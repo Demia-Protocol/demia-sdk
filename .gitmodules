@@ -1,0 +1,16 @@
+[submodule "iota.rs"]
+	path = iota.rs
+	url = https://github.com/demia-protocol/iota.rs
+	branch = adapter-with-encryption
+[submodule "streams"]
+	path = streams
+	url = https://github.com/demia-protocol/streams
+	branch = develop
+[submodule "identity.rs"]
+	path = identity.rs
+	url = https://github.com/demia-protocol/identity.rs
+	branch = modified-client-dep
+[submodule "stronghold.rs"]
+	path = stronghold.rs
+	url = https://github.com/demia-protocol/stronghold.rs
+	branch = dev
