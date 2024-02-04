@@ -1,5 +1,5 @@
 [package]
-name = "sdk"
+name = "demia_sdk"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,9 +7,25 @@ edition = "2021"
 iota-client = { path = "../iota.rs/client"}
 
 lets = { path = "../streams/lets"}
-streams = { path = "../streams/streams"}
+streams = { path = "../streams/streams", default-features = false }
 
 identity_did = { path = "../identity.rs/identity_did"}
 identity_iota = { path = "../identity.rs/identity_iota"}
 
 iota_stronghold = { path = "../stronghold.rs/client"}
+
+dotenv = { version = "0.15" }
+tokio = { version = "1", features = ["full"] }
+
+[features]
+default = ["streams/default", "utangle-client", "did", "std"]
+std = ["streams/std"]
+
+did = ["streams/did"]
+bucket = ["streams/did"]
+mysql-client = ["streams/mysql-client"]
+utangle-client = ["streams/utangle-client"]
+
+[[example]]
+name = "main"
+path = "examples/main.rs"

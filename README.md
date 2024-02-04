@@ -50,7 +50,16 @@ To get started with the Demia SDK and its submodules, follow these general steps
    use demia_sdk::identity::iota::IOTAIdentity;
    use demia_sdk::iota_stronghold::Stronghold;
 
-   
+## Examples
+
+You can see examples using the library in the [examples](examples/) directory. Try them with:
+
+```shell
+# cargo run --example <name of the example without .rs>
+cargo run --example main
+```
+
+For examples where a seed is required you need to create a `.env` file under the current directory. You can do so by renaming [`.env.example`](.env.example) to `.env`.
 
 ## Contributing
 We welcome contributions from the community. If you would like to contribute to the Demia SDK, please follow our contribution guidelines.
