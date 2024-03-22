@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iota-client = { path = "../iota.rs/client"}
+iota-client = { path = "../demia.rs/client"}
 
 lets = { path = "../streams/lets"}
 streams = { path = "../streams/streams", default-features = false }
