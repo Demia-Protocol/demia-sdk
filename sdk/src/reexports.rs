@@ -17,6 +17,10 @@ pub mod identity {
     pub mod iota {
         pub use identity_iota::*;
     }
+
+    pub mod demia {
+        pub use identity_demia::*;
+    }
 }
 
 pub mod iota_stronghold {

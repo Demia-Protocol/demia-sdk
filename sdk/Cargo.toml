@@ -11,6 +11,7 @@ streams = { path = "../streams/streams", default-features = false }
 
 identity_did = { path = "../identity.rs/identity_did"}
 identity_iota = { path = "../identity.rs/identity_iota"}
+identity_demia = { path = "../identity.rs/identity_demia"}
 
 iota_stronghold = { path = "../stronghold.rs/client"}
 

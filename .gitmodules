@@ -5,11 +5,11 @@
 [submodule "streams"]
 	path = streams
 	url = https://github.com/demia-protocol/streams
-	branch = develop
+	branch = backwards
 [submodule "identity.rs"]
 	path = identity.rs
 	url = https://github.com/demia-protocol/identity.rs
-	branch = modified-client-dep
+	branch = main
 [submodule "stronghold.rs"]
 	path = stronghold.rs
 	url = https://github.com/demia-protocol/stronghold.rs
