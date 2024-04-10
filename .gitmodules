@@ -5,7 +5,7 @@
 [submodule "streams"]
 	path = streams
 	url = https://github.com/demia-protocol/streams
-	branch = backwards
+	branch = develop
 [submodule "identity.rs"]
 	path = identity.rs
 	url = https://github.com/demia-protocol/identity.rs
