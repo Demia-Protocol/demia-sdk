@@ -122,7 +122,8 @@ jobs:
           components: rustfmt
 
       - name: Run cargo-doc
-        run: cargo ci-doc --manifest-path ./sdk/Cargo.toml
+        working-directory: ./sdk
+        run: cargo ci-doc
 
   types:
     name: Check types-only compilation
