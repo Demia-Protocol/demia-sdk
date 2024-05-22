@@ -1,0 +1,152 @@
+name: Linting
+on:
+  push:
+    branches: [main, develop, gh-actions]
+    paths:
+      - ".cargo/config.toml"
+      - ".github/workflows/lint.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+  pull_request:
+    branches: [main, develop, gh-actions]
+    paths:
+      - ".cargo/config.toml"
+      - ".github/workflows/lint.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: beta
+          components: clippy
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Clippy
+        uses: actions-rs/clippy-check@v1
+        working-directory: ./sdk
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features --all-targets -- --deny warnings
+          name: Clippy Results for the Rust Core
+
+  check-unused-deps:
+    name: Check Unused Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-udeps
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Cargo Udeps
+        working-directory: ./sdk
+        run: cargo ci-udeps
+
+  check-format:
+    name: Check Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+
+      - name: Install cargo-license-template
+        run: cargo install --force cargo-license-template
+
+      - name: Run Cargo Fmt
+        working-directory: ./sdk
+        run: cargo ci-fmt
+
+  check-docs:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: rustfmt
+
+      - name: Run cargo-doc
+        working-directory: ./sdk
+        run: cargo ci-doc
+
+  audit:
+    name: Perform Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          install: cargo-audit
+
+      - name: Run Cargo Audit
+        working-directory: ./sdk
+        run: cargo ci-audit
+
+  types:
+    name: Check types-only compilation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Source Code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+
+      - name: Check
+        working-directory: ./sdk
+        run: cargo ci-check-types

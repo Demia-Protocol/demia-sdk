@@ -1,0 +1,27 @@
+[alias]
+ci-check-all = "check --all-targets --all-features"
+ci-check-types = "check --no-default-features -p boilerplate"
+
+ci-test = "nextest run --all-features --profile ci --cargo-profile ci -p boilerplate"
+ci-tangle-test = "nextest run --tests --all-features --run-ignored ignored-only --profile ci --cargo-profile ci -p boilerplate"
+# TODO add `--run-ignored all` again
+ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests -p boilerplate --all-features --profile ci"
+# ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests -p boilerplate --all-features --run-ignored all --profile ci"
+
+ci-clippy = "clippy --all-targets --all-features -- -D warnings"
+
+ci-doctest = "test --doc --all-features"
+ci-doc = "doc --all-features --no-deps --document-private-items"
+ci-fmt = "fmt --all -- --check"
+ci-toml = "sort --grouped --check"
+ci-udeps = "udeps --all-targets --all-features --backend=depinfo"
+ci-license = "license-template --template .license_template"
+
+# The ignored security advisories:
+# - https://rustsec.org/advisories/RUSTSEC-2021-0139
+#   - ansi_term is unmaintained
+# - https://rustsec.org/advisories/RUSTSEC-2022-0071
+#   - Rusoto is unmaintained 
+# - https://rustsec.org/advisories/RUSTSEC-2023-0071
+#   - https://github.com/RustCrypto/RSA/pull/394
+ci-audit = "audit --file Cargo.lock --ignore RUSTSEC-2021-0139 --ignore RUSTSEC-2022-0071"

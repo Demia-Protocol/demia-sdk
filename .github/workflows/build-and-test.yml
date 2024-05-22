@@ -1,0 +1,49 @@
+name: Build and Run Tests
+
+on:
+  push:
+    branches: [main, develop, gh-actions]
+    paths:
+      - ".cargo/config.toml"
+      - ".github/workflows/build-and-test.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/bindings/**" # Exclude all bindings
+  pull_request:
+    branches: [main, develop, gh-actions]
+    paths:
+      - ".cargo/config.toml"
+      - ".github/workflows/build-and-test.yml"
+      - ".github/actions/**"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+      - "!**/bindings/**" # Exclude all bindings
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  crate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # os: [windows-latest,  macos-latest, ubuntu-latest] No database on windows and mac
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+
+      - name: Install Nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Run tests
+        working-directory: ./sdk
+        run: cargo ci-test

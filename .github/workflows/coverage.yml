@@ -1,0 +1,60 @@
+name: Test coverage
+
+on:
+  push:
+    branches: [disabled]
+    paths:
+      - ".cargo/config.toml"
+      - ".github/workflows/coverage.yml"
+      - ".github/actions/**"
+      - "coverage.sh"
+      - "**.rs" # Include all rust files
+      - "**Cargo.toml" # Include all Cargo.toml files
+      - "**Cargo.lock" # Include all Cargo.lock files
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  collect-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          toolchain: nightly
+          components: llvm-tools-preview
+
+      - name: Install llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+
+      # - name: Start private tangle
+      #   uses: "./.github/actions/private-tangle/setup"
+
+      # TODO add `--run-ignored all` again
+      - name: Collect coverage data
+        working-directory: ./sdk
+        run: cargo ci-coverage
+
+      # - name: Tear down private tangle
+      #   if: always()
+      #   uses: "./.github/actions/private-tangle/tear-down"
+
+      - name: Upload coverage data to Coveralls
+        uses: coverallsapp/github-action@v2.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          flag-name: Unit
