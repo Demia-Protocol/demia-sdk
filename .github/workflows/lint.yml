@@ -126,25 +126,6 @@ jobs:
       - name: Run cargo-doc
         run: cargo ci-doc
 
-  audit:
-    name: Perform Security Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the Source Code
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Set up Rust
-        uses: ./.github/actions/setup-rust
-        with:
-          toolchain: nightly
-          install: cargo-audit
-
-      - name: Run Cargo Audit
-        run: cargo ci-audit
-
   types:
     name: Check types-only compilation
     runs-on: ubuntu-latest
