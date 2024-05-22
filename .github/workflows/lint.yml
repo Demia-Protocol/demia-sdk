@@ -38,6 +38,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
@@ -64,6 +67,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
@@ -86,6 +92,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
@@ -108,6 +117,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
@@ -125,6 +137,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
@@ -142,6 +157,9 @@ jobs:
     steps:
       - name: Checkout the Source Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Rust
         uses: ./.github/actions/setup-rust
