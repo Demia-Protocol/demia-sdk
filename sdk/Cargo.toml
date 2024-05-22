@@ -27,6 +27,11 @@ bucket = ["streams/did"]
 mysql-client = ["streams/mysql-client"]
 utangle-client = ["streams/utangle-client"]
 
+[profile.ci]
+inherits = "dev"
+debug = 0
+incremental = false
+
 [[example]]
 name = "main"
 path = "examples/main.rs"
