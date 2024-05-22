@@ -26,6 +26,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    working-directory: sdk
+
 jobs:
   crate:
     runs-on: ${{ matrix.os }}

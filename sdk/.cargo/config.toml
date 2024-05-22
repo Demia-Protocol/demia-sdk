@@ -1,12 +1,12 @@
 [alias]
 ci-check-all = "check --all-targets --all-features"
-ci-check-types = "check --no-default-features -p boilerplate"
+ci-check-types = "check --no-default-features"
 
-ci-test = "nextest run --all-features --profile ci --cargo-profile ci -p boilerplate"
-ci-tangle-test = "nextest run --tests --all-features --run-ignored ignored-only --profile ci --cargo-profile ci -p boilerplate"
+ci-test = "nextest run --all-features --profile ci --cargo-profile ci"
+ci-tangle-test = "nextest run --tests --all-features --run-ignored ignored-only --profile ci --cargo-profile ci"
 # TODO add `--run-ignored all` again
-ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests -p boilerplate --all-features --profile ci"
-# ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests -p boilerplate --all-features --run-ignored all --profile ci"
+ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests --all-features --profile ci"
+# ci-coverage = "llvm-cov nextest --lcov --output-path lcov.info --tests --all-features --run-ignored all --profile ci"
 
 ci-clippy = "clippy --all-targets --all-features -- -D warnings"
 
