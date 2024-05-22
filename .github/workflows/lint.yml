@@ -128,7 +128,7 @@ jobs:
 
       - name: Run cargo-doc
         working-directory: ./sdk
-        run: cargo doc --all-features --no-deps --document-private-items
+        run: cargo doc --all-features --no-deps --document-private-items -p demia_sdk --lib
 
   types:
     name: Check types-only compilation
