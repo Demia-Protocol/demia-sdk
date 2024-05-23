@@ -11,3 +11,5 @@ pub mod errors;
 pub mod logger;
 pub mod models;
 pub mod utils;
+
+pub use isocountry::{CountryCode, self};
