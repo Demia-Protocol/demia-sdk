@@ -46,3 +46,35 @@ pub struct Reading {
     pub annotations: HashMap<String, Annotation>,
     pub score: f32,
 }
+
+impl Default for Sensor {
+    fn default() -> Self {
+        let s: String = rand::thread_rng()
+            .sample_iter(&rand::distributions::Alphanumeric)
+            .take(7)
+            .map(char::from)
+            .collect();
+
+            Sensor {
+            id: format!("Sensor_{}", s),
+            total: 0,
+            avgcf: 0.0,
+            equipment: Equipment::default(),
+            readings: Vec::new(),
+            local_time: chrono::Local::now().naive_local(),
+        }
+    }
+}
+
+impl From<Equipment> for Sensor {
+    fn from(equipment: Equipment) -> Self {
+        Sensor {
+            id: equipment.name.clone(),
+            total: 0,
+            avgcf: 0.0,
+            equipment,
+            readings: Vec::new(),
+            local_time: chrono::Local::now().naive_local(),
+        }
+    }
+}

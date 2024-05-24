@@ -49,6 +49,7 @@ impl Storage for AwsClient {
         self.s3_client
             .put_object(PutObjectRequest {
                 bucket: info.bucket.to_owned(),
+                key: info.url,
                 ..Default::default()
             })
             .await
