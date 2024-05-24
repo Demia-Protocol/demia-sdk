@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use alvarium_sdk_rust::annotations::Annotation;
 use chrono::NaiveDateTime;
 use indexmap::IndexMap;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -13,7 +14,7 @@ pub struct Sensors {
     pub sensors: IndexMap<String, Sensor>,
 }
 
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sensor {
     pub id: String,
     pub total: usize,
@@ -55,7 +56,7 @@ impl Default for Sensor {
             .map(char::from)
             .collect();
 
-            Sensor {
+        Sensor {
             id: format!("Sensor_{}", s),
             total: 0,
             avgcf: 0.0,
