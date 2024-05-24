@@ -1,18 +1,16 @@
-mod context;
-// mod identity;
 mod sensor;
 mod site;
 mod token;
 mod vault;
+mod context;
 
 use std::collections::HashSet;
 
-pub use context::*;
 pub use sensor::*;
-// pub use identity::{check_balance, UserIdentity};
 pub use site::*;
 pub use token::*;
 pub use vault::*;
+pub use context::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
@@ -25,10 +23,10 @@ pub struct Card {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ValueSet {
-    values: Vec<f64>,
-    timestamps: Vec<String>,
-    total: f64,
-    avg: f64,
+    pub values: Vec<f64>,
+    pub timestamps: Vec<String>,
+    pub total: f64,
+    pub avg: f64,
 }
 
 impl ValueSet {
