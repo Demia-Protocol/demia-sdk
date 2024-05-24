@@ -1,9 +1,9 @@
 use std::collections::HashMap;
+
 use indexmap::IndexMap;
+
 use crate::{
-    models::{
-        SensorDashboardContext, EquipmentDashboardContext, GHGInfo, Notification, ProjectInfo, ValueSet, Sensors
-    },
+    models::{Equipment, GHGInfo, Notification, ProjectInfo, Sensor, Sensors, ValueSet},
     utils::Record,
 };
 
@@ -19,7 +19,7 @@ pub struct NewSite {
     pub id: String,
     pub name: String,
     pub location: SiteLocation,
-    pub sensors: Vec<(String, EquipmentDashboardContext)>,
+    pub sensors: Vec<(String, Equipment)>,
     pub project: ProjectInfo,
     pub announcement: String,
 }
@@ -65,7 +65,7 @@ impl Site {
         location: SiteLocation,
         sensors: Sensors,
         project: ProjectInfo,
-    ) -> Self{
+    ) -> Self {
         Self {
             id,
             name,
@@ -82,7 +82,7 @@ impl From<&NewSite> for Site {
     fn from(new_site: &NewSite) -> Self {
         let mut sensors = IndexMap::new();
         for (sensor, equipment) in &new_site.sensors {
-            let context = SensorDashboardContext {
+            let context = Sensor {
                 id: sensor.clone(),
                 equipment: equipment.clone(),
                 ..Default::default()

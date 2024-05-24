@@ -12,4 +12,4 @@ pub mod logger;
 pub mod models;
 pub mod utils;
 
-pub use isocountry::{CountryCode, self};
+pub use isocountry::{self, CountryCode};
