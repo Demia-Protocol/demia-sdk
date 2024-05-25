@@ -7,11 +7,11 @@ edition = "2021"
 iota-client = { path = "../demia.rs/client", features = ["tls", "stronghold"] }
 
 lets = { path = "../streams/lets"}
-streams = { path = "../streams/streams", default-features = false, features = ["serde", "did", "mysql-client", "bucket"] }
+streams = { path = "../streams/streams", features = ["serde", "did", "mysql-client", "bucket"] }
 
 identity_did = { path = "../identity.rs/identity_did"}
 identity_iota = { path = "../identity.rs/identity_iota"}
-identity_demia = { path = "../identity.rs/identity_demia" }
+identity_demia = { path = "../identity.rs/identity_demia", features = ["client", "iota-client"] }
 isocountry = { version = "0.3" }
 
 iota_stronghold = { path = "../stronghold.rs/client"}
