@@ -15,9 +15,40 @@ identity_demia = { path = "../identity.rs/identity_demia", features = ["client",
 isocountry = { version = "0.3" }
 
 iota_stronghold = { path = "../stronghold.rs/client"}
+# TODO Change back to project-alvarium when merged 
+alvarium-sdk-rust = { git = "https://github.com/kwek20/alvarium-sdk-rust", branch = "demia-sdk" }
 
 dotenv = { version = "0.15" }
 tokio = { version = "1", features = ["full"] }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json"] }
+tokio-stream = "0.1"
+log = "0.4"
+rand = "0.8.5"
+indexmap = "2.1.0"
+
+chrono = "0.4.26"
+fern = "0.6.2"
+async-trait = "0.1.68"
+
+thiserror = "1.0.40"
+rocket_okapi = "0.8.0"
+
+google-cloud-storage = { git = "https://github.com/yoshidan/google-cloud-rust", branch="main", default-features=false, features=["trace","rustls-tls"]}
+
+rusoto_sts = "0.48.0"
+rusoto_core = "0.48.0"
+rusoto_s3 = "0.48.0"
+vaultrs = "0.7.0"
+
+base64 = "0.21.2"
+hex = "0.4.3"
+der = "0.7.6"
+uuid = { version = "1.8.0", features = ["v4"] }
+url = "2.4"
+jsonwebtoken = "8.3.0"
 
 [features]
 default = ["streams/default", "utangle-client", "did", "std"]
