@@ -50,6 +50,7 @@ impl Storage for AwsClient {
             .put_object(PutObjectRequest {
                 bucket: info.bucket.to_owned(),
                 key: info.url,
+                body: Some(info.data.unwrap().into()),
                 ..Default::default()
             })
             .await

@@ -11,6 +11,7 @@ use crate::{
 pub struct SiteLocation {
     pub address: String,
     pub lat: f32,
+    #[serde(alias = "long")]
     pub lon: f32,
 }
 
@@ -42,18 +43,25 @@ pub struct SiteState {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Site {
+    #[serde(rename = "projectId")]
     pub id: String,
+    #[serde(rename = "projectAnnouncement")]
     pub announcement: String,
+    #[serde(rename = "projectName")]
     pub name: String,
     pub location: SiteLocation,
     pub sensors: Sensors,
     pub notifications: Vec<Notification>,
+    #[serde(rename = "projectInfo")]
     pub project: ProjectInfo,
+    #[serde(rename = "ghgLast30Days")]
     pub ghg_last_30_days: GHGInfo,
     #[serde(default)]
     pub records: HashMap<String, Record>,
+    #[serde(rename = "ghgAnnual")]
     pub ghg_annual: GHGInfo,
     pub state_data: SiteState,
+    #[serde(rename = "avgDcf")]
     pub avg_dcf: Option<String>,
 }
 

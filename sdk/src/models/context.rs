@@ -15,10 +15,12 @@ pub struct EquipmentDashboardContext {
     pub id: String,
     pub group: String,
     pub units: String,
+    #[serde(rename = "eqType")]
     pub eq_type: String,
     pub name: String,
     pub accuracy: f32,
     pub installed: u16,
+    #[serde(rename = "serialNo")]
     pub serial_no: String,
     pub manufacturer: String,
 }
@@ -30,6 +32,7 @@ pub struct ReadingDashboardContext {
     pub address: String,
     pub timestamp: String,
     pub value: f32,
+    #[serde(rename = "sheetData")]
     pub sheet_data: Option<Value>,
     pub annotations: HashMap<String, Annotation>,
     pub score: f32,

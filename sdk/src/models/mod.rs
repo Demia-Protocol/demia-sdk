@@ -47,8 +47,10 @@ impl ValueSet {
 pub struct ProjectInfo {
     #[serde(rename = "type")]
     pub project_type: String,
+    #[serde(rename = "projectId")]
     pub id: String,
     pub methodology: String,
+    #[serde(rename = "projectDev")]
     pub developer: String,
 }
 
