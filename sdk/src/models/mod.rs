@@ -21,12 +21,12 @@ pub struct Card {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ValueSet {
-    title: String,
-    label: String,
-    values: Vec<f64>,
-    timestamps: Vec<String>,
-    total: f64,
-    avg: f64,
+    pub title: String,
+    pub label: String,
+    pub values: Vec<f64>,
+    pub timestamps: Vec<String>,
+    pub total: f64,
+    pub avg: f64,
 }
 
 impl ValueSet {
