@@ -21,14 +21,16 @@ pub struct Card {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ValueSet {
-    pub values: Vec<f64>,
-    pub timestamps: Vec<String>,
-    pub total: f64,
-    pub avg: f64,
+    title: String,
+    label: String,
+    values: Vec<f64>,
+    timestamps: Vec<String>,
+    total: f64,
+    avg: f64,
 }
 
 impl ValueSet {
-    pub fn new(mut values: Vec<f64>, timestamps: Vec<String>) -> ValueSet {
+    pub fn new(mut values: Vec<f64>, timestamps: Vec<String>, title: String, label: String) -> ValueSet {
         if values.len() == 1 {
             (1..timestamps.len()).for_each(|_| values.push(values[0]))
         }
@@ -39,6 +41,8 @@ impl ValueSet {
             timestamps,
             total,
             avg,
+            title,
+            label,
         }
     }
 }

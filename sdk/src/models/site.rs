@@ -41,6 +41,16 @@ pub struct SiteState {
     pub calc_data: Vec<Record>,
 }
 
+impl SiteState {
+    pub fn get_map(&self) -> HashMap<String, serde_json::Value> {
+        // map to string to include labels
+        let str = serde_json::to_string(self).unwrap();
+        // parse the string to a HashMap
+        let map: HashMap<String, serde_json::Value> = serde_json::from_str(&str).unwrap();
+        map
+    }
+}
+
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Site {
     #[serde(rename = "projectId")]
