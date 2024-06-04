@@ -35,12 +35,7 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
         .map(|record| (record.sum + cod_lab_sheet) * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR)
         .collect();
 
-    ValueSet::new(
-        result,
-        data_timestamp,
-        "Waste Water (liquid industrial waste)".to_string(),
-        "Tonnes".to_string(),
-    )
+    ValueSet::new(result, data_timestamp, "Waste Water (liquid industrial waste)".to_string(), "Tonnes".to_string())
 }
 
 // Methane emissions from solid waste disposal sites (using first order decay method)
@@ -85,12 +80,7 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
         })
         .collect();
 
-    ValueSet::new(
-        result,
-        data_timestamp,
-        "Methane emissions from solid waste disposal sites".to_string(),
-        "t C02e".to_string(),
-    )
+    ValueSet::new(result, data_timestamp, "Methane emissions from solid waste disposal sites".to_string(), "t C02e".to_string())
 }
 
 // Emissions for the Reporting Period
@@ -161,12 +151,7 @@ pub async fn equation10(bde: Vec<f64>, ch4: Vec<f64>, calc_data: &[Record]) -> V
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        daily_f_mo.1,
-        "Anaerobic Digestor".to_string(),
-        "t C02e".to_string(),
-    )
+    ValueSet::new(result, daily_f_mo.1, "Anaerobic Digestor".to_string(), "t C02e".to_string())
 }
 
 // Quantity of Methane Collected and Metered
@@ -191,12 +176,7 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        daily_f_mo.1,
-        "Quantity of Methane Collected and Metered".to_string(),
-        "t CH4".to_string(),
-    )
+    ValueSet::new(result, daily_f_mo.1, "Quantity of Methane Collected and Metered".to_string(), "t CH4".to_string())
 }
 
 // Weighted average of all destruction devices used (fraction)
@@ -211,12 +191,7 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        daily_calc_data.1,
-        "Weighted Biogas average of all destruction devices used".to_string(),
-        "Nm3".to_string(),
-    )
+    ValueSet::new(result, daily_calc_data.1, "Weighted Biogas average of all destruction devices used".to_string(), "Nm3".to_string())
 }
 
 // Volume of biogas collected for the given time interval
@@ -236,12 +211,7 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        daily_calc_data.1,
-        "Volume of biogas collected for the given time interval".to_string(),
-        "Nm3".to_string(),
-    )
+    ValueSet::new(result, daily_calc_data.1, "Volume of biogas collected for the given time interval".to_string(), "Nm3".to_string())
 }
 
 // Total GHG Emissions for Effluent Storage for the Reporting Period
@@ -262,12 +232,7 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        daily_calc_data.1,
-        "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
-        "t C02e".to_string(),
-    )
+    ValueSet::new(result, daily_calc_data.1, "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(), "t C02e".to_string())
 }
 
 // Total Metered Quantity of Methane Captured and Destroyed by the AD Project
@@ -300,16 +265,12 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
         vec![]
     };
 
-    ValueSet::new(
-        result,
-        data_timestamp,
-        "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
-        "t CH4".to_string(),
-    )
+    ValueSet::new(result, data_timestamp, "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(), "t CH4".to_string())
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Record {
+    pub id: String,
     pub sensor_id: String,
     pub data_timestamp: NaiveDateTime,
     pub sum: f64,
@@ -322,8 +283,9 @@ pub struct Record {
 }
 
 impl Record {
-    pub fn new(date: NaiveDateTime, value: f64, company: String, sensor_id: String, raw: Option<Value>) -> Self {
+    pub fn new(id: String, date: NaiveDateTime, value: f64, company: String, sensor_id: String, raw: Option<Value>) -> Self {
         Record {
+            id,
             sensor_id,
             data_timestamp: date,
             sum: value,
