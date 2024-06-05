@@ -7,8 +7,8 @@ use std::str::FromStr;
 /// Represents the Wrapper for an Annotation, including the reading_id that they represent
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct AnnotationWrap {
-    reading_id: String,
-    annotation: Annotation,
+    pub reading_id: String,
+    pub annotation: Annotation,
 }
 
 /// Represents a Reading Type for demo data
