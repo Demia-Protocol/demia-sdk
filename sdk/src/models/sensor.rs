@@ -6,12 +6,14 @@ use indexmap::IndexMap;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::models::AnnotationWrap;
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Sensors {
     pub total: u16,
     pub online: u16,
     pub sensors: IndexMap<String, Sensor>,
+    pub unprocessed: HashMap<String, Vec<AnnotationWrap>>
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -20,9 +22,19 @@ pub struct Sensor {
     pub total: usize,
     pub avgcf: f32,
     pub equipment: Equipment,
-    pub readings: Vec<(String, Reading)>,
+    pub readings: HashMap<String, Reading>,
+    pub state_data: SensorStateData,
     #[serde(rename = "localTime")]
     pub local_time: NaiveDateTime,
+}
+
+/// Holds state data for the sensor to be represented in the dashboard
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SensorStateData {
+    pub real_time_flow: f64,
+    pub total_flow: f64,
+    pub current_day_avg: f64,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -91,7 +103,8 @@ impl Default for Sensor {
             total: 0,
             avgcf: 0.0,
             equipment: Equipment::default(),
-            readings: Vec::new(),
+            readings: HashMap::new(),
+            state_data: SensorStateData::default(),
             local_time: chrono::Local::now().naive_local(),
         }
     }
@@ -104,7 +117,8 @@ impl From<Equipment> for Sensor {
             total: 0,
             avgcf: 0.0,
             equipment,
-            readings: Vec::new(),
+            readings: HashMap::new(),
+            state_data: SensorStateData::default(),
             local_time: chrono::Local::now().naive_local(),
         }
     }

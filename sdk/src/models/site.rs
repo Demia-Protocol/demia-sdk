@@ -111,6 +111,7 @@ impl From<&NewSite> for Site {
             total: 0,
             online: 0,
             sensors,
+            unprocessed: HashMap::new(),
         };
         Site::new(
             new_site.id.clone(),
