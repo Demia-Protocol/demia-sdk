@@ -1,8 +1,9 @@
+use std::str::FromStr;
+
 use alvarium_sdk_rust::annotations::Annotation;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::str::FromStr;
 
 /// Represents the Wrapper for an Annotation, including the reading_id that they represent
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]

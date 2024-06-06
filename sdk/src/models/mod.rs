@@ -1,16 +1,16 @@
+mod reading;
 mod sensor;
 mod site;
 mod token;
 mod vault;
-mod reading;
 
 use std::collections::HashSet;
 
+pub use reading::*;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
 pub use vault::*;
-pub use reading::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
