@@ -25,7 +25,7 @@ pub struct Sensor {
     pub avgcf: f32,
     pub equipment: Equipment,
     pub readings: HashMap<String, Reading>,
-    pub last_updated: NaiveDateTime,
+    pub last_updated: Option<NaiveDateTime>,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -95,7 +95,7 @@ impl Default for Sensor {
             avgcf: 0.0,
             equipment: Equipment::default(),
             readings: HashMap::new(),
-            last_updated: chrono::Local::now().naive_local(),
+            last_updated: None,
         }
     }
 }
@@ -108,7 +108,7 @@ impl From<Equipment> for Sensor {
             avgcf: 0.0,
             equipment,
             readings: HashMap::new(),
-            last_updated: chrono::Local::now().naive_local(),
+            last_updated: None,
         }
     }
 }
