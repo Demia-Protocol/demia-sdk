@@ -25,17 +25,7 @@ pub struct Sensor {
     pub avgcf: f32,
     pub equipment: Equipment,
     pub readings: HashMap<String, Reading>,
-    pub state_data: SensorStateData,
     pub last_updated: NaiveDateTime,
-}
-
-/// Holds state data for the sensor to be represented in the dashboard
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SensorStateData {
-    pub real_time_flow: f64,
-    pub total_flow: f64,
-    pub current_day_avg: f64,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -105,7 +95,6 @@ impl Default for Sensor {
             avgcf: 0.0,
             equipment: Equipment::default(),
             readings: HashMap::new(),
-            state_data: SensorStateData::default(),
             last_updated: chrono::Local::now().naive_local(),
         }
     }
@@ -119,7 +108,6 @@ impl From<Equipment> for Sensor {
             avgcf: 0.0,
             equipment,
             readings: HashMap::new(),
-            state_data: SensorStateData::default(),
             last_updated: chrono::Local::now().naive_local(),
         }
     }
