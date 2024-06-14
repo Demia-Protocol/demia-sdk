@@ -16,7 +16,7 @@ isocountry = { version = "0.3" }
 
 iota_stronghold = { path = "../stronghold.rs/client"}
 # TODO Change back to project-alvarium when merged 
-alvarium-sdk-rust = { git = "https://github.com/kwek20/alvarium-sdk-rust", branch = "demia-sdk" }
+alvarium-sdk-rust = { git = "https://github.com/DyrellC/alvarium-sdk-rust", branch = "main" }
 
 dotenv = { version = "0.15" }
 tokio = { version = "1", features = ["full"] }
