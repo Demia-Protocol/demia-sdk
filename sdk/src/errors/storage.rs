@@ -18,6 +18,12 @@ impl From<google_cloud_storage::http::Error> for StorageError {
     }
 }
 
+impl From<RusotoError<rusoto_s3::DeleteObjectError>> for StorageError {
+    fn from(error: RusotoError<rusoto_s3::DeleteObjectError>) -> Self {
+        Self::AwsClientError(format!("Delete Object: {}", error))
+    }
+}
+
 impl From<RusotoError<rusoto_s3::ListObjectsError>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::ListObjectsError>) -> Self {
         Self::AwsClientError(format!("List Object: {}", error))

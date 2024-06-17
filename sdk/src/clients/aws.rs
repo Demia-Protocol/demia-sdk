@@ -2,7 +2,9 @@ use std::{collections::HashMap, fmt::Debug};
 
 use log::{debug, info, warn};
 use rusoto_core::{credential::StaticProvider, Region};
-use rusoto_s3::{GetObjectOutput, GetObjectRequest, ListObjectsRequest, Object, PutObjectRequest, S3Client, S3};
+use rusoto_s3::{
+    DeleteObjectRequest, GetObjectOutput, GetObjectRequest, ListObjectsRequest, Object, PutObjectRequest, S3Client, S3,
+};
 use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;
 
@@ -30,19 +32,37 @@ impl Storage for AwsClient {
     type FileInfo = GetObjectOutput;
     type File = Object;
 
-    async fn list_objects(&self, bucket: String) -> StorageResult<Vec<Self::FileInfo>> {
+    async fn list_objects(&self, bucket: String) -> StorageResult<Vec<String>> {
         let get_object_request = ListObjectsRequest {
             bucket,
             ..Default::default()
         };
-        let _objects = self
+        let objects = self
             .s3_client
             .list_objects(get_object_request)
             .await
             .map_err(StorageError::from)?;
 
-        // TODO: Vec<GetObjectOutput> -> into type File
-        todo!()
+        Ok(objects
+            .contents
+            .unwrap_or_default()
+            .iter()
+            .map(|f| f.key.clone().unwrap_or_default())
+            .collect())
+    }
+
+    async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()> {
+        let request = DeleteObjectRequest {
+            bucket: info.bucket.to_string(),
+            key: info.url,
+            ..Default::default()
+        };
+        let _objects = self
+            .s3_client
+            .delete_object(request)
+            .await
+            .map_err(StorageError::from)?;
+        Ok(())
     }
 
     async fn upload(&self, info: StorageInfo<'_>) -> StorageResult<()> {

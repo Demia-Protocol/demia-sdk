@@ -28,11 +28,13 @@ pub const STRONGHOLD_PATH: &str = "stronghold";
 pub const IDENTITY_METADATA: &str = "metadata";
 pub const STREAMS_PATH: &str = "stream";
 pub const MESSAGE_PATH: &str = "demia-messages";
+pub const DOCUMENTS_PATH: &str = "documents";
 
 pub enum StorageDataType<'a> {
     StreamsSnapshot(&'a str),
     StrongholdSnapshot(&'a str),
     IdentityMetadata(&'a str),
+    Document(&'a str),
 }
 
 /// Storage info
@@ -46,11 +48,12 @@ pub struct StorageInfo<'a> {
     data: Option<Vec<u8>>,
 }
 
-pub(crate) fn get_paths<'a>(data: &'a StorageDataType) -> (&'a str, &'a str) {
-    match data {
-        StorageDataType::StreamsSnapshot(path) => (path, STREAMS_PATH),
-        StorageDataType::StrongholdSnapshot(path) => (path, STRONGHOLD_PATH),
-        StorageDataType::IdentityMetadata(path) => (path, IDENTITY_METADATA),
+pub(crate) fn get_paths<'a>(data: &'a StorageDataType) -> (&'a str, String) {
+    match *data {
+        StorageDataType::StreamsSnapshot(path) => (path, STREAMS_PATH.to_owned()),
+        StorageDataType::StrongholdSnapshot(path) => (path, STRONGHOLD_PATH.to_owned()),
+        StorageDataType::IdentityMetadata(path) => (path, IDENTITY_METADATA.to_owned()),
+        StorageDataType::Document(path) => (path, format!("{}/{}", DOCUMENTS_PATH, path)),
     }
 }
 
@@ -63,7 +66,9 @@ pub trait Storage {
 
     async fn download(&self, info: StorageInfo<'_>) -> StorageResult<Vec<u8>>;
 
-    async fn list_objects(&self, file: String) -> StorageResult<Vec<Self::FileInfo>>;
+    async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()>;
+
+    async fn list_objects(&self, file: String) -> StorageResult<Vec<String>>;
 }
 
 #[async_trait::async_trait]
@@ -92,6 +97,10 @@ impl<T: Storage> StorageClient<T> {
     pub async fn new(jwt_token: TokenWrap, storage: T) -> StorageResult<Self> {
         let sub = jwt_token.get_sub().unwrap();
         Ok(Self { storage, sub })
+    }
+
+    pub async fn upload(&self, info: StorageInfo<'_>) -> StorageResult<()> {
+        self.storage.upload(info).await
     }
 
     pub async fn upload_data(&self, data: StorageDataType<'_>) -> StorageResult<()> {
@@ -141,7 +150,7 @@ impl<T: Storage> StorageClient<T> {
 
         let raw = self.storage.download(info).await;
         match storage_type {
-            StorageDataType::IdentityMetadata(_) => match raw {
+            StorageDataType::IdentityMetadata(_) | StorageDataType::Document(_) => match raw {
                 Ok(object) => Ok(object),
                 Err(_) => Ok(vec![]),
             },
