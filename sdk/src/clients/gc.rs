@@ -31,13 +31,11 @@ impl Storage for GoogleCloud {
     type FileInfo = UploadObjectRequest;
     type File = Object;
 
-    async fn list_objects(&self, bucket: String) -> StorageResult<Vec<String>> {
-        // TODO: Vec<GetObjectOutput> -> into type File
-        let _ = bucket.split(':');
+    async fn list_objects(&self, _info: StorageInfo<'_>) -> StorageResult<Vec<String>> {
         todo!()
     }
 
-    async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()> {
+    async fn delete(&self, _info: StorageInfo<'_>) -> StorageResult<()> {
         todo!()
     }
 

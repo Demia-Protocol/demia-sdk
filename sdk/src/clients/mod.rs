@@ -30,11 +30,13 @@ pub const STREAMS_PATH: &str = "stream";
 pub const MESSAGE_PATH: &str = "demia-messages";
 pub const DOCUMENTS_PATH: &str = "documents";
 
+pub const MAX_FILE_SIZE: u32 = 10 * 1024 * 1024;
+
 pub enum StorageDataType<'a> {
     StreamsSnapshot(&'a str),
     StrongholdSnapshot(&'a str),
     IdentityMetadata(&'a str),
-    Document(&'a str),
+    Document(&'a str, &'a str), // Site, filename
 }
 
 /// Storage info
@@ -48,12 +50,12 @@ pub struct StorageInfo<'a> {
     data: Option<Vec<u8>>,
 }
 
-pub(crate) fn get_paths<'a>(data: &'a StorageDataType) -> (&'a str, String) {
+pub(crate) fn get_paths<'a>(data: &'a StorageDataType, sub: &'a str) -> (&'a str, String) {
     match *data {
-        StorageDataType::StreamsSnapshot(path) => (path, STREAMS_PATH.to_owned()),
-        StorageDataType::StrongholdSnapshot(path) => (path, STRONGHOLD_PATH.to_owned()),
-        StorageDataType::IdentityMetadata(path) => (path, IDENTITY_METADATA.to_owned()),
-        StorageDataType::Document(path) => (path, format!("{}/{}", DOCUMENTS_PATH, path)),
+        StorageDataType::StreamsSnapshot(path) => (path, format!("users/{}/{}", sub, STREAMS_PATH.to_owned())),
+        StorageDataType::StrongholdSnapshot(path) => (path, format!("users/{}/{}", sub, STRONGHOLD_PATH.to_owned())),
+        StorageDataType::IdentityMetadata(path) => (path, format!("users/{}/{}", sub, IDENTITY_METADATA.to_owned())),
+        StorageDataType::Document(site, file) => (file, format!("sites/{}/{}/{}", site, sub, file)),
     }
 }
 
@@ -68,7 +70,7 @@ pub trait Storage {
 
     async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()>;
 
-    async fn list_objects(&self, file: String) -> StorageResult<Vec<String>>;
+    async fn list_objects(&self, file: StorageInfo<'_>) -> StorageResult<Vec<String>>;
 }
 
 #[async_trait::async_trait]
@@ -99,39 +101,53 @@ impl<T: Storage> StorageClient<T> {
         Ok(Self { storage, sub })
     }
 
-    pub async fn upload(&self, info: StorageInfo<'_>) -> StorageResult<()> {
-        self.storage.upload(info).await
-    }
+    pub async fn upload_data(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
+        let (file_path, storage_path) = get_paths(&data, &self.sub);
 
-    pub async fn upload_data(&self, data: StorageDataType<'_>) -> StorageResult<()> {
-        let (file_path, storage_path) = get_paths(&data);
-        let key = format!("users/{}/{}", self.sub, storage_path);
+        let data = content.unwrap_or({
+            let file = File::open(file_path).expect("File not found");
+            let mut data = Vec::new();
+            file.take(10 * 1024 * 1024)
+                .read_to_end(&mut data)
+                .expect("Failed to read file");
+            data
+        });
 
-        let file = File::open(file_path).expect("File not found");
-        let mut data = Vec::new();
-        file.take(10 * 1024 * 1024)
-            .read_to_end(&mut data)
-            .expect("Failed to read file");
-
-        // Upload the file
         self.storage
             .upload(StorageInfo {
-                url: key,
+                url: storage_path,
                 bucket: BUCKET_PATH,
                 data: Some(data),
             })
             .await
     }
 
-    pub async fn upload_metadata<S: serde::Serialize + Send>(&self, metadata: S) -> StorageResult<()> {
-        let (_, storage_path) = get_paths(&StorageDataType::IdentityMetadata(""));
-        let key = format!("users/{}/{}", self.sub, storage_path);
+    pub async fn list_objects(&self, path: String) -> StorageResult<Vec<String>> {
+        self.storage
+            .list_objects(StorageInfo {
+                url: path,
+                bucket: BUCKET_PATH,
+                data: None,
+            })
+            .await
+    }
 
-        log::debug!("Metadata key: {}", key);
-        // Upload the file
+    pub async fn delete(&self, data: StorageDataType<'_>) -> StorageResult<()> {
+        let (_, storage_path) = get_paths(&data, &self.sub);
+        self.storage
+            .delete(StorageInfo {
+                url: storage_path,
+                bucket: BUCKET_PATH,
+                data: None,
+            })
+            .await
+    }
+
+    pub async fn upload_metadata<S: serde::Serialize + Send>(&self, metadata: S) -> StorageResult<()> {
+        let (_, storage_path) = get_paths(&StorageDataType::IdentityMetadata(""), &self.sub);
         self.storage
             .upload(StorageInfo {
-                url: key,
+                url: storage_path,
                 bucket: BUCKET_PATH,
                 data: Some(serde_json::to_vec(&metadata).expect("Metadata is serializable, should not fail")),
             })
@@ -139,18 +155,17 @@ impl<T: Storage> StorageClient<T> {
     }
 
     pub async fn download_data(&self, storage_type: StorageDataType<'_>) -> StorageResult<Vec<u8>> {
-        let (file_path, storage_path) = get_paths(&storage_type);
-        let key = format!("users/{}/{}", self.sub, storage_path);
+        let (file_path, storage_path) = get_paths(&storage_type, &self.sub);
 
         let info = StorageInfo {
-            url: key,
+            url: storage_path,
             bucket: BUCKET_PATH,
             ..Default::default()
         };
 
         let raw = self.storage.download(info).await;
         match storage_type {
-            StorageDataType::IdentityMetadata(_) | StorageDataType::Document(_) => match raw {
+            StorageDataType::IdentityMetadata(_) | StorageDataType::Document(_, _) => match raw {
                 Ok(object) => Ok(object),
                 Err(_) => Ok(vec![]),
             },

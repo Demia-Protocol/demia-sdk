@@ -32,9 +32,10 @@ impl Storage for AwsClient {
     type FileInfo = GetObjectOutput;
     type File = Object;
 
-    async fn list_objects(&self, bucket: String) -> StorageResult<Vec<String>> {
+    async fn list_objects(&self, info: StorageInfo<'_>) -> StorageResult<Vec<String>> {
         let get_object_request = ListObjectsRequest {
-            bucket,
+            bucket: info.bucket.to_string(),
+            // key: info.url
             ..Default::default()
         };
         let objects = self
