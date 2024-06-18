@@ -10,6 +10,8 @@ pub enum StorageError {
     AwsClientError(String),
     #[error("GC error: {0}")]
     GoogleCloud(String),
+    #[error("File error: {0}")]
+    File(String),
 }
 
 impl From<google_cloud_storage::http::Error> for StorageError {

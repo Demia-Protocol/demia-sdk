@@ -32,6 +32,7 @@ pub const DOCUMENTS_PATH: &str = "documents";
 
 pub const MAX_FILE_SIZE: u32 = 10 * 1024 * 1024;
 
+#[derive(Debug)]
 pub enum StorageDataType<'a> {
     StreamsSnapshot(&'a str),
     StrongholdSnapshot(&'a str),
@@ -40,7 +41,7 @@ pub enum StorageDataType<'a> {
 }
 
 /// Storage info
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct StorageInfo<'a> {
     /// Name of the bucket
     bucket: &'a str,
@@ -109,7 +110,7 @@ impl<T: Storage> StorageClient<T> {
         let data = content.unwrap_or({
             let file = File::open(file_path).expect("File not found");
             let mut data = Vec::new();
-            file.take(10 * 1024 * 1024)
+            file.take(MAX_FILE_SIZE)
                 .read_to_end(&mut data)
                 .expect("Failed to read file");
             data
