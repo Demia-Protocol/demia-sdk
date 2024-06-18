@@ -30,7 +30,7 @@ pub const STREAMS_PATH: &str = "stream";
 pub const MESSAGE_PATH: &str = "demia-messages";
 pub const DOCUMENTS_PATH: &str = "documents";
 
-pub const MAX_FILE_SIZE: u32 = 10 * 1024 * 1024;
+pub const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 
 #[derive(Debug)]
 pub enum StorageDataType<'a> {
