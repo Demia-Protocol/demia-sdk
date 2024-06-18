@@ -101,7 +101,9 @@ impl<T: Storage> StorageClient<T> {
         Ok(Self { storage, sub })
     }
 
-    pub async fn upload_data(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
+    /// Uploads the data from the optional parameter if it exists.
+    /// Otherwise, upload from file system.
+    pub async fn upload(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
         let (file_path, storage_path) = get_paths(&data, &self.sub);
 
         let data = content.unwrap_or({
@@ -120,6 +122,11 @@ impl<T: Storage> StorageClient<T> {
                 data: Some(data),
             })
             .await
+    }
+
+    /// Uploads the data from a file on the system
+    pub async fn upload_data(&self, data: StorageDataType<'_>) -> StorageResult<()> {
+        self.upload(data, None).await
     }
 
     pub async fn list_objects(&self, path: String) -> StorageResult<Vec<String>> {
