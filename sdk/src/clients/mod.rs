@@ -107,7 +107,7 @@ impl<T: Storage> StorageClient<T> {
     pub async fn upload(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
         let (file_path, storage_path) = get_paths(&data, &self.sub);
 
-        let data = content.unwrap_or_else(|_| {
+        let data = content.unwrap_or_else(|| {
             let file = File::open(file_path).expect("File not found");
             let mut data = Vec::new();
             file.take(MAX_FILE_SIZE)
