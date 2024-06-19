@@ -26,8 +26,8 @@ impl From<RusotoError<rusoto_s3::DeleteObjectError>> for StorageError {
     }
 }
 
-impl From<RusotoError<rusoto_s3::ListObjectsError>> for StorageError {
-    fn from(error: RusotoError<rusoto_s3::ListObjectsError>) -> Self {
+impl From<RusotoError<rusoto_s3::ListObjectsV2Error>> for StorageError {
+    fn from(error: RusotoError<rusoto_s3::ListObjectsV2Error>) -> Self {
         Self::AwsClientError(format!("List Object: {}", error))
     }
 }
