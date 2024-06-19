@@ -60,6 +60,18 @@ pub(crate) fn get_paths<'a>(data: &'a StorageDataType, sub: &'a str) -> (&'a str
     }
 }
 
+pub struct FileInfo {
+    pub name: String,
+    pub owner: String,
+    pub last_modified: String,
+    pub metadata: Option<FileMetadata>,
+}
+
+pub struct FileMetadata {
+    pub size: String,
+    pub r#type: String,
+}
+
 #[async_trait::async_trait]
 pub trait Storage {
     type FileInfo;
@@ -71,7 +83,7 @@ pub trait Storage {
 
     async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()>;
 
-    async fn list_objects(&self, file: StorageInfo<'_>) -> StorageResult<Vec<String>>;
+    async fn list_objects(&self, file: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>>;
 }
 
 #[async_trait::async_trait]
@@ -130,7 +142,7 @@ impl<T: Storage> StorageClient<T> {
         self.upload(data, None).await
     }
 
-    pub async fn list_objects(&self, path: String) -> StorageResult<Vec<String>> {
+    pub async fn list_objects(&self, path: String) -> StorageResult<Vec<FileInfo>> {
         self.storage
             .list_objects(StorageInfo {
                 url: path,

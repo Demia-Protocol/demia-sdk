@@ -3,7 +3,8 @@ use std::{collections::HashMap, fmt::Debug};
 use log::{debug, info, warn};
 use rusoto_core::{credential::StaticProvider, Region};
 use rusoto_s3::{
-    DeleteObjectRequest, GetObjectOutput, GetObjectRequest, ListObjectsRequest, Object, PutObjectRequest, S3Client, S3,
+    DeleteObjectRequest, GetObjectOutput, GetObjectRequest, ListObjectsV2Request, Object, PutObjectRequest, S3Client,
+    S3,
 };
 use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;
@@ -32,15 +33,15 @@ impl Storage for AwsClient {
     type FileInfo = GetObjectOutput;
     type File = Object;
 
-    async fn list_objects(&self, info: StorageInfo<'_>) -> StorageResult<Vec<String>> {
-        let get_object_request = ListObjectsRequest {
+    async fn list_objects(&self, info: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>> {
+        let get_object_request = ListObjectsV2Request {
             bucket: info.bucket.to_string(),
-            // key: info.url
+            prefix: Some(info.url),
             ..Default::default()
         };
         let objects = self
             .s3_client
-            .list_objects(get_object_request)
+            .list_objects_v2(get_object_request)
             .await
             .map_err(StorageError::from)?;
 
@@ -48,7 +49,12 @@ impl Storage for AwsClient {
             .contents
             .unwrap_or_default()
             .iter()
-            .map(|f| f.key.clone().unwrap_or_default())
+            .map(|f| FileInfo {
+                name: f.key.clone().unwrap_or_default(),
+                owner: f.owner.clone().and_then(|o| o.id).unwrap_or_default(),
+                last_modified: f.last_modified.clone().unwrap_or_default(),
+                metadata: None,
+            })
             .collect())
     }
 
@@ -153,12 +159,12 @@ impl AwsClient {
     }
 
     pub async fn get_messages(&mut self) -> StorageResult<Vec<Object>> {
-        let get_object_request = ListObjectsRequest {
+        let get_object_request = ListObjectsV2Request {
             bucket: MESSAGE_PATH.to_string(),
             ..Default::default()
         };
         let mut retrieved: Vec<Object> = Vec::new();
-        match self.s3_client.list_objects(get_object_request).await {
+        match self.s3_client.list_objects_v2(get_object_request).await {
             Ok(messages) => {
                 if let Some(object_list) = messages.contents {
                     for object in object_list.iter() {

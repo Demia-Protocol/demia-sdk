@@ -9,7 +9,7 @@ use google_cloud_storage::{
 };
 
 use crate::{
-    clients::{Storage, StorageInfo},
+    clients::{FileInfo, Storage, StorageInfo},
     errors::{StorageError, StorageResult},
 };
 
@@ -31,7 +31,7 @@ impl Storage for GoogleCloud {
     type FileInfo = UploadObjectRequest;
     type File = Object;
 
-    async fn list_objects(&self, _info: StorageInfo<'_>) -> StorageResult<Vec<String>> {
+    async fn list_objects(&self, _info: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>> {
         todo!()
     }
 
