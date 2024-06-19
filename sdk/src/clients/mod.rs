@@ -60,13 +60,16 @@ pub(crate) fn get_paths<'a>(data: &'a StorageDataType, sub: &'a str) -> (&'a str
     }
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct FileInfo {
     pub name: String,
     pub owner: String,
+    #[serde(rename = "lastModified")]
     pub last_modified: String,
     pub metadata: Option<FileMetadata>,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct FileMetadata {
     pub size: String,
     pub r#type: String,
