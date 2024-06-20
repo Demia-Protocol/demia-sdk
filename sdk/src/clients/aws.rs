@@ -3,8 +3,8 @@ use std::{collections::HashMap, fmt::Debug};
 use log::{debug, info, warn};
 use rusoto_core::{credential::StaticProvider, Region};
 use rusoto_s3::{
-    DeleteObjectRequest, GetObjectOutput, GetObjectRequest, ListObjectsV2Request, Object, PutObjectRequest, S3Client,
-    S3,
+    CopyObjectRequest, DeleteObjectRequest, GetObjectOutput, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request,
+    Object, PutObjectRequest, S3Client, S3,
 };
 use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;
@@ -30,13 +30,14 @@ impl Debug for AwsClient {
 
 #[async_trait::async_trait]
 impl Storage for AwsClient {
-    type FileInfo = GetObjectOutput;
-    type File = Object;
+    // type FileInfo = GetObjectOutput;
+    // type File = Object;
 
     async fn list_objects(&self, info: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>> {
         let get_object_request = ListObjectsV2Request {
             bucket: info.bucket.to_string(),
             prefix: Some(info.url),
+            delimiter: Some("/".to_string()),
             ..Default::default()
         };
         let objects = self
@@ -69,6 +70,31 @@ impl Storage for AwsClient {
             .delete_object(request)
             .await
             .map_err(StorageError::from)?;
+        Ok(())
+    }
+    async fn get_metadata(&self, info: StorageInfo<'_>) -> StorageResult<FileMetadata> {
+        let request = HeadObjectRequest {
+            bucket: info.bucket.to_string(),
+            key: info.url,
+            ..Default::default()
+        };
+        self.s3_client
+            .head_object(request)
+            .await
+            .map(|m| FileMetadata {
+                size: m.content_length.map(|b| b.to_string()).unwrap_or("0".to_string()),
+                r#type: m.content_type.unwrap_or_default(),
+                custom: m.metadata.unwrap_or_default(),
+            })
+            .map_err(StorageError::from)
+    }
+
+    async fn set_metadata(&self, info: StorageInfo<'_>, metadata: Map<String, String>) -> StorageResult<()> {
+        let request = CopyObjectRequest {
+            bucket: info.bucket.to_string(),
+            key: info.url,
+            ..Default::default()
+        };
         Ok(())
     }
 

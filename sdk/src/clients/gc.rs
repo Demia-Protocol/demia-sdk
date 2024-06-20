@@ -1,3 +1,5 @@
+use std::collections::HashMap as Map;
+
 use google_cloud_storage::{
     client::{Client, ClientConfig},
     http::objects::{
@@ -9,7 +11,7 @@ use google_cloud_storage::{
 };
 
 use crate::{
-    clients::{FileInfo, Storage, StorageInfo},
+    clients::{FileInfo, FileMetadata, Storage, StorageInfo},
     errors::{StorageError, StorageResult},
 };
 
@@ -28,10 +30,18 @@ impl GoogleCloud {
 
 #[async_trait::async_trait]
 impl Storage for GoogleCloud {
-    type FileInfo = UploadObjectRequest;
-    type File = Object;
+    // type FileInfo = UploadObjectRequest;
+    // type File = Object;
 
     async fn list_objects(&self, _info: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>> {
+        todo!()
+    }
+
+    async fn get_metadata(&self, _info: StorageInfo<'_>) -> StorageResult<FileMetadata> {
+        todo!()
+    }
+
+    async fn set_metadata(&self, _info: StorageInfo<'_>, _metadata: Map<String, String>) -> StorageResult<()> {
         todo!()
     }
 

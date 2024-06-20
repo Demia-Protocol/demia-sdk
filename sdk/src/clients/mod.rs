@@ -7,6 +7,7 @@ mod token;
 
 use core::fmt::Debug;
 use std::{
+    collections::HashMap as Map,
     fs::File,
     io::{Read, Write},
 };
@@ -69,24 +70,36 @@ pub struct FileInfo {
     pub metadata: Option<FileMetadata>,
 }
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct FileMetadata {
     pub size: String,
     pub r#type: String,
+    pub custom: Map<String, String>,
 }
 
 #[async_trait::async_trait]
 pub trait Storage {
-    type FileInfo;
-    type File;
+    // Unused
+    // type FileInfo = FileInfo;
+    // type File = Vec<u8>;
 
+    /// Upload an object
     async fn upload(&self, file: StorageInfo<'_>) -> StorageResult<()>;
 
+    /// Download an object
     async fn download(&self, info: StorageInfo<'_>) -> StorageResult<Vec<u8>>;
 
+    /// marks an object for deletion from the storage. Does not guarantee immediate deletion.
     async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()>;
 
+    /// List all objects from the path, does not get metadata.
     async fn list_objects(&self, file: StorageInfo<'_>) -> StorageResult<Vec<FileInfo>>;
+
+    /// Get object metadata
+    async fn get_metadata(&self, file: StorageInfo<'_>) -> StorageResult<FileMetadata>;
+
+    /// Assign object metadata, set/update is dependant on trait implementation
+    async fn set_metadata(&self, file: StorageInfo<'_>, metadata: Map<String, String>) -> StorageResult<()>;
 }
 
 #[async_trait::async_trait]
@@ -145,7 +158,7 @@ impl<T: Storage> StorageClient<T> {
         self.upload(data, None).await
     }
 
-    pub async fn list_objects(&self, path: String) -> StorageResult<Vec<FileInfo>> {
+    pub async fn list_objects(&self, path: String, get_metadata: bool) -> StorageResult<Vec<FileInfo>> {
         self.storage
             .list_objects(StorageInfo {
                 url: path,
