@@ -35,6 +35,8 @@ async-trait = "0.1.68"
 
 thiserror = "1.0.40"
 rocket_okapi = "0.8.0"
+schemars = { version = "0.8", features = [ "chrono", "indexmap2" ] }
+#serde_with = { version = "3.4" , features = []}
 
 google-cloud-storage = { git = "https://github.com/yoshidan/google-cloud-rust", branch="main", default-features=false, features=["trace","rustls-tls"]}
 

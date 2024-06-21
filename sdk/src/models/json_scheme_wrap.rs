@@ -34,4 +34,10 @@ pub struct AnnotationTypeDef(String);
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(transparent)]
-pub struct Annotation(#[serde(with = "AnnotationDef")] AlvariumAnnotation);
+pub struct Annotation(#[serde(with = "AnnotationDef")] pub AlvariumAnnotation);
+
+impl From<AlvariumAnnotation> for Annotation {
+    fn from(ann: AlvariumAnnotation) -> Self {
+        Self(ann)
+    }
+}

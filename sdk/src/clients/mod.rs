@@ -17,6 +17,7 @@ pub use aws::AwsClient;
 pub use gc::GoogleCloud;
 pub(crate) use http_client::*;
 pub use keycloak::Keycloak;
+use rocket_okapi::okapi::schemars;
 pub use token::TokenManager;
 
 use crate::{
@@ -35,7 +36,7 @@ pub const SITES_PATH: &str = "sites";
 
 pub const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum StorageDataType<'a> {
     StreamsSnapshot(&'a str),
     StrongholdSnapshot(&'a str),
@@ -55,7 +56,7 @@ impl<'a> StorageDataType<'a> {
 }
 
 /// Storage info
-#[derive(Debug, Default)]
+#[derive(Debug, Default, schemars::JsonSchema)]
 pub struct StorageInfo<'a> {
     /// Name of the bucket
     bucket: &'a str,
@@ -65,7 +66,7 @@ pub struct StorageInfo<'a> {
     data: Option<Vec<u8>>,
 }
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct FileInfo {
     pub name: String,
     pub owner: String,
@@ -74,7 +75,7 @@ pub struct FileInfo {
     pub metadata: Option<FileMetadata>,
 }
 
-#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct FileMetadata {
     pub size: String,
     pub r#type: String,
