@@ -1,3 +1,4 @@
+mod json_scheme_wrap;
 mod reading;
 mod sensor;
 mod site;
@@ -6,7 +7,9 @@ mod vault;
 
 use std::collections::HashSet;
 
+pub(crate) use json_scheme_wrap::*;
 pub use reading::*;
+use rocket_okapi::okapi::schemars;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
@@ -15,13 +18,13 @@ pub use vault::*;
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, schemars::JsonSchema)]
 pub struct Card {
     pub title: String,
     pub content: String,
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ValueSet {
     pub title: String,
     pub label: String,
@@ -49,7 +52,7 @@ impl ValueSet {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ProjectInfo {
     #[serde(rename = "type")]
     pub project_type: String,
@@ -71,7 +74,7 @@ impl ProjectInfo {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct GHGInfo {
     pub value: String,
     pub data: Vec<String>,
@@ -90,5 +93,5 @@ impl GHGInfo {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Notification {}

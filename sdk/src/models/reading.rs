@@ -2,18 +2,22 @@ use std::str::FromStr;
 
 use alvarium_sdk_rust::annotations::Annotation;
 use chrono::{DateTime, Utc};
+use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::models::json_scheme_wrap::AnnotationDef;
+
 /// Represents the Wrapper for an Annotation, including the reading_id that they represent
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 pub struct AnnotationWrap {
     pub reading_id: String,
+    #[serde(with = "AnnotationDef")]
     pub annotation: Annotation,
 }
 
 /// Represents a Reading Type for demo data
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub enum WrappedReadingType {
     Sensor(SensorReading),
     Sheet(SheetReading),
@@ -52,7 +56,7 @@ impl WrappedReadingType {
 }
 
 /// A reading from an automated sensor source
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct SensorReading {
     pub id: String,
     pub value: f32,
@@ -60,7 +64,7 @@ pub struct SensorReading {
 }
 
 /// A reading from a spreadsheet in json form
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct SheetReading {
     pub id: String,
     pub value: Value,
@@ -68,7 +72,7 @@ pub struct SheetReading {
 }
 
 /// Wraps the reading with an address and id reference
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct ReadingWrap {
     pub id: String,
     pub address: String,
@@ -76,7 +80,7 @@ pub struct ReadingWrap {
 }
 
 // TODO: Determine required fields vs variable fields to isolate necessary data
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, schemars::JsonSchema)]
 pub struct SheetData {
     #[serde(rename = "dataTimestamp")]
     pub date_timestamp: i64,

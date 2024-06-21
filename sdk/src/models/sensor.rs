@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
-use alvarium_sdk_rust::annotations::Annotation;
 use chrono::NaiveDateTime;
 use indexmap::IndexMap;
 use rand::Rng;
+use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::models::AnnotationWrap;
+use crate::models::{Annotation, AnnotationWrap};
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Sensors {
     pub total: u16,
     pub online: u16,
@@ -17,7 +17,7 @@ pub struct Sensors {
     pub unprocessed: HashMap<String, Vec<AnnotationWrap>>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Sensor {
     pub id: String,
@@ -28,7 +28,7 @@ pub struct Sensor {
     pub last_updated: Option<NaiveDateTime>,
 }
 
-#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct Equipment {
     pub id: String,
     pub group: String,
@@ -69,7 +69,7 @@ impl Equipment {
     }
 }
 
-#[derive(Default, Clone, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct Reading {
     pub id: String,
     pub address: String,

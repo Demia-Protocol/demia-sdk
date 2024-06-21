@@ -29,7 +29,9 @@ pub const STRONGHOLD_PATH: &str = "stronghold";
 pub const IDENTITY_METADATA: &str = "metadata";
 pub const STREAMS_PATH: &str = "stream";
 pub const MESSAGE_PATH: &str = "demia-messages";
-pub const DOCUMENTS_PATH: &str = "documents";
+
+pub const USERS_PATH: &str = "users";
+pub const SITES_PATH: &str = "sites";
 
 pub const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 
@@ -41,6 +43,17 @@ pub enum StorageDataType<'a> {
     Document(&'a str, &'a str), // Site, filename
 }
 
+impl<'a> StorageDataType<'a> {
+    pub fn get_paths(&self, sub: &'a str) -> (&'a str, String) {
+        match self {
+            Self::StreamsSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STREAMS_PATH.to_owned())),
+            Self::StrongholdSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STRONGHOLD_PATH.to_owned())),
+            Self::IdentityMetadata(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, IDENTITY_METADATA.to_owned())),
+            Self::Document(site, file) => (file, format!("{}/{}/{}/{}", SITES_PATH, site, sub, file)),
+        }
+    }
+}
+
 /// Storage info
 #[derive(Debug, Default)]
 pub struct StorageInfo<'a> {
@@ -50,15 +63,6 @@ pub struct StorageInfo<'a> {
     url: String,
     /// Content/body
     data: Option<Vec<u8>>,
-}
-
-pub(crate) fn get_paths<'a>(data: &'a StorageDataType, sub: &'a str) -> (&'a str, String) {
-    match *data {
-        StorageDataType::StreamsSnapshot(path) => (path, format!("users/{}/{}", sub, STREAMS_PATH.to_owned())),
-        StorageDataType::StrongholdSnapshot(path) => (path, format!("users/{}/{}", sub, STRONGHOLD_PATH.to_owned())),
-        StorageDataType::IdentityMetadata(path) => (path, format!("users/{}/{}", sub, IDENTITY_METADATA.to_owned())),
-        StorageDataType::Document(site, file) => (file, format!("sites/{}/{}/{}", site, sub, file)),
-    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -133,7 +137,7 @@ impl<T: Storage> StorageClient<T> {
     /// Uploads the data from the optional parameter if it exists.
     /// Otherwise, upload from file system.
     pub async fn upload(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
-        let (file_path, storage_path) = get_paths(&data, &self.sub);
+        let (file_path, storage_path) = data.get_paths(&self.sub);
 
         let data = content.unwrap_or_else(|| {
             let file = File::open(file_path).expect("File not found");
@@ -169,7 +173,7 @@ impl<T: Storage> StorageClient<T> {
     }
 
     pub async fn delete(&self, data: StorageDataType<'_>) -> StorageResult<()> {
-        let (_, storage_path) = get_paths(&data, &self.sub);
+        let (_, storage_path) = data.get_paths(&self.sub);
         self.storage
             .delete(StorageInfo {
                 url: storage_path,
@@ -180,7 +184,7 @@ impl<T: Storage> StorageClient<T> {
     }
 
     pub async fn upload_metadata<S: serde::Serialize + Send>(&self, metadata: S) -> StorageResult<()> {
-        let (_, storage_path) = get_paths(&StorageDataType::IdentityMetadata(""), &self.sub);
+        let (_, storage_path) = StorageDataType::IdentityMetadata("").get_paths(&self.sub);
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
@@ -191,8 +195,7 @@ impl<T: Storage> StorageClient<T> {
     }
 
     pub async fn download_data(&self, storage_type: StorageDataType<'_>) -> StorageResult<Vec<u8>> {
-        let (file_path, storage_path) = get_paths(&storage_type, &self.sub);
-
+        let (file_path, storage_path) = storage_type.get_paths(&self.sub);
         let info = StorageInfo {
             url: storage_path,
             bucket: BUCKET_PATH,

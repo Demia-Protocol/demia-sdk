@@ -1,9 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use jsonwebtoken::TokenData;
+use rocket_okapi::okapi::schemars;
 use serde_json::Value;
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct TokenResponse {
     pub access_token: String,
     pub refresh_token: String,
@@ -48,7 +49,7 @@ impl TokenWrap {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum TokenType {
     AWS,
     VAULT,

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, vec};
 
 use chrono::{NaiveDate, NaiveDateTime};
-// use log::info;
+use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -308,7 +308,7 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
     )
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct Record {
     pub id: String,
     pub sensor_id: String,

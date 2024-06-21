@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
 use indexmap::IndexMap;
+use rocket_okapi::okapi::schemars;
 
 use crate::{
     models::{Equipment, GHGInfo, Notification, ProjectInfo, Sensor, Sensors, ValueSet},
     utils::Record,
 };
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteLocation {
     pub address: String,
     pub lat: f32,
@@ -15,7 +16,7 @@ pub struct SiteLocation {
     pub lon: f32,
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct NewSite {
     pub id: String,
     pub name: String,
@@ -25,7 +26,7 @@ pub struct NewSite {
     pub announcement: String,
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteState {
     pub ch4_emission: ValueSet,
     pub wws: ValueSet,
@@ -51,7 +52,7 @@ impl SiteState {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Site {
     #[serde(rename = "projectId")]
     pub id: String,
