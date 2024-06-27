@@ -7,6 +7,7 @@ use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+// Missing JsonSchema on alvarium
 // use alvarium_sdk_rust::annotations::Annotation;
 use crate::models::{Annotation, AnnotationWrap};
 

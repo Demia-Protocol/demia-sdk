@@ -164,13 +164,32 @@ impl<T: Storage> StorageClient<T> {
     }
 
     pub async fn list_objects(&self, path: String, get_metadata: bool) -> StorageResult<Vec<FileInfo>> {
-        self.storage
+        let mut objs = self
+            .storage
             .list_objects(StorageInfo {
                 url: path,
                 bucket: BUCKET_PATH,
                 data: None,
             })
-            .await
+            .await?;
+
+        match get_metadata {
+            false => Ok(objs),
+            true => {
+                for mut obj in &mut objs {
+                    let meta = self
+                        .storage
+                        .get_metadata(StorageInfo {
+                            url: obj.name.clone(),
+                            bucket: BUCKET_PATH,
+                            data: None,
+                        })
+                        .await?;
+                    obj.metadata = Some(meta);
+                }
+                Ok(objs)
+            }
+        }
     }
 
     pub async fn delete(&self, data: StorageDataType<'_>) -> StorageResult<()> {
