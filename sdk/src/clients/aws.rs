@@ -73,12 +73,12 @@ impl Storage for AwsClient {
         Ok(())
     }
     async fn get_metadata(&self, info: StorageInfo<'_>) -> StorageResult<FileMetadata> {
+        log::info!("{:?}", info);
         let request = HeadObjectRequest {
             bucket: info.bucket.to_string(),
             key: info.url,
             ..Default::default()
         };
-        log::info!("{:?}", info);
         log::info!("{:?}", request);
         self.s3_client
             .head_object(request)
