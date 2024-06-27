@@ -78,6 +78,8 @@ impl Storage for AwsClient {
             key: info.url,
             ..Default::default()
         };
+        log::info!("{:?}", info);
+        log::info!("{:?}", request);
         self.s3_client
             .head_object(request)
             .await
