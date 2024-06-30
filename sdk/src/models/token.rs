@@ -26,7 +26,7 @@ impl TokenWrap {
 
     pub fn get_sub(&self) -> Option<String> {
         let sub = self.token.claims.get("sub").expect("Should be able to pull sub");
-        Some(sub.to_string().replace('"', ""))
+        Some(sub.to_string().replace('"', "").replace("auth0|", ""))
     }
 
     pub fn token_type(&self) -> &TokenType {
