@@ -39,13 +39,6 @@ impl Auth0Client {
             .as_str()
             .expect("Failed to extract public key");
 
-        let formatted_key = jwk.chars().collect::<Vec<char>>()
-            .chunks(64)
-            .map(|chunk| chunk.iter().collect::<String>())
-            .collect::<Vec<String>>()
-            .join("\n");
-
-
         // println!("Jwk: {}", jwk);
         // The public key is Base64-encoded in the JWKS, so decode it
         let engine = base64::engine::general_purpose::STANDARD_NO_PAD;
@@ -53,9 +46,10 @@ impl Auth0Client {
 
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
-            formatted_key
+            engine.encode(&public_key_der)
         );
 
+        println!("Access token: {}", token.access_token);
         println!("Public key pem: {}", public_key_pem);
 
         let decoding_key =
