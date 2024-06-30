@@ -39,12 +39,18 @@ impl Auth0Client {
             .as_str()
             .expect("Failed to extract public key");
 
+        // println!("Jwk: {}", jwk);
+        // The public key is Base64-encoded in the JWKS, so decode it
+        let engine = base64::engine::general_purpose::STANDARD_NO_PAD;
+        let public_key_der = engine.decode(jwk).expect("coudln't decode base64");
+
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
-            jwk
+            engine.encode(public_key_der)
         );
 
         println!("Public key pem: {}", public_key_pem);
+
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
         let mut validator = Validation::new(Algorithm::RS256);
