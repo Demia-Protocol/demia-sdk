@@ -1,4 +1,5 @@
 mod api;
+mod auth0;
 mod aws;
 mod gc;
 mod http_client;
@@ -13,6 +14,7 @@ use std::{
 };
 
 pub use api::ApiClient;
+pub use auth0::Auth0Client;
 pub use aws::AwsClient;
 pub use gc::GoogleCloud;
 pub(crate) use http_client::*;
