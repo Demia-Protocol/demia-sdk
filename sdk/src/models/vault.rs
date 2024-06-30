@@ -16,6 +16,7 @@ use crate::{
     models::TokenWrap,
     utils::new_stronghold_key,
 };
+use crate::models::TokenType;
 
 pub const VAULT_DOC_ID: &str = "streams_doc_id";
 pub const VAULT_STREAMS_ADDRESSES: &str = "streams_addresses";
@@ -47,7 +48,11 @@ impl VaultClient {
 
         let mut vault_client = Client::new(vault_config).expect("Should be able to use vault client");
 
-        let auth_info = vaultrs::auth::oidc::login(&vault_client, "jwt", token.raw(), Some("default".to_string()))
+        let mount = match token.token_type() {
+            TokenType::VAULT => "jwt",
+            _ => "jwt2",
+        };
+        let auth_info = vaultrs::auth::oidc::login(&vault_client, mount, token.raw(), Some("default".to_string()))
             .await
             .expect("Should be able to login");
         vault_client.set_token(&auth_info.client_token);
