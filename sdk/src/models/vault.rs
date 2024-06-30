@@ -48,11 +48,11 @@ impl VaultClient {
 
         let mut vault_client = Client::new(vault_config).expect("Should be able to use vault client");
 
-        let mount = match token.token_type() {
-            TokenType::VAULT => "jwt",
-            _ => "jwt2",
+        let (mount, role) = match token.token_type() {
+            TokenType::VAULT => ("jwt", "default"),
+            _ => ("jwt2", "demiauser"),
         };
-        let auth_info = vaultrs::auth::oidc::login(&vault_client, mount, token.raw(), Some("default".to_string()))
+        let auth_info = vaultrs::auth::oidc::login(&vault_client, mount, token.raw(), Some(role.to_string()))
             .await
             .expect("Should be able to login");
         vault_client.set_token(&auth_info.client_token);
