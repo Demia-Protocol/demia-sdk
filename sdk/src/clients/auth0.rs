@@ -39,16 +39,12 @@ impl Auth0Client {
             .as_str()
             .expect("Failed to extract public key");
 
-        // println!("Jwk: {}", jwk);
-        // The public key is Base64-encoded in the JWKS, so decode it
-
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
             jwk
         );
 
-        // println!("Public key pem: {}", public_key_pem);
-
+        println!("Public key pem: {}", public_key_pem);
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
         let mut validator = Validation::new(Algorithm::RS256);
@@ -93,7 +89,7 @@ impl SecretManager for Auth0Client {
         log::debug!("Response: {:?}", response);
         let token: TokenResponse = response.json().await.expect("Should be a token response");
         self.session_refresh.replace(token.refresh_token.clone());
-        let token_data = self.get_token_data(TokenType::AUTH0, &token).await?;
+        let token_data = self.get_token_data(&token).await?;
 
         Ok(TokenWrap::new(
             token_type.clone(),
