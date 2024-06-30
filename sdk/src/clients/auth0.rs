@@ -100,7 +100,7 @@ impl SecretManager for Auth0Client {
             .await
             .expect("Expect a response at least");
 
-        log::debug!("Response2: {:?}", response2.json::<Value>());
+        log::debug!("Response2: {:?}", response2.json::<Value>().await);
         let token: TokenResponse = response.json().await.expect("Should be a token response");
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
