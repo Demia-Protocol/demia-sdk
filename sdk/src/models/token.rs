@@ -58,7 +58,7 @@ pub enum TokenType {
 impl TokenType {
     pub fn client_id(&self) -> &'static str {
         match self {
-            Self::AWS => "aws-token-issuer",
+            Self::AWS => "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
             Self::VAULT => "vault-client-public",
         }
     }
