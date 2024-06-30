@@ -56,7 +56,10 @@ impl SecretManager for TokenManager {
 
         match token_type {
             TokenType::AWS => self.set_aws_token(token.clone()),
-            TokenType::AUTH0 => self.set_aws_token(token.clone()),
+            TokenType::AUTH0 => {
+                self.set_aws_token(token.clone());
+                self.set_vault_token(token.clone());
+            },
             TokenType::VAULT => self.set_vault_token(token.clone()),
         }
 
