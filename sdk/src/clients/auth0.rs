@@ -41,12 +41,10 @@ impl Auth0Client {
 
         // println!("Jwk: {}", jwk);
         // The public key is Base64-encoded in the JWKS, so decode it
-        let engine = base64::engine::general_purpose::STANDARD;
-        let public_key_der = engine.decode(jwk).expect("coudln't decode base64");
 
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
-            engine.encode(public_key_der)
+            jwk
         );
 
         // println!("Public key pem: {}", public_key_pem);
@@ -95,7 +93,7 @@ impl SecretManager for Auth0Client {
         log::debug!("Response: {:?}", response);
         let token: TokenResponse = response.json().await.expect("Should be a token response");
         self.session_refresh.replace(token.refresh_token.clone());
-        let token_data = self.get_token_data(&token).await?;
+        let token_data = self.get_token_data(TokenType::AUTH0, &token).await?;
 
         Ok(TokenWrap::new(
             token_type.clone(),
