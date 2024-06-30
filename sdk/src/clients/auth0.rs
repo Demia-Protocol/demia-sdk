@@ -49,16 +49,13 @@ impl Auth0Client {
             engine.encode(&public_key_der)
         );
 
-        println!("Access token: {}", token.access_token);
-        println!("Public key pem: {}", public_key_pem);
-
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
         let mut validator = Validation::new(Algorithm::RS256);
         validator.set_audience(&["DemiaUser"]);
 
         Ok(
-            jsonwebtoken::decode::<Value>(&token.access_token, &decoding_key, &validator)
+            jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator)
                 .expect("Could not decode jwt"),
         )
     }
