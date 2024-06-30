@@ -115,6 +115,6 @@ impl SecretManager for Auth0Client {
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
 
-        Ok(TokenWrap::new(TokenType::VAULT, token_data, token.access_token.clone()))
+        Ok(TokenWrap::new(TokenType::VAULT, token_data, token.id_token.clone()))
     }
 }
