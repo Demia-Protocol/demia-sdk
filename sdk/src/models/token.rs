@@ -7,7 +7,7 @@ use serde_json::Value;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct TokenResponse {
     pub access_token: String,
-    #[default]
+    #[serde(default)]
     pub id_token: String,
     pub refresh_token: String,
 }
