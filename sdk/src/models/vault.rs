@@ -52,6 +52,7 @@ impl VaultClient {
             TokenType::VAULT => ("jwt", Some("default".to_string())),
             _ => ("jwt2", None),
         };
+        log::info!("Mount: {}, Role: {:?}", mount, role);
         let auth_info = vaultrs::auth::oidc::login(&vault_client, mount, token.raw(), role)
             .await
             .expect("Should be able to login");
