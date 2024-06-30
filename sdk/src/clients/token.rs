@@ -36,6 +36,13 @@ impl SecretManager for TokenManager {
                     }
                 }
             }
+            TokenType::AUTH0 => {
+                if let Some(token) = &self.aws_token {
+                    if !token.is_expired() {
+                        return Ok(token.clone());
+                    }
+                }
+            },
             TokenType::VAULT => {
                 if let Some(token) = &self.vault_token {
                     if !token.is_expired() {
@@ -49,6 +56,7 @@ impl SecretManager for TokenManager {
 
         match token_type {
             TokenType::AWS => self.set_aws_token(token.clone()),
+            TokenType::AUTH0 => self.set_aws_token(token.clone()),
             TokenType::VAULT => self.set_vault_token(token.clone()),
         }
 
@@ -75,6 +83,7 @@ impl TokenManager {
     pub fn get_status(&self, token_type: TokenType) -> bool {
         match token_type {
             TokenType::AWS => self.aws_token.is_some() && !self.aws_token.as_ref().unwrap().is_expired(),
+            TokenType::AUTH0 => self.aws_token.is_some() && !self.aws_token.as_ref().unwrap().is_expired(),
             TokenType::VAULT => self.vault_token.is_some() && !self.vault_token.as_ref().unwrap().is_expired(),
         }
     }

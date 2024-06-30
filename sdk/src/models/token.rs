@@ -52,13 +52,15 @@ impl TokenWrap {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum TokenType {
     AWS,
+    AUTH0,
     VAULT,
 }
 
 impl TokenType {
     pub fn client_id(&self) -> &'static str {
         match self {
-            Self::AWS => "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
+            Self::AWS => "aws-token-issuer",
+            Self::AUTH0 => "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
             Self::VAULT => "vault-client-public",
         }
     }
