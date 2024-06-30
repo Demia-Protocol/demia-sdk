@@ -227,7 +227,6 @@ async fn assume_role(token: &str, sub: &str) -> StorageResult<Credentials> {
         ..Default::default()
     };
     debug!("Assuming role with openid");
-    info!("STS: {:?}", assume_role_request);
     let assume_role_result = sts_client
         .assume_role_with_web_identity(assume_role_request)
         .await

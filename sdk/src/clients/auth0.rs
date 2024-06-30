@@ -88,10 +88,6 @@ impl SecretManager for Auth0Client {
             .form(&params)
             .send()
             .await
-            .map_err(|e| {
-                log::error!("Failed to get token: {}", e);
-                e
-            })
             .expect("Expect a response at least");
 
         log::debug!("Response: {:?}", response);
@@ -102,7 +98,7 @@ impl SecretManager for Auth0Client {
         Ok(TokenWrap::new(
             token_type.clone(),
             token_data,
-            token.access_token.clone(),
+            token.id_token.clone(),
         ))
     }
 
