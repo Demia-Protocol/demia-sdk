@@ -52,7 +52,7 @@ impl Auth0Client {
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
         let mut validator = Validation::new(Algorithm::RS256);
-        validator.set_audience(&["DemiaUser"]);
+        validator.set_audience(&["KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ"]);
 
         Ok(
             jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator)
