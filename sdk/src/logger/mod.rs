@@ -30,7 +30,7 @@ pub fn init(config: &LoggingConfiguration) -> Result<(), SetLoggerError> {
         })
         .level(log_level)
         .level_for("sqlx", LevelFilter::Warn)
-        .level_for("vaultrs", LevelFilter::Warn)
+        .level_for("vaultrs", LevelFilter::Debug)
         .chain(std::io::stdout())
         // .chain(OpenOptions::new()
         // .write(true)
