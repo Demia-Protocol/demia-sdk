@@ -108,7 +108,7 @@ impl SecretManager for Auth0Client {
         let params = serde_json::json!({
             "grant_type": "refresh_token",
             "refresh_token": &self.session_refresh,
-            "client_id": "vault-client-public",
+            "client_id": "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
         });
 
         let response = self.client.post(url).form(&params).send().await?;
