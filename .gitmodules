@@ -14,3 +14,7 @@
 	path = stronghold.rs
 	url = https://github.com/demia-protocol/stronghold.rs
 	branch = dev
+[submodule "crypto.rs"]
+    path = crypto.rs
+    url = https://github.com/demia-protocol/crypto.rs
+    branch = dev
