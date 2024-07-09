@@ -42,7 +42,7 @@ impl SecretManager for TokenManager {
                         return Ok(token.clone());
                     }
                 }
-            },
+            }
             TokenType::VAULT => {
                 if let Some(token) = &self.vault_token {
                     if !token.is_expired() {
@@ -59,7 +59,7 @@ impl SecretManager for TokenManager {
             TokenType::AUTH0 => {
                 self.set_aws_token(token.clone());
                 self.set_vault_token(token.clone());
-            },
+            }
             TokenType::VAULT => self.set_vault_token(token.clone()),
         }
 

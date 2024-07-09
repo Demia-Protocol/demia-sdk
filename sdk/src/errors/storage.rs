@@ -12,11 +12,19 @@ pub enum StorageError {
     GoogleCloud(String),
     #[error("File error: {0}")]
     File(String),
+    #[error("Should be able to assume role")]
+    Credentials,
 }
 
 impl From<google_cloud_storage::http::Error> for StorageError {
     fn from(error: google_cloud_storage::http::Error) -> Self {
         Self::GoogleCloud(format!("{}", error))
+    }
+}
+
+impl<T, R> From<aws_sdk_s3::error::SdkError<T, R>> for StorageError {
+    fn from(value: aws_sdk_s3::error::SdkError<T, R>) -> Self {
+        Self::AwsClientError(format!("AWS SDK error: {}", value))
     }
 }
 

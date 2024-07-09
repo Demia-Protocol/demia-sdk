@@ -13,10 +13,9 @@ use vaultrs::{
 use crate::{
     configuration::StrongholdConfiguration,
     errors::{IdentityError, IdentityResult as Result},
-    models::TokenWrap,
+    models::{TokenType, TokenWrap},
     utils::new_stronghold_key,
 };
-use crate::models::TokenType;
 
 pub const VAULT_DOC_ID: &str = "streams_doc_id";
 pub const VAULT_STREAMS_ADDRESSES: &str = "streams_addresses";
