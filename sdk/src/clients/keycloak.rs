@@ -53,7 +53,7 @@ impl Keycloak {
 
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
-        let validator = Validation::new(Algorithm::RS256);
+        let mut validator = Validation::new(Algorithm::RS256);
 
         validator.set_audience(&[TokenType::VAULT.client_id(), TokenType::AWS.client_id()]);
         Ok(
