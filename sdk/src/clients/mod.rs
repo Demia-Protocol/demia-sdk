@@ -113,8 +113,9 @@ pub trait Storage {
 
 #[async_trait::async_trait]
 pub trait SecretManager: Debug + Send + Sync {
+    /// Gets the specific token from the manager using the refresh token
     async fn get_token(&mut self, token_type: &TokenType, username: &str, password: &str) -> SecretResult<TokenWrap>;
-
+    /// Updates the refresh token used to connect to the manager
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap>;
 }
 
@@ -240,6 +241,7 @@ impl<T: Storage> StorageClient<T> {
                     .create(true)
                     .truncate(true)
                     .write(true)
+                    .read(true)
                     .open(file_path)
                     .expect("Should be able to write to provided file path");
                 file.write_all(&data).expect("should be able to write to that file...");

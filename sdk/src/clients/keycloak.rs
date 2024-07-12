@@ -71,7 +71,7 @@ impl Debug for Keycloak {
 #[async_trait::async_trait]
 impl SecretManager for Keycloak {
     async fn get_token(&mut self, token_type: &TokenType, username: &str, password: &str) -> SecretResult<TokenWrap> {
-        let client_id = token_type.client_id();
+        let client_id = TokenType::AUTH0.client_id();
         log::debug!("Refreshing token: {}", client_id);
 
         let url = format!("{}/protocol/openid-connect/token", self.url);
