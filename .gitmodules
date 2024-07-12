@@ -9,7 +9,7 @@
 [submodule "identity.rs"]
 	path = identity.rs
 	url = https://github.com/demia-protocol/identity.rs
-	branch = demia/modified-client-dep
+	branch = demia-retriever
 [submodule "stronghold.rs"]
 	path = stronghold.rs
 	url = https://github.com/demia-protocol/stronghold.rs
