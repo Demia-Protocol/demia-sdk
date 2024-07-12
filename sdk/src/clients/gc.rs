@@ -6,7 +6,6 @@ use google_cloud_storage::{
         download::Range,
         get::GetObjectRequest,
         upload::{Media, UploadObjectRequest, UploadType},
-        Object,
     },
 };
 

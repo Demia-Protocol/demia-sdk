@@ -102,7 +102,7 @@ impl Storage for AwsClient {
             .map_err(StorageError::from)
     }
 
-    async fn set_metadata(&self, info: StorageInfo<'_>, metadata: HashMap<String, String>) -> StorageResult<()> {
+    async fn set_metadata(&self, _info: StorageInfo<'_>, _metadata: HashMap<String, String>) -> StorageResult<()> {
         todo!();
     }
 

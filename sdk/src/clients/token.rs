@@ -17,6 +17,12 @@ pub struct TokenManager {
     secret_manager: Box<dyn SecretManager>,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct TokenSecret<'a> {
+    pub password: Option<&'a str>,
+    pub secret: Option<&'a str>
+}
+
 impl Default for TokenManager {
     fn default() -> Self {
         Self {
@@ -39,6 +45,22 @@ impl SecretManager for TokenManager {
         }
 
         let token = self.secret_manager.get_token(token_type, username, password).await?;
+        self.tokens.write().await.insert(token_type.clone(), token.clone());
+
+        Ok(token)
+    }
+
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap> {
+        {
+            let lock = self.tokens.read().await;
+            if let Some(token) = lock.get(token_type) {
+                if !token.is_expired() {
+                    return Ok(token.clone());
+                }
+            }
+        }
+
+        let token = self.secret_manager.get_token_with_secret(token_type, client_secret).await?;
         self.tokens.write().await.insert(token_type.clone(), token.clone());
 
         Ok(token)
@@ -71,7 +93,7 @@ impl TokenManager {
     }
 
     /// Refreshes the specific token regardless wether its expired or not
-    async fn refresh_token_type(&mut self, token_type: TokenType, username: &str, password: &str) -> SecretResult<()> {
+    async fn _refresh_token_type(&mut self, token_type: TokenType, username: &str, password: &str) -> SecretResult<()> {
         let token = self.secret_manager.get_token(&token_type, username, password).await?;
         self.tokens.write().await.insert(token_type.clone(), token.clone());
         Ok(())

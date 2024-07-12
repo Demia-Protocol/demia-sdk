@@ -115,6 +115,8 @@ pub trait Storage {
 pub trait SecretManager: Debug + Send + Sync {
     /// Gets the specific token from the manager using the refresh token
     async fn get_token(&mut self, token_type: &TokenType, username: &str, password: &str) -> SecretResult<TokenWrap>;
+    /// Gets a token using a token secret
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap>;
     /// Updates the refresh token used to connect to the manager
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap>;
 }
@@ -182,7 +184,7 @@ impl<T: Storage> StorageClient<T> {
         match get_metadata {
             false => Ok(objs),
             true => {
-                for mut obj in &mut objs {
+                for obj in &mut objs {
                     let meta = self
                         .storage
                         .get_metadata(StorageInfo {

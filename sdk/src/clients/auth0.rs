@@ -56,6 +56,14 @@ impl Auth0Client {
 
         Ok(jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator).expect("Could not decode jwt"))
     }
+
+    async fn token_from_response(&mut self, token_type: TokenType, response: reqwest::Response) -> SecretResult<TokenWrap> {
+        let token: TokenResponse = response.json().await.expect("Should be a token response");
+        self.session_refresh.replace(token.refresh_token.clone());
+        let token_data = self.get_token_data(&token).await?;
+
+        Ok(TokenWrap::new(token_type, token_data, token.id_token.clone()))
+    }
 }
 
 impl Debug for Auth0Client {
@@ -89,11 +97,31 @@ impl SecretManager for Auth0Client {
 
         log::debug!("Response: {:?}", response);
 
-        let token: TokenResponse = response.json().await.expect("Should be a token response");
-        self.session_refresh.replace(token.refresh_token.clone());
-        let token_data = self.get_token_data(&token).await?;
+        self.token_from_response(token_type.clone(), response).await
+    }
 
-        Ok(TokenWrap::new(token_type.clone(), token_data, token.id_token.clone()))
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap> {
+        let client_id = token_type.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let url = format!("{}/oauth/token", self.url);
+        let params = json!({
+            "grant_type": "client_secret",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "scope": "openid profile email offline_access"
+        });
+
+        let response = self
+            .client
+            .post(url.clone())
+            .form(&params)
+            .send()
+            .await
+            .expect("Expect a response at least");
+
+        log::debug!("Response: {:?}", response);
+        self.token_from_response(token_type.clone(), response).await
     }
 
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {

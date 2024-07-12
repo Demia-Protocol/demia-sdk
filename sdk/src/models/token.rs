@@ -55,6 +55,7 @@ impl TokenWrap {
 pub enum TokenType {
     AWS,
     AUTH0,
+    Auth0Admin,
     VAULT,
 }
 
@@ -63,6 +64,7 @@ impl TokenType {
         match self {
             Self::AWS => "aws-token-issuer",
             Self::AUTH0 => "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
+            Self::Auth0Admin => "TOF8oMvj577kvq2tVq6dofRDDEAfdAwn",
             Self::VAULT => "vault-client-public",
         }
     }
@@ -71,6 +73,7 @@ impl TokenType {
         match &self {
             Self::AWS => "aws",
             Self::AUTH0 => "auth0",
+            Self::Auth0Admin => "auth0-admin",
             Self::VAULT => "vault",
         }
     }
