@@ -54,7 +54,10 @@ impl Auth0Client {
         let mut validator = Validation::new(Algorithm::RS256);
         validator.set_audience(&["KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ"]);
 
-        Ok(jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator).expect("Could not decode jwt"))
+        Ok(
+            jsonwebtoken::decode::<Value>(&token.access_token, &decoding_key, &validator)
+                .expect("Could not decode jwt"),
+        )
     }
 }
 
@@ -93,7 +96,12 @@ impl SecretManager for Auth0Client {
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
 
-        Ok(TokenWrap::new(token_type.clone(), token_data, token.id_token.clone()))
+        Ok(TokenWrap::new(
+            token_type.clone(),
+            token_data,
+            token.access_token.clone(),
+            token.refresh_token.clone(),
+        ))
     }
 
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {
@@ -109,6 +117,11 @@ impl SecretManager for Auth0Client {
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
 
-        Ok(TokenWrap::new(TokenType::VAULT, token_data, token.id_token.clone()))
+        Ok(TokenWrap::new(
+            TokenType::VAULT,
+            token_data,
+            token.access_token.clone(),
+            token.refresh_token.clone(),
+        ))
     }
 }

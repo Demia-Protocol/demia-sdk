@@ -160,6 +160,6 @@ async fn assume_role(token: &str, sub: &str) -> StorageResult<aws_sdk_sts::types
         .await
     {
         Ok(e) => e.credentials().cloned().ok_or(StorageError::Credentials),
-        Err(e) => Err(e.into()),
+        Err(e) => Err(e.into())
     }
 }

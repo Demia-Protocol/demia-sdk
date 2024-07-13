@@ -47,7 +47,7 @@ impl VaultClient {
 
         let mut vault_client = Client::new(vault_config).expect("Should be able to use vault client");
 
-        let (mount, role) = match token.token_type() {
+        let (mount, role) = match token.token_type {
             TokenType::VAULT => ("jwt", Some("default".to_string())),
             _ => ("jwt2", None),
         };
