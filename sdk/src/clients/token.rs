@@ -128,4 +128,12 @@ impl TokenManager {
             None => Err(SecretError::TokenNotFound(TokenType::AWS.to_string()).into()),
         }
     }
+
+    pub async fn auth0_token(&self) -> SecretResult<TokenWrap> {
+        match self.tokens.read().await.get(&TokenType::AUTH0) {
+            Some(token) => Ok(token.clone()),
+            None => Err(SecretError::TokenNotFound(TokenType::AUTH0.to_string()).into()),
+        }
+    }
+
 }
