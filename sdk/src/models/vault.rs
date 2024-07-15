@@ -74,8 +74,12 @@ impl VaultClient {
 
     async fn check_token(&mut self) -> Result<()> {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let (mount, role) = match self.token.token_type() {
+            TokenType::VAULT => ("jwt", Some("default".to_string())),
+            _ => ("jwt2", None),
+        };
         if self.exp <= now {
-            let auth_info = oidc::login(&self.vault_client, "jwt", self.token.raw(), Some("default".to_string()))
+            let auth_info = oidc::login(&self.vault_client, mount, self.token.raw(), role)
                 .await
                 .expect("Should be able to login");
 
