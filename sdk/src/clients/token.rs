@@ -82,11 +82,11 @@ impl TokenManager {
     }
 
     /// Refreshes the refresh token and all active tokens held by the token manager.
-    pub async fn refresh(&mut self, username: &str, password: &str) -> SecretResult<()> {
-        self.refresh_token().await?;
+    pub async fn refresh(&mut self) -> SecretResult<()> {
+        let new_token = self.refresh_token().await?;
         let mut new_tokens: HashMap<TokenType, TokenWrap> = HashMap::default();
         for el in self.tokens.clone().read().await.keys() {
-            new_tokens.insert(el.clone(), self.secret_manager.get_token(el, username, password).await?);
+            new_tokens.insert(el.clone(), new_token.clone());
         }
         self.tokens.write().await.extend(new_tokens);
         Ok(())
