@@ -13,6 +13,7 @@ use crate::{
     clients::{FileInfo, FileMetadata, Storage, StorageInfo},
     errors::{StorageError, StorageResult},
 };
+use crate::models::TokenWrap;
 
 #[derive(Clone)]
 pub struct GoogleCloud {
@@ -76,5 +77,9 @@ impl Storage for GoogleCloud {
             )
             .await
             .map_err(Into::into)
+    }
+
+    async fn update_credentials(&mut self, _token: TokenWrap) -> StorageResult<()> {
+        todo!()
     }
 }
