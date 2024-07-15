@@ -135,6 +135,12 @@ impl Storage for AwsRusotoClient {
             Err(e) => Err(e.into()),
         }
     }
+
+    async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()> {
+        Self::new(token).await.map(|client| {
+            *self = client;
+        })
+    }
 }
 
 impl AwsRusotoClient {

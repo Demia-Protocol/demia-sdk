@@ -109,6 +109,9 @@ pub trait Storage {
 
     /// Assign object metadata, set/update is dependant on trait implementation
     async fn set_metadata(&self, file: StorageInfo<'_>, metadata: Map<String, String>) -> StorageResult<()>;
+
+    /// Refresh credentials for storage provider
+    async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()>;
 }
 
 #[async_trait::async_trait]

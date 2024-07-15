@@ -140,6 +140,10 @@ impl Storage for AwsClient {
             Err(e) => Err(e.into()),
         }
     }
+
+    async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()> {
+        todo!()
+    }
 }
 
 async fn assume_role(token: &str, sub: &str) -> StorageResult<aws_sdk_sts::types::Credentials> {
