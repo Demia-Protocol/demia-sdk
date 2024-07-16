@@ -255,4 +255,8 @@ impl<T: Storage> StorageClient<T> {
             }
         }
     }
+
+    pub async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()> {
+        self.storage.update_credentials(token).await
+    }
 }
