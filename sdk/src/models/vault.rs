@@ -77,7 +77,7 @@ impl VaultClient {
                 .expect("Should be able to login");
 
             self.vault_client.set_token(&auth_info.client_token);
-            self.exp = now + auth_info.lease_duration;
+            self.exp = self.token.get_expiration().unwrap_or(now);
         }
         Ok(())
     }

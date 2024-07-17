@@ -38,7 +38,7 @@ impl TokenWrap {
         self.get_expiration().unwrap() <= time_elapsed
     }
 
-    fn get_expiration(&self) -> Option<u64> {
+    pub fn get_expiration(&self) -> Option<u64> {
         self.token
             .claims
             .get("exp")
