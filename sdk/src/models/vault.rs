@@ -128,9 +128,9 @@ impl VaultClient {
     }
 
     pub async fn update_client_token(&mut self, token: TokenWrap) -> Result<()> {
-        let exp = token.get_expiration().unwrap();
-        Self::set_client_token(&mut self.vault_client, token).await?;
-        self.exp = exp;
+        Self::set_client_token(&mut self.vault_client, token.clone()).await?;
+        self.token = token;
+        self.exp = self.token.get_expiration().unwrap();
         Ok(())
     }
 
