@@ -129,6 +129,10 @@ impl TokenManager {
         }
     }
 
+    pub async fn set_auth0_token(&mut self, token: TokenWrap) {
+        self.tokens.write().await.insert(TokenType::AUTH0, token);
+    }
+
     pub async fn auth0_token(&self) -> SecretResult<TokenWrap> {
         match self.tokens.read().await.get(&TokenType::AUTH0) {
             Some(token) => Ok(token.clone()),
