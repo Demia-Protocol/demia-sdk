@@ -46,6 +46,10 @@ impl TokenWrap {
             .as_u64()
     }
 
+    pub fn get_token_data(&self) -> &TokenData<Value> {
+        &self.token
+    }
+
     pub fn raw(&self) -> &str {
         &self.raw
     }
