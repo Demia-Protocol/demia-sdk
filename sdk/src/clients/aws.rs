@@ -142,7 +142,9 @@ impl Storage for AwsClient {
     }
 
     async fn update_credentials(&mut self, _token: TokenWrap) -> StorageResult<()> {
-        todo!()
+        Self::new(token).await.map(|client| {
+            *self = client;
+        })
     }
 }
 
