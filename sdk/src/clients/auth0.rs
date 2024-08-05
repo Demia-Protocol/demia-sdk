@@ -139,4 +139,21 @@ impl SecretManager for Auth0Client {
 
         Ok(TokenWrap::new(TokenType::AUTH0, token_data, token.id_token.clone()))
     }
+
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+        let client_id = token_type.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let token_data = self.get_token_data(&TokenResponse {
+            access_token: "".to_string(),
+            id_token: token.to_string(),
+            refresh_token: "".to_string(),
+        }).await?;
+
+        Ok(TokenWrap::new(
+            token_type.clone(),
+            token_data,
+            token.to_string(),
+        ))
+    }
 }
