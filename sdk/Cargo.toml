@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iota-client = { path = "../demia.rs/client", features = ["tls", "stronghold"] }
+# iota-client = { path = "../demia.rs/client", features = ["tls", "stronghold"] }
+iota-client = { package = "iota-sdk", path = "../iota-sdk/sdk", features = ["tls", "stronghold"] }
 
 lets = { path = "../streams/lets"}
 streams = { path = "../streams/streams", features = ["serde", "did", "mysql-client", "bucket"] }
