@@ -5,7 +5,7 @@
 [submodule "streams"]
 	path = streams
 	url = https://github.com/Demia-Protocol/streams
-	branch = mysql-dev
+	branch = iota-sdk
 [submodule "identity.rs"]
 	path = identity.rs
 	url = https://github.com/Demia-Protocol/identity.rs
