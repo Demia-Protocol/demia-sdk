@@ -1,7 +1,7 @@
 // Import reexports from the Demia SDK
 use demia_sdk::{
     identity::iota::iota::{IotaDID, NetworkName},
-    iota_client::Client as IotaClient,
+    iota_sdk::client::Client as IotaClient,
     iota_stronghold::Stronghold,
     streams::{transport::utangle::Client as StreamsClient, TransportMessage},
 };

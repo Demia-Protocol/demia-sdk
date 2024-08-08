@@ -1,5 +1,5 @@
-pub mod iota_client {
-    pub use iota_client::*;
+pub mod iota_sdk {
+    pub use iota_sdk::*;
 }
 
 pub mod streams {

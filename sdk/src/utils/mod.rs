@@ -1,7 +1,7 @@
 pub mod analytics;
 pub use analytics::*;
 use base64::Engine;
-use iota_client::crypto::signatures::ed25519::SecretKey;
+use iota_sdk::crypto::signatures::ed25519::SecretKey;
 use log::info;
 
 pub fn new_stronghold_key() -> String {

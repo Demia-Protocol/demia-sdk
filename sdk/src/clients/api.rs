@@ -1,5 +1,5 @@
 use std::{fmt::Debug, time::Duration};
-use iota_client::types::block::address::Address;
+use iota_sdk::types::block::address::Address;
 use serde::{de::DeserializeOwned, Serialize};
 use url::Url;
 
