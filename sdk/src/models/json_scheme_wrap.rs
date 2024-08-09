@@ -23,7 +23,9 @@ pub struct AnnotationDef {
     pub is_satisfied: bool,
     pub timestamp: String,
     #[serde(with = "LayerTypeDef")]
+    #[serde(default = "default_layer")]
     pub layer: LayerType,
+    #[serde(default)]
     pub tag: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
@@ -46,4 +48,8 @@ impl From<AlvariumAnnotation> for Annotation {
     fn from(ann: AlvariumAnnotation) -> Self {
         Self(ann)
     }
+}
+
+fn default_layer() -> LayerType {
+    LayerType("host".to_string())
 }
