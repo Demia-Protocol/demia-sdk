@@ -1,5 +1,4 @@
 use std::{collections::HashMap, sync::Arc};
-
 use tokio::sync::RwLock;
 
 use crate::{
@@ -66,10 +65,16 @@ impl SecretManager for TokenManager {
         Ok(token)
     }
 
-    /// Refreshes the "refresh" token. doenst update tokens held by the tokenmanager.
+    /// Refreshes the "refresh" token. Doesn't update tokens held by the tokenmanager.
     /// That operation is called refresh_token_type() or refresh()
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {
         self.secret_manager.refresh_token().await
+    }
+
+    /// Creates a TokenWrap for a raw id token string and stores the token locally. This is for API
+    /// based functionality and won't contain the refresh token
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+        self.secret_manager.token_from_raw(token_type, token).await
     }
 }
 

@@ -122,6 +122,8 @@ pub trait SecretManager: Debug + Send + Sync {
     async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap>;
     /// Updates the refresh token used to connect to the manager
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap>;
+    /// Get token data from raw token response
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap>;
 }
 
 pub(crate) fn default_secret() -> Box<impl SecretManager> {
