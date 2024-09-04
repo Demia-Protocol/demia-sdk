@@ -46,28 +46,8 @@ pub struct Equipment {
 }
 
 impl Equipment {
-    pub fn new(
-        id: String,
-        name: String,
-        group: String,
-        units: String,
-        eq_type: String,
-        accuracy: f32,
-        installed: u16,
-        serial_no: String,
-        manufacturer: String,
-    ) -> Self {
-        Self {
-            id,
-            name,
-            group,
-            units,
-            eq_type,
-            accuracy,
-            installed,
-            serial_no,
-            manufacturer,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 }
 

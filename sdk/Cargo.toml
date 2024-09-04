@@ -17,7 +17,6 @@ isocountry = { version = "0.3" }
 iota_stronghold = { path = "../stronghold.rs/client"}
 alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust" }
 
-dotenv = { version = "0.15" }
 tokio = { version = "1", features = ["full"] }
 
 serde = { version = "1.0", features = ["derive"] }
@@ -57,9 +56,13 @@ uuid = { version = "1.8.0", features = ["v4"] }
 url = "2.4"
 jsonwebtoken = "8.3.0"
 
+[dev-dependencies]
+dotenv = "0.15.0"
+
 [features]
-default = ["streams/default", "utangle-client", "did", "std"]
+default = ["streams/default", "utangle-client", "did", "std", "test"]
 std = ["streams/std"]
+test = ["iota-sdk/test"]
 
 did = ["streams/did"]
 bucket = ["streams/did"]
