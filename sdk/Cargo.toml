@@ -62,7 +62,7 @@ dotenv = "0.15.0"
 [features]
 default = ["streams/default", "utangle-client", "did", "std", "test"]
 std = ["streams/std"]
-test = ["iota-sdk/test"]
+test = []
 
 did = ["streams/did"]
 bucket = ["streams/did"]
