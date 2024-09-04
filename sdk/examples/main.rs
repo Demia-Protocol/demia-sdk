@@ -2,12 +2,10 @@
 use demia_sdk::{
     iota_sdk::client::Client as IotaClient,
     iota_stronghold::Stronghold,
+    isocountry,
     streams::{transport::utangle::Client as StreamsClient, TransportMessage},
-    isocountry
 };
-use identity_demia::{
-    demia::{DemiaDID, NetworkName},
-};
+use identity_demia::demia::{DemiaDID, NetworkName};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,7 +24,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ...
 
     // Example: Interact with the Identity module
-    let iota_identity = DemiaDID::from_alias_id("seed_for_identity", &isocountry::CountryCode::CAN, &NetworkName::try_from("smr").unwrap());
+    let iota_identity = DemiaDID::from_alias_id(
+        "seed_for_identity",
+        &isocountry::CountryCode::CAN,
+        &NetworkName::try_from("smr").unwrap(),
+    );
 
     // Print the created DID
     println!("Created DID: {}", iota_identity);
