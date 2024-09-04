@@ -6,6 +6,7 @@ use std::{
 use log::{debug, info};
 use serde_json::Value;
 use vaultrs::{
+    api::AuthInfo,
     auth::oidc,
     client::{Client as _, VaultClient as Client},
 };
@@ -47,15 +48,7 @@ impl VaultClient {
 
         let mut vault_client = Client::new(vault_config).expect("Should be able to use vault client");
 
-        let (mount, role) = match token.token_type() {
-            TokenType::VAULT => ("jwt", Some("default".to_string())),
-            _ => ("jwt2", None),
-        };
-        log::info!("Mount: {}, Role: {:?}", mount, role);
-        let auth_info = vaultrs::auth::oidc::login(&vault_client, mount, token.raw(), role)
-            .await
-            .expect("Should be able to login");
-        vault_client.set_token(&auth_info.client_token);
+        let auth_info = Self::set_client_token(&mut vault_client, token.clone()).await?;
 
         let exp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + auth_info.lease_duration;
 
@@ -74,13 +67,17 @@ impl VaultClient {
 
     async fn check_token(&mut self) -> Result<()> {
         let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let (mount, role) = match self.token.token_type() {
+            TokenType::VAULT => ("jwt", Some("default".to_string())),
+            _ => ("jwt2", None),
+        };
         if self.exp <= now {
-            let auth_info = oidc::login(&self.vault_client, "jwt", self.token.raw(), Some("default".to_string()))
+            let auth_info = oidc::login(&self.vault_client, mount, self.token.raw(), role)
                 .await
                 .expect("Should be able to login");
 
             self.vault_client.set_token(&auth_info.client_token);
-            self.exp = now + auth_info.lease_duration;
+            self.exp = self.token.get_expiration().unwrap_or(now);
         }
         Ok(())
     }
@@ -128,5 +125,24 @@ impl VaultClient {
             }
             Some(password) => Ok(password.clone()),
         }
+    }
+
+    pub async fn update_client_token(&mut self, token: TokenWrap) -> Result<()> {
+        Self::set_client_token(&mut self.vault_client, token.clone()).await?;
+        self.token = token;
+        self.exp = self.token.get_expiration().unwrap();
+        Ok(())
+    }
+
+    async fn set_client_token(vault_client: &mut vaultrs::client::VaultClient, token: TokenWrap) -> Result<AuthInfo> {
+        let (mount, role) = match token.token_type() {
+            TokenType::VAULT => ("jwt", Some("default".to_string())),
+            _ => ("jwt2", None),
+        };
+        let auth_info = oidc::login(vault_client, mount, token.raw(), role)
+            .await
+            .expect("Should be able to login");
+        vault_client.set_token(&auth_info.client_token);
+        Ok(auth_info)
     }
 }

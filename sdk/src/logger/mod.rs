@@ -1,8 +1,9 @@
+use fern::Dispatch;
 use log::{LevelFilter, SetLoggerError};
 
 use crate::configuration::LoggingConfiguration;
 
-pub fn init(config: &LoggingConfiguration) -> Result<(), SetLoggerError> {
+pub fn init(config: &LoggingConfiguration, dispatch: Option<Dispatch>) -> Result<(), SetLoggerError> {
     let log_level = match config.level.as_str() {
         "debug" => LevelFilter::Debug,
         "warn" => LevelFilter::Warn,
@@ -10,7 +11,7 @@ pub fn init(config: &LoggingConfiguration) -> Result<(), SetLoggerError> {
         _ => LevelFilter::Info,
     };
 
-    fern::Dispatch::new()
+    let mut d = fern::Dispatch::new()
         .format(|out: fern::FormatCallback, message, record| {
             let source = format!("{}:{}", record.target(), record.line().unwrap_or_default());
             let gap = if source.len() < 35 {
@@ -29,15 +30,12 @@ pub fn init(config: &LoggingConfiguration) -> Result<(), SetLoggerError> {
             ))
         })
         .level(log_level)
+        .level_for("hyper", log::LevelFilter::Info)
         .level_for("sqlx", LevelFilter::Warn)
         .level_for("vaultrs", LevelFilter::Warn)
-        .chain(std::io::stdout())
-        // .chain(OpenOptions::new()
-        // .write(true)
-        // .create(true)
-        // .truncate(true)
-        // .open(&configuration.logging.debug_location)
-        // .map_err(|e| Error::LoggerFormattingError(e))?
-        // )
-        .apply()
+        .chain(std::io::stdout());
+    if let Some(disp) = dispatch {
+        d = d.chain(disp);
+    }
+    d.apply()
 }

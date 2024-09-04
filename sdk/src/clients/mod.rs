@@ -109,17 +109,25 @@ pub trait Storage {
 
     /// Assign object metadata, set/update is dependant on trait implementation
     async fn set_metadata(&self, file: StorageInfo<'_>, metadata: Map<String, String>) -> StorageResult<()>;
+
+    /// Refresh credentials for storage provider
+    async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()>;
 }
 
 #[async_trait::async_trait]
 pub trait SecretManager: Debug + Send + Sync {
+    /// Gets the specific token from the manager using the refresh token
     async fn get_token(&mut self, token_type: &TokenType, username: &str, password: &str) -> SecretResult<TokenWrap>;
-
+    /// Gets a token using a token secret
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap>;
+    /// Updates the refresh token used to connect to the manager
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap>;
+    /// Get token data from raw token response
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap>;
 }
 
 pub(crate) fn default_secret() -> Box<impl SecretManager> {
-    Box::new(Keycloak::default())
+    Box::<Keycloak>::default()
 }
 
 pub enum Clients {
@@ -181,7 +189,7 @@ impl<T: Storage> StorageClient<T> {
         match get_metadata {
             false => Ok(objs),
             true => {
-                for mut obj in &mut objs {
+                for obj in &mut objs {
                     let meta = self
                         .storage
                         .get_metadata(StorageInfo {
@@ -240,6 +248,7 @@ impl<T: Storage> StorageClient<T> {
                     .create(true)
                     .truncate(true)
                     .write(true)
+                    .read(true)
                     .open(file_path)
                     .expect("Should be able to write to provided file path");
                 file.write_all(&data).expect("should be able to write to that file...");
@@ -247,5 +256,9 @@ impl<T: Storage> StorageClient<T> {
                 Ok(data)
             }
         }
+    }
+
+    pub async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()> {
+        self.storage.update_credentials(token).await
     }
 }

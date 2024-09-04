@@ -6,13 +6,13 @@ use google_cloud_storage::{
         download::Range,
         get::GetObjectRequest,
         upload::{Media, UploadObjectRequest, UploadType},
-        Object,
     },
 };
 
 use crate::{
     clients::{FileInfo, FileMetadata, Storage, StorageInfo},
     errors::{StorageError, StorageResult},
+    models::TokenWrap,
 };
 
 #[derive(Clone)]
@@ -77,5 +77,9 @@ impl Storage for GoogleCloud {
             )
             .await
             .map_err(Into::into)
+    }
+
+    async fn update_credentials(&mut self, _token: TokenWrap) -> StorageResult<()> {
+        todo!()
     }
 }

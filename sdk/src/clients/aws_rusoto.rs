@@ -3,8 +3,8 @@ use std::{collections::HashMap, fmt::Debug};
 use log::{debug, info, warn};
 use rusoto_core::{credential::StaticProvider, Region};
 use rusoto_s3::{
-    CopyObjectRequest, DeleteObjectRequest, GetObjectOutput, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request,
-    Object, PutObjectRequest, S3Client, S3,
+    CopyObjectRequest, DeleteObjectRequest, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request, Object,
+    PutObjectRequest, S3Client, S3,
 };
 use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;
@@ -89,8 +89,8 @@ impl Storage for AwsRusotoClient {
             .map_err(StorageError::from)
     }
 
-    async fn set_metadata(&self, info: StorageInfo<'_>, metadata: Map<String, String>) -> StorageResult<()> {
-        let request = CopyObjectRequest {
+    async fn set_metadata(&self, info: StorageInfo<'_>, _metadata: Map<String, String>) -> StorageResult<()> {
+        let _request = CopyObjectRequest {
             bucket: info.bucket.to_string(),
             key: info.url,
             ..Default::default()
@@ -134,6 +134,12 @@ impl Storage for AwsRusotoClient {
             }
             Err(e) => Err(e.into()),
         }
+    }
+
+    async fn update_credentials(&mut self, token: TokenWrap) -> StorageResult<()> {
+        Self::new(token).await.map(|client| {
+            *self = client;
+        })
     }
 }
 

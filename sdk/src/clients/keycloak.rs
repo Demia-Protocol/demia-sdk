@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use base64::Engine;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
+use reqwest::Response;
 use serde_json::{json, Value};
 
 use crate::{
@@ -53,12 +54,26 @@ impl Keycloak {
 
         let decoding_key =
             DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
-        let validator = Validation::new(Algorithm::RS256);
+        let mut validator = Validation::new(Algorithm::RS256);
 
+        validator.set_audience(&[TokenType::VAULT.client_id(), TokenType::AWS.client_id()]);
         Ok(
             jsonwebtoken::decode::<Value>(&token.access_token, &decoding_key, &validator)
                 .expect("Could not decode jwt"),
         )
+    }
+
+    async fn token_from_response(&mut self, token_type: TokenType, response: Response) -> SecretResult<TokenWrap> {
+        log::debug!("Response: {:?}", response);
+        let token: TokenResponse = response.json().await.expect("Should be a token response");
+        self.session_refresh.replace(token.refresh_token.clone());
+        let token_data = self.get_token_data(&token).await?;
+
+        Ok(TokenWrap::new(
+            token_type.clone(),
+            token_data,
+            token.access_token.clone(),
+        ))
     }
 }
 
@@ -71,7 +86,7 @@ impl Debug for Keycloak {
 #[async_trait::async_trait]
 impl SecretManager for Keycloak {
     async fn get_token(&mut self, token_type: &TokenType, username: &str, password: &str) -> SecretResult<TokenWrap> {
-        let client_id = token_type.client_id();
+        let client_id = TokenType::AUTH0.client_id();
         log::debug!("Refreshing token: {}", client_id);
 
         let url = format!("{}/protocol/openid-connect/token", self.url);
@@ -90,16 +105,29 @@ impl SecretManager for Keycloak {
             .await
             .expect("Expect a response at least");
 
-        log::debug!("Response: {:?}", response);
-        let token: TokenResponse = response.json().await.expect("Should be a token response");
-        self.session_refresh.replace(token.refresh_token.clone());
-        let token_data = self.get_token_data(&token).await?;
+        self.token_from_response(token_type.clone(), response).await
+    }
 
-        Ok(TokenWrap::new(
-            token_type.clone(),
-            token_data,
-            token.access_token.clone(),
-        ))
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap> {
+        let client_id = TokenType::AUTH0.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let url = format!("{}/protocol/openid-connect/token", self.url);
+        let params = json!({
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        });
+
+        let response = self
+            .client
+            .post(url)
+            .form(&params)
+            .send()
+            .await
+            .expect("Expect a response at least");
+
+        self.token_from_response(token_type.clone(), response).await
     }
 
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {
@@ -116,5 +144,20 @@ impl SecretManager for Keycloak {
         let token_data = self.get_token_data(&token).await?;
 
         Ok(TokenWrap::new(TokenType::VAULT, token_data, token.access_token.clone()))
+    }
+
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+        let client_id = token_type.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let token_data = self
+            .get_token_data(&TokenResponse {
+                access_token: token.to_string(),
+                id_token: "".to_string(),
+                refresh_token: "".to_string(),
+            })
+            .await?;
+
+        Ok(TokenWrap::new(token_type.clone(), token_data, token.to_string()))
     }
 }

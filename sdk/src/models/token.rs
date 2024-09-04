@@ -38,7 +38,7 @@ impl TokenWrap {
         self.get_expiration().unwrap() <= time_elapsed
     }
 
-    fn get_expiration(&self) -> Option<u64> {
+    pub fn get_expiration(&self) -> Option<u64> {
         self.token
             .claims
             .get("exp")
@@ -46,15 +46,20 @@ impl TokenWrap {
             .as_u64()
     }
 
+    pub fn token_data(&self) -> &TokenData<Value> {
+        &self.token
+    }
+
     pub fn raw(&self) -> &str {
         &self.raw
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Eq, Hash, PartialEq)]
 pub enum TokenType {
     AWS,
     AUTH0,
+    Auth0Admin,
     VAULT,
 }
 
@@ -63,7 +68,17 @@ impl TokenType {
         match self {
             Self::AWS => "aws-token-issuer",
             Self::AUTH0 => "KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ",
+            Self::Auth0Admin => "TOF8oMvj577kvq2tVq6dofRDDEAfdAwn",
             Self::VAULT => "vault-client-public",
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match &self {
+            Self::AWS => "aws",
+            Self::AUTH0 => "auth0",
+            Self::Auth0Admin => "auth0-admin",
+            Self::VAULT => "vault",
         }
     }
 }

@@ -9,7 +9,7 @@ pub mod utils;
 
 pub use isocountry::{self, CountryCode};
 
-pub extern crate iota_client;
+pub extern crate iota_sdk;
 
 pub extern crate lets;
 pub extern crate streams;

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iota-client = { path = "../demia.rs/client", features = ["tls", "stronghold"] }
+iota-sdk = { path = "../iota-sdk/sdk", features = ["tls", "stronghold"] }
 
 lets = { path = "../streams/lets"}
 streams = { path = "../streams/streams", features = ["serde", "did", "mysql-client", "bucket"] }
@@ -15,10 +15,8 @@ identity_demia = { path = "../identity.rs/identity_demia", features = ["client",
 isocountry = { version = "0.3" }
 
 iota_stronghold = { path = "../stronghold.rs/client"}
-# TODO Change back to project-alvarium when merged 
-alvarium-sdk-rust = { git = "https://github.com/DyrellC/alvarium-sdk-rust", branch = "main" }
+alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust" }
 
-dotenv = { version = "0.15" }
 tokio = { version = "1", features = ["full"] }
 
 serde = { version = "1.0", features = ["derive"] }
@@ -58,9 +56,13 @@ uuid = { version = "1.8.0", features = ["v4"] }
 url = "2.4"
 jsonwebtoken = "8.3.0"
 
+[dev-dependencies]
+dotenv = "0.15.0"
+
 [features]
-default = ["streams/default", "utangle-client", "did", "std"]
+default = ["streams/default", "utangle-client", "did", "std", "test"]
 std = ["streams/std"]
+test = []
 
 did = ["streams/did"]
 bucket = ["streams/did"]

@@ -46,7 +46,7 @@ impl Auth0Client {
 
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
-            engine.encode(&public_key_der)
+            engine.encode(public_key_der)
         );
 
         let decoding_key =
@@ -55,6 +55,18 @@ impl Auth0Client {
         validator.set_audience(&["KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ"]);
 
         Ok(jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator).expect("Could not decode jwt"))
+    }
+
+    async fn token_from_response(
+        &mut self,
+        token_type: TokenType,
+        response: reqwest::Response,
+    ) -> SecretResult<TokenWrap> {
+        let token: TokenResponse = response.json().await.expect("Should be a token response");
+        self.session_refresh.replace(token.refresh_token.clone());
+        let token_data = self.get_token_data(&token).await?;
+
+        Ok(TokenWrap::new(token_type, token_data, token.id_token.clone()))
     }
 }
 
@@ -89,11 +101,31 @@ impl SecretManager for Auth0Client {
 
         log::debug!("Response: {:?}", response);
 
-        let token: TokenResponse = response.json().await.expect("Should be a token response");
-        self.session_refresh.replace(token.refresh_token.clone());
-        let token_data = self.get_token_data(&token).await?;
+        self.token_from_response(token_type.clone(), response).await
+    }
 
-        Ok(TokenWrap::new(token_type.clone(), token_data, token.id_token.clone()))
+    async fn get_token_with_secret(&mut self, token_type: &TokenType, client_secret: &str) -> SecretResult<TokenWrap> {
+        let client_id = token_type.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let url = format!("{}/oauth/token", self.url);
+        let params = json!({
+            "grant_type": "client_secret",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "scope": "openid profile email offline_access"
+        });
+
+        let response = self
+            .client
+            .post(url.clone())
+            .form(&params)
+            .send()
+            .await
+            .expect("Expect a response at least");
+
+        log::debug!("Response: {:?}", response);
+        self.token_from_response(token_type.clone(), response).await
     }
 
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {
@@ -109,6 +141,21 @@ impl SecretManager for Auth0Client {
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
 
-        Ok(TokenWrap::new(TokenType::VAULT, token_data, token.id_token.clone()))
+        Ok(TokenWrap::new(TokenType::AUTH0, token_data, token.id_token.clone()))
+    }
+
+    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+        let client_id = token_type.client_id();
+        log::debug!("Refreshing token: {}", client_id);
+
+        let token_data = self
+            .get_token_data(&TokenResponse {
+                access_token: "".to_string(),
+                id_token: token.to_string(),
+                refresh_token: "".to_string(),
+            })
+            .await?;
+
+        Ok(TokenWrap::new(token_type.clone(), token_data, token.to_string()))
     }
 }
