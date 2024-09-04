@@ -46,7 +46,7 @@ impl Auth0Client {
 
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
-            engine.encode(&public_key_der)
+            engine.encode(public_key_der)
         );
 
         let decoding_key =
@@ -57,7 +57,11 @@ impl Auth0Client {
         Ok(jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator).expect("Could not decode jwt"))
     }
 
-    async fn token_from_response(&mut self, token_type: TokenType, response: reqwest::Response) -> SecretResult<TokenWrap> {
+    async fn token_from_response(
+        &mut self,
+        token_type: TokenType,
+        response: reqwest::Response,
+    ) -> SecretResult<TokenWrap> {
         let token: TokenResponse = response.json().await.expect("Should be a token response");
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
@@ -144,16 +148,14 @@ impl SecretManager for Auth0Client {
         let client_id = token_type.client_id();
         log::debug!("Refreshing token: {}", client_id);
 
-        let token_data = self.get_token_data(&TokenResponse {
-            access_token: "".to_string(),
-            id_token: token.to_string(),
-            refresh_token: "".to_string(),
-        }).await?;
+        let token_data = self
+            .get_token_data(&TokenResponse {
+                access_token: "".to_string(),
+                id_token: token.to_string(),
+                refresh_token: "".to_string(),
+            })
+            .await?;
 
-        Ok(TokenWrap::new(
-            token_type.clone(),
-            token_data,
-            token.to_string(),
-        ))
+        Ok(TokenWrap::new(token_type.clone(), token_data, token.to_string()))
     }
 }

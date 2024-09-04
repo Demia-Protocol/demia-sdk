@@ -127,7 +127,7 @@ pub trait SecretManager: Debug + Send + Sync {
 }
 
 pub(crate) fn default_secret() -> Box<impl SecretManager> {
-    Box::new(Keycloak::default())
+    Box::<Keycloak>::default()
 }
 
 pub enum Clients {

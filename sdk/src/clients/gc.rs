@@ -12,8 +12,8 @@ use google_cloud_storage::{
 use crate::{
     clients::{FileInfo, FileMetadata, Storage, StorageInfo},
     errors::{StorageError, StorageResult},
+    models::TokenWrap,
 };
-use crate::models::TokenWrap;
 
 #[derive(Clone)]
 pub struct GoogleCloud {

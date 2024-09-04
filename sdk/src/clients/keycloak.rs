@@ -63,7 +63,7 @@ impl Keycloak {
         )
     }
 
-    async fn token_from_response(&mut self, token_type: TokenType, response: Response) -> SecretResult<TokenWrap>{
+    async fn token_from_response(&mut self, token_type: TokenType, response: Response) -> SecretResult<TokenWrap> {
         log::debug!("Response: {:?}", response);
         let token: TokenResponse = response.json().await.expect("Should be a token response");
         self.session_refresh.replace(token.refresh_token.clone());
@@ -130,7 +130,6 @@ impl SecretManager for Keycloak {
         self.token_from_response(token_type.clone(), response).await
     }
 
-
     async fn refresh_token(&mut self) -> SecretResult<TokenWrap> {
         let url = format!("{}/protocol/openid-connect/token", self.url);
         let params = serde_json::json!({
@@ -151,16 +150,14 @@ impl SecretManager for Keycloak {
         let client_id = token_type.client_id();
         log::debug!("Refreshing token: {}", client_id);
 
-        let token_data = self.get_token_data(&TokenResponse {
-            access_token: token.to_string(),
-            id_token: "".to_string(),
-            refresh_token: "".to_string(),
-        }).await?;
+        let token_data = self
+            .get_token_data(&TokenResponse {
+                access_token: token.to_string(),
+                id_token: "".to_string(),
+                refresh_token: "".to_string(),
+            })
+            .await?;
 
-        Ok(TokenWrap::new(
-            token_type.clone(),
-            token_data,
-            token.to_string(),
-        ))
+        Ok(TokenWrap::new(token_type.clone(), token_data, token.to_string()))
     }
 }

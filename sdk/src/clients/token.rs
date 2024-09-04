@@ -1,4 +1,5 @@
 use std::{collections::HashMap, sync::Arc};
+
 use tokio::sync::RwLock;
 
 use crate::{
@@ -19,7 +20,7 @@ pub struct TokenManager {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TokenSecret<'a> {
     pub password: Option<&'a str>,
-    pub secret: Option<&'a str>
+    pub secret: Option<&'a str>,
 }
 
 impl Default for TokenManager {
@@ -59,7 +60,10 @@ impl SecretManager for TokenManager {
             }
         }
 
-        let token = self.secret_manager.get_token_with_secret(token_type, client_secret).await?;
+        let token = self
+            .secret_manager
+            .get_token_with_secret(token_type, client_secret)
+            .await?;
         self.tokens.write().await.insert(token_type.clone(), token.clone());
 
         Ok(token)
@@ -107,9 +111,7 @@ impl TokenManager {
     // Checks if the token exists and is unexpired(true), otherwise false
     pub async fn get_status(&self, token_type: TokenType) -> bool {
         let lock = self.tokens.read().await;
-        lock.get(&token_type)
-            .and_then(|t| Some(!t.is_expired()))
-            .unwrap_or(false)
+        lock.get(&token_type).map(|t| !t.is_expired()).unwrap_or(false)
     }
 
     pub async fn set_vault_token(&mut self, vault_token: TokenWrap) {
@@ -119,7 +121,7 @@ impl TokenManager {
     pub async fn vault_token(&self) -> SecretResult<TokenWrap> {
         match self.tokens.read().await.get(&TokenType::VAULT) {
             Some(token) => Ok(token.clone()),
-            None => Err(SecretError::TokenNotFound(TokenType::VAULT.to_string()).into()),
+            None => Err(SecretError::TokenNotFound(TokenType::VAULT.to_string())),
         }
     }
 
@@ -130,7 +132,7 @@ impl TokenManager {
     pub async fn aws_token(&self) -> SecretResult<TokenWrap> {
         match self.tokens.read().await.get(&TokenType::AWS) {
             Some(token) => Ok(token.clone()),
-            None => Err(SecretError::TokenNotFound(TokenType::AWS.to_string()).into()),
+            None => Err(SecretError::TokenNotFound(TokenType::AWS.to_string())),
         }
     }
 
@@ -141,8 +143,7 @@ impl TokenManager {
     pub async fn auth0_token(&self) -> SecretResult<TokenWrap> {
         match self.tokens.read().await.get(&TokenType::AUTH0) {
             Some(token) => Ok(token.clone()),
-            None => Err(SecretError::TokenNotFound(TokenType::AUTH0.to_string()).into()),
+            None => Err(SecretError::TokenNotFound(TokenType::AUTH0.to_string())),
         }
     }
-
 }

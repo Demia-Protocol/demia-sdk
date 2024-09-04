@@ -6,10 +6,10 @@ use std::{
 use log::{debug, info};
 use serde_json::Value;
 use vaultrs::{
+    api::AuthInfo,
     auth::oidc,
     client::{Client as _, VaultClient as Client},
 };
-use vaultrs::api::AuthInfo;
 
 use crate::{
     configuration::StrongholdConfiguration,
