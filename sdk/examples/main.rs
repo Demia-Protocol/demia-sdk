@@ -1,9 +1,12 @@
 // Import reexports from the Demia SDK
 use demia_sdk::{
-    identity::iota::iota::{IotaDID, NetworkName},
     iota_sdk::client::Client as IotaClient,
     iota_stronghold::Stronghold,
     streams::{transport::utangle::Client as StreamsClient, TransportMessage},
+    isocountry
+};
+use identity_demia::{
+    demia::{DemiaDID, NetworkName},
 };
 
 #[tokio::main]
@@ -11,7 +14,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let url = dotenv::var("URL")?;
 
     // Initialize IOTA client
-    let _iota_client = IotaClient::builder().with_node(&url)?.finish()?;
+    let _iota_client = IotaClient::builder().with_node(&url)?.finish().await?;
 
     // Example: Interact with the IOTA module
     // ...
@@ -23,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ...
 
     // Example: Interact with the Identity module
-    let iota_identity = IotaDID::from_alias_id("seed_for_identity", &NetworkName::try_from("smr").unwrap());
+    let iota_identity = DemiaDID::from_alias_id("seed_for_identity", &isocountry::CountryCode::CAN, &NetworkName::try_from("smr").unwrap());
 
     // Print the created DID
     println!("Created DID: {}", iota_identity);
