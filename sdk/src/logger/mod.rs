@@ -11,7 +11,12 @@ pub fn init(config: &LoggingConfiguration, dispatch: Option<Dispatch>) -> Result
         _ => LevelFilter::Info,
     };
 
-    let mut d = fern::Dispatch::new()
+    let dispatch = match dispatch {
+        None => fern::Dispatch::new(),
+        Some(d) => d,
+    };
+
+    dispatch
         .format(|out: fern::FormatCallback, message, record| {
             let source = format!("{}:{}", record.target(), record.line().unwrap_or_default());
             let gap = if source.len() < 35 {
@@ -30,12 +35,10 @@ pub fn init(config: &LoggingConfiguration, dispatch: Option<Dispatch>) -> Result
             ))
         })
         .level(log_level)
+        .level_for("tracing", log::LevelFilter::Info)
         .level_for("hyper", log::LevelFilter::Info)
         .level_for("sqlx", LevelFilter::Warn)
         .level_for("vaultrs", LevelFilter::Warn)
-        .chain(std::io::stdout());
-    if let Some(disp) = dispatch {
-        d = d.chain(disp);
-    }
-    d.apply()
+        .chain(std::io::stdout())
+        .apply()
 }
