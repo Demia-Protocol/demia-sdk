@@ -15,6 +15,9 @@ pub enum IdentityError {
     #[error("An Identity Core IdentityError has occurred: {0}")]
     IdentityCoreError(String),
 
+    #[error("An Identity credentials error has occurred: {0}")]
+    IdentityCredentialError(String),
+
     #[error("An Identity Verification IdentityError has occurred: {0}")]
     IdentityVerificationError(String),
 
