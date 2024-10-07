@@ -18,6 +18,7 @@ pub use api::ApiClient;
 pub use auth0::Auth0Client;
 pub use aws::AwsClient;
 pub use aws_rusoto::AwsRusotoClient;
+use chrono::{DateTime, Utc};
 pub use gc::GoogleCloud;
 pub(crate) use http_client::*;
 pub use keycloak::Keycloak;
@@ -96,7 +97,8 @@ pub trait Storage {
     async fn upload(&self, file: StorageInfo<'_>) -> StorageResult<()>;
 
     /// Download an object
-    async fn download(&self, info: StorageInfo<'_>) -> StorageResult<Vec<u8>>;
+    /// If last_modified is specified, only downloads if the remote version is newer
+    async fn download(&self, info: StorageInfo<'_>, last_modified: Option<DateTime<Utc>>) -> StorageResult<Vec<u8>>;
 
     /// marks an object for deletion from the storage. Does not guarantee immediate deletion.
     async fn delete(&self, info: StorageInfo<'_>) -> StorageResult<()>;
@@ -190,19 +192,23 @@ impl<T: Storage> StorageClient<T> {
             false => Ok(objs),
             true => {
                 for obj in &mut objs {
-                    let meta = self
-                        .storage
-                        .get_metadata(StorageInfo {
-                            url: obj.name.clone(),
-                            bucket: BUCKET_PATH,
-                            data: None,
-                        })
-                        .await?;
+                    let meta = self.get_metadata_raw(obj.name.clone()).await?;
                     obj.metadata = Some(meta);
                 }
                 Ok(objs)
             }
         }
+    }
+
+    /// Function expects raw path of file for the storage provider.
+    pub async fn get_metadata_raw(&self, file: String) -> StorageResult<FileMetadata> {
+        self.storage
+            .get_metadata(StorageInfo {
+                url: file,
+                bucket: BUCKET_PATH,
+                data: None,
+            })
+            .await
     }
 
     pub async fn delete(&self, data: StorageDataType<'_>) -> StorageResult<()> {
@@ -227,7 +233,11 @@ impl<T: Storage> StorageClient<T> {
             .await
     }
 
-    pub async fn download_data(&self, storage_type: StorageDataType<'_>) -> StorageResult<Vec<u8>> {
+    pub async fn download_data(
+        &self,
+        storage_type: StorageDataType<'_>,
+        last_modified: Option<DateTime<Utc>>,
+    ) -> StorageResult<Vec<u8>> {
         let (file_path, storage_path) = storage_type.get_paths(&self.sub);
         let info = StorageInfo {
             url: storage_path,
@@ -235,7 +245,7 @@ impl<T: Storage> StorageClient<T> {
             ..Default::default()
         };
 
-        let raw = self.storage.download(info).await;
+        let raw = self.storage.download(info, last_modified).await;
         match storage_type {
             StorageDataType::IdentityMetadata(_) | StorageDataType::Document(_, _) => match raw {
                 Ok(object) => Ok(object),
