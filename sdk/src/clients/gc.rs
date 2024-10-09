@@ -1,5 +1,6 @@
 use std::collections::HashMap as Map;
 
+use chrono::Utc;
 use google_cloud_storage::{
     client::{Client, ClientConfig},
     http::objects::{
@@ -65,7 +66,11 @@ impl Storage for GoogleCloud {
         Ok(())
     }
 
-    async fn download(&self, data: StorageInfo<'_>) -> StorageResult<Vec<u8>> {
+    async fn download(
+        &self,
+        data: StorageInfo<'_>,
+        last_modified: Option<chrono::DateTime<Utc>>,
+    ) -> StorageResult<Vec<u8>> {
         self.client
             .download_object(
                 &GetObjectRequest {

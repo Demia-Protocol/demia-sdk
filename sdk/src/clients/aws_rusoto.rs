@@ -1,7 +1,9 @@
 use std::{collections::HashMap, fmt::Debug};
 
+use chrono::{DateTime, Utc};
 use log::{debug, info, warn};
-use rusoto_core::{credential::StaticProvider, Region};
+use reqwest::StatusCode;
+use rusoto_core::{credential::StaticProvider, Region, RusotoError};
 use rusoto_s3::{
     CopyObjectRequest, DeleteObjectRequest, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request, Object,
     PutObjectRequest, S3Client, S3,
@@ -111,12 +113,16 @@ impl Storage for AwsRusotoClient {
         Ok(())
     }
 
-    async fn download(&self, info: StorageInfo<'_>) -> StorageResult<Vec<u8>> {
-        let get_object_request = GetObjectRequest {
+    async fn download(&self, info: StorageInfo<'_>, last_modified: Option<DateTime<Utc>>) -> StorageResult<Vec<u8>> {
+        let mut get_object_request = GetObjectRequest {
             bucket: info.bucket.to_string(),
             key: info.url.clone(),
             ..Default::default()
         };
+
+        if let Some(time) = last_modified {
+            get_object_request.if_modified_since = Some(time.to_rfc3339());
+        }
 
         match self.s3_client.get_object(get_object_request).await {
             Ok(object) => {
@@ -132,7 +138,12 @@ impl Storage for AwsRusotoClient {
 
                 Ok(data)
             }
-            Err(e) => Err(e.into()),
+            Err(e) => {
+                match e {
+                    // TODO: Check if unmodified was returned
+                    _ => Err(e.into()),
+                }
+            }
         }
     }
 

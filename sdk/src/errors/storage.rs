@@ -14,6 +14,8 @@ pub enum StorageError {
     File(String),
     #[error("Should be able to assume role")]
     Credentials,
+    #[error("Download file request was denied due to no update needed")]
+    NotModified,
 }
 
 impl From<google_cloud_storage::http::Error> for StorageError {

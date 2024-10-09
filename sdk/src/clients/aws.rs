@@ -1,9 +1,11 @@
-use std::{collections::HashMap, fmt::Debug, time::SystemTime};
+use std::{collections::HashMap, error::Error, fmt::Debug, time::SystemTime};
 
 use aws_config::{BehaviorVersion, ConfigLoader};
 use aws_credential_types::Credentials;
-use aws_sdk_s3::Client as S3Client;
+use aws_sdk_s3::{primitives::DateTime, Client as S3Client};
 use aws_sdk_sts::Client as StsClient;
+use chrono::Utc;
+use reqwest::StatusCode;
 use tokio::io::AsyncReadExt;
 
 use super::{FileInfo, FileMetadata, Storage, StorageInfo};
@@ -118,15 +120,23 @@ impl Storage for AwsClient {
         Ok(())
     }
 
-    async fn download(&self, info: StorageInfo<'_>) -> StorageResult<Vec<u8>> {
-        match self
+    async fn download(
+        &self,
+        info: StorageInfo<'_>,
+        last_modified: Option<chrono::DateTime<Utc>>,
+    ) -> StorageResult<Vec<u8>> {
+        let mut request = self
             .s3_client
             .get_object()
             .bucket(info.bucket.to_string())
-            .key(info.url)
-            .send()
-            .await
-        {
+            .key(info.url);
+
+        if let Some(time) = last_modified {
+            let time = SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(time.timestamp() as u64);
+            request = request.if_modified_since(time.into());
+        }
+
+        match request.send().await {
             Ok(object) => {
                 let mut data_read = object.body.into_async_read();
                 let mut data = Vec::new();
@@ -137,7 +147,13 @@ impl Storage for AwsClient {
 
                 Ok(data)
             }
-            Err(e) => Err(e.into()),
+            Err(e) => {
+                if e.raw_response().map(|r| r.status()) == Some(StatusCode::NOT_MODIFIED.into()) {
+                    Err(StorageError::NotModified)
+                } else {
+                    Err(e.into())
+                }
+            }
         }
     }
 
