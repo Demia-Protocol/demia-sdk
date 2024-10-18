@@ -52,7 +52,7 @@ pub enum StorageDataType<'a> {
 impl<'a> StorageDataType<'a> {
     pub fn get_paths(&self, sub: &'a str) -> (&'a str, String) {
         match self {
-            Self::StreamsSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STREAMS_PATH.to_owned())),
+            Self::StreamsSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, path)),
             Self::StrongholdSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STRONGHOLD_PATH.to_owned())),
             Self::IdentityMetadata(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, IDENTITY_METADATA.to_owned())),
             Self::Document(site, file) => (file, format!("{}/{}/{}/{}", SITES_PATH, site, sub, file)),
