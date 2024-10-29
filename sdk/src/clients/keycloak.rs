@@ -146,7 +146,7 @@ impl SecretManager for Keycloak {
         Ok(TokenWrap::new(TokenType::VAULT, token_data, token.access_token.clone()))
     }
 
-    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+    async fn token_from_raw(&self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
         let client_id = token_type.client_id();
         log::debug!("Refreshing token: {}", client_id);
 

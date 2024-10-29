@@ -77,7 +77,7 @@ impl SecretManager for TokenManager {
 
     /// Creates a TokenWrap for a raw id token string and stores the token locally. This is for API
     /// based functionality and won't contain the refresh token
-    async fn token_from_raw(&mut self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
+    async fn token_from_raw(&self, token_type: &TokenType, token: &str) -> SecretResult<TokenWrap> {
         self.secret_manager.token_from_raw(token_type, token).await
     }
 }
