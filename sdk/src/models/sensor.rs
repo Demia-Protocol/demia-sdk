@@ -9,7 +9,7 @@ use serde_json::Value;
 
 // Missing JsonSchema on alvarium
 // use alvarium_sdk_rust::annotations::Annotation;
-use crate::models::{Annotation, AnnotationWrap};
+use crate::models::{Annotation, AnnotationWrap, NestedReadingValue};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Sensors {
@@ -56,7 +56,7 @@ pub struct Reading {
     pub id: String,
     pub address: String,
     pub timestamp: String,
-    pub value: f32,
+    pub value: NestedReadingValue,
     #[serde(rename = "sheetData")]
     pub sheet_data: Option<Value>,
     pub annotations: HashMap<String, Annotation>,
