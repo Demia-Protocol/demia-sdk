@@ -12,6 +12,9 @@ pub enum SecretError {
 
     #[error("No token found of type {0}")]
     TokenNotFound(String),
+
+    #[error("JWT error {0}")]
+    Jwt(String),
 }
 
 impl From<google_cloud_storage::http::Error> for SecretError {
