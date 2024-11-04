@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use super::Parameter;
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct ValueSet {
     pub inputs: HashMap<String, Vec<f64>>,
     pub params: Vec<Parameter>,

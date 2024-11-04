@@ -1,5 +1,9 @@
 pub mod analytics;
 pub use analytics::*;
+
+pub mod constants;
+pub use constants::*;
+
 use base64::Engine;
 use iota_sdk::crypto::signatures::ed25519::SecretKey;
 use log::info;

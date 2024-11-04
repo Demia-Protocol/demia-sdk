@@ -25,7 +25,6 @@ pub struct NewSite {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct SiteState {
     pub ch4_emission: ValueSet,
     pub wws: ValueSet,
@@ -52,7 +51,6 @@ impl SiteState {
 }
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-#[serde(bound(deserialize = "'de: 'static"))]
 pub struct Site {
     #[serde(rename = "projectId")]
     pub id: String,
