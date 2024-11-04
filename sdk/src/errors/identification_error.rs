@@ -1,11 +1,12 @@
 // src/errors/identification_error.rs
 
 use rocket_okapi::okapi::schemars;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub type IdentityResult<T> = core::result::Result<T, IdentityError>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum IdentityError {
     #[error("No password in vault")]
     NoStrongholdSecret,
