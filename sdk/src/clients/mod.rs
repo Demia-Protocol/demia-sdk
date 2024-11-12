@@ -3,7 +3,6 @@ mod auth0;
 mod aws;
 mod aws_rusoto;
 mod gc;
-mod http_client;
 mod keycloak;
 mod token;
 
@@ -14,13 +13,12 @@ use std::{
     io::{Read, Write},
 };
 
-pub use api::ApiClient;
+pub use api::*;
 pub use auth0::Auth0Client;
 pub use aws::AwsClient;
 pub use aws_rusoto::AwsRusotoClient;
 use chrono::{DateTime, Utc};
 pub use gc::GoogleCloud;
-pub(crate) use http_client::*;
 pub use keycloak::Keycloak;
 use rocket_okapi::okapi::schemars;
 pub use token::TokenManager;

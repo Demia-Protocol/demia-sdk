@@ -3,7 +3,7 @@ use demia_sdk::{
     iota_sdk::client::Client as IotaClient,
     iota_stronghold::Stronghold,
     isocountry,
-    streams::{transport::utangle::Client as StreamsClient, TransportMessage},
+    streams::{TransportMessage, transport::utangle::Client as StreamsClient},
 };
 use identity_demia::demia::{DemiaDID, NetworkName};
 

@@ -1,35 +1,48 @@
 use std::{fmt::Debug, time::Duration};
 
 use iota_sdk::types::block::address::Address;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use url::Url;
 
-use crate::{clients::HttpClient, errors::ApiResult};
+use crate::{
+    clients::{HttpClient, query_tuples_to_query_string},
+    errors::{ApiError, ApiResult},
+};
 
 pub struct ApiClient {
-    url: Url,
-    http_client: HttpClient,
+    pub(crate) cloud_api_url: Url,
+    pub(crate) retriever_url: Url,
+    pub(crate) http_client: HttpClient,
 }
 
 impl Default for ApiClient {
     fn default() -> Self {
         // Ensure its the same port as you set in the .env from the local_api folder
         Self {
-            url: Url::parse("http://localhost:1111").unwrap(),
+            cloud_api_url: Url::parse("http://localhost:1111").unwrap(),
+            retriever_url: Url::parse("http://localhost:9000").unwrap(),
             http_client: HttpClient::new("demia".to_string()),
         }
     }
 }
 
 impl ApiClient {
-    pub fn new(url: Url) -> Self {
-        Self {
-            url,
+    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: T) -> ApiResult<Self>
+    where
+        T::Error: std::fmt::Display,
+    {
+        Ok(Self {
+            cloud_api_url: cloud_api_url
+                .try_into()
+                .map_err(|e| ApiError::NotFound(e.to_string()))?,
+            retriever_url: retriever_url
+                .try_into()
+                .map_err(|e| ApiError::NotFound(e.to_string()))?,
             http_client: HttpClient::new("demia".to_string()),
-        }
+        })
     }
 
-    fn get_timeout(&self) -> Duration {
+    pub(crate) fn get_timeout(&self) -> Duration {
         Duration::from_secs(10)
     }
 
@@ -38,7 +51,7 @@ impl ApiClient {
         let path = "v1/balance";
         let query = query_tuples_to_query_string([Some(("address", addr))]);
 
-        let mut url = self.url.clone();
+        let mut url = self.cloud_api_url.clone();
         url.set_path(path);
         url.set_query(query.as_deref());
 
@@ -57,7 +70,7 @@ impl ApiClient {
         query: Option<&str>,
         json: serde_json::Value,
     ) -> ApiResult<T> {
-        let mut url = self.url.clone();
+        let mut url = self.cloud_api_url.clone();
         url.set_path(path);
         url.set_query(query);
 
@@ -77,7 +90,7 @@ impl ApiClient {
         path: &str,
         query: Option<&str>,
     ) -> ApiResult<T> {
-        let mut url = self.url.clone();
+        let mut url = self.cloud_api_url.clone();
         url.set_path(path);
         url.set_query(query);
 
@@ -89,15 +102,4 @@ impl ApiClient {
             Err(e) => Err(e),
         }
     }
-}
-
-pub(crate) fn query_tuples_to_query_string(
-    tuples: impl IntoIterator<Item = Option<(&'static str, String)>>,
-) -> Option<String> {
-    let query = tuples
-        .into_iter()
-        .filter_map(|tuple| tuple.map(|(key, value)| format!("{}={}", key, value)))
-        .collect::<Vec<_>>();
-
-    if query.is_empty() { None } else { Some(query.join("&")) }
 }

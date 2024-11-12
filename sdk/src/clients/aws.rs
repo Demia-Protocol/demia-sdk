@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error, fmt::Debug, time::SystemTime};
 
 use aws_config::{BehaviorVersion, ConfigLoader};
 use aws_credential_types::Credentials;
-use aws_sdk_s3::{primitives::DateTime, Client as S3Client};
+use aws_sdk_s3::{Client as S3Client, primitives::DateTime};
 use aws_sdk_sts::Client as StsClient;
 use chrono::Utc;
 use reqwest::StatusCode;
