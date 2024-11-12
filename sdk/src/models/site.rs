@@ -51,26 +51,24 @@ impl SiteState {
 }
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Site {
-    #[serde(rename = "projectId")]
+    #[serde(alias = "projectId")]
     pub id: String,
-    #[serde(rename = "projectAnnouncement")]
+    #[serde(alias = "projectAnnouncement")]
     pub announcement: String,
-    #[serde(rename = "projectName")]
+    #[serde(alias = "projectName")]
     pub name: String,
     pub location: SiteLocation,
     pub sensors: Sensors,
     pub notifications: Vec<Notification>,
-    #[serde(rename = "projectInfo")]
+    #[serde(alias = "projectInfo")]
     pub project: ProjectInfo,
-    #[serde(rename = "ghgLast30Days")]
     pub ghg_last_30_days: GHGInfo,
     #[serde(default)]
     pub records: HashMap<String, Record>,
-    #[serde(rename = "ghgAnnual")]
     pub ghg_annual: GHGInfo,
     pub state_data: SiteState,
-    #[serde(rename = "avgDcf")]
     pub avg_dcf: Option<String>,
 }
 
