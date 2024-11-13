@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::{models::ValueSet, utils::feedstock_types::feedstock_types};
+use crate::models::NestedReadingValue;
 
 // Constants
 const B_OWW_S: f64 = 0.21;
@@ -20,6 +21,14 @@ const X: f64 = 1.0;
 const Y: f64 = 10.0;
 const F_Y: f64 = 0.26;
 
+
+fn get_float(nested: &NestedReadingValue) -> f64 {
+    match nested {
+        NestedReadingValue::Float(val) => *val as f64,
+        _ => 0.0
+    }
+}
+
 // Wastewater (liquid industrial waste) of the given stream
 pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSet {
     let q_ww_s_i = feedstock_data
@@ -32,7 +41,10 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
 
     let result: Vec<f64> = daily_feedstock
         .iter()
-        .map(|record| (record.sum + cod_lab_sheet) * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR)
+        .map(|record| match record.sum {
+            NestedReadingValue::Float(sum) => (sum as f64 + cod_lab_sheet) * B_OWW_S *MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR,
+            _ => 0.0
+        })
         .collect();
 
     ValueSet::new(
@@ -58,11 +70,16 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
 
             ////info!("Feedstop Type: {:?}", feedstock_type);
             ////info!("Sum: {}", record.sum);
-            let sum = if record.sum > 10000.0 {
-                record.sum / 1000.0
-            } else {
-                record.sum
-            };
+            let sum = match record.sum {
+                NestedReadingValue::Float(sum) => {
+                    if sum > 10000.0 {
+                        sum / 1000.0
+                    } else {
+                        sum
+                    }
+                }
+                _ => 0.0
+            } as f64;
 
             if feedstock_type.is_some() && feedstock_type.unwrap().type_of_feedstock.as_str() == "Manure" {
                 0.21 * 0.03 * GWP_CH4 * UNCERTAINTY_FACTOR * (sum + cod_ww_s_i)
@@ -109,7 +126,7 @@ pub async fn equation7(
             .0
             .iter()
             .enumerate()
-            .map(|(i, record)| record.sum - daily_biogas_no_flare.0[i].sum)
+            .map(|(i, record)| get_float(&record.sum) - get_float(&daily_biogas_no_flare.0[i].sum))
             .collect()
     } else {
         vec![]
@@ -184,7 +201,7 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
             .enumerate()
             .map(|(i, record)| {
                 ////info!("Sum: {}", record.sum);
-                record.sum * daily_ch4_conc_mo.0[i].sum * methane_density * conversion_factor
+                get_float(&record.sum) * get_float(&daily_ch4_conc_mo.0[i].sum) * methane_density * conversion_factor
             })
             .collect()
     } else {
@@ -206,7 +223,7 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
     let daily_calc_data = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
     let result: Vec<f64> = if !daily_calc_data.0.is_empty() {
-        daily_calc_data.0.iter().map(|record| record.sum * bde_dd).collect()
+        daily_calc_data.0.iter().map(|record| get_float(&record.sum) * bde_dd).collect()
     } else {
         vec![]
     };
@@ -230,7 +247,7 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
         daily_calc_data
             .0
             .iter()
-            .map(|record| record.sum * (520.0 / t) * p)
+            .map(|record| get_float(&record.sum) * (520.0 / t) * p)
             .collect()
     } else {
         vec![]
@@ -256,7 +273,7 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
         daily_calc_data
             .0
             .iter()
-            .map(|record| b_0_ef * methane_conversion_factor * gwp_ch4 * record.sum)
+            .map(|record| b_0_ef * methane_conversion_factor * gwp_ch4 * get_float(&record.sum))
             .collect()
     } else {
         vec![]
@@ -281,14 +298,14 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
 
     if !daily_biogas.0.is_empty() {
         for i in 0..daily_biogas.0.len() {
-            let n = if daily_biogas.0[i].sum == 0.0 || daily_biogas_no_flare.0[i].sum == 0.0 {
+            let n = if get_float(&daily_biogas.0[i].sum) == 0.0 || get_float(&daily_biogas_no_flare.0[i].sum) == 0.0 {
                 1.0
             } else {
                 2.0
             };
 
             let value =
-                ((daily_biogas.0[i].sum + daily_biogas_no_flare.0[i].sum) / n) * daily_ch4_meter.0[i].sum * GWP_CH4;
+                ((get_float(&daily_biogas.0[i].sum) + get_float(&daily_biogas_no_flare.0[i].sum)) / n) * get_float(&daily_ch4_meter.0[i].sum) * GWP_CH4;
 
             result.push(value);
         }
@@ -313,7 +330,7 @@ pub struct Record {
     pub id: String,
     pub sensor_id: String,
     pub data_timestamp: NaiveDateTime,
-    pub sum: f64,
+    pub sum: NestedReadingValue,
     pub company: String,
     pub simulated: bool,
     pub avg_val: f64,
@@ -326,7 +343,7 @@ impl Record {
     pub fn new(
         id: String,
         date: NaiveDateTime,
-        value: f64,
+        value: NestedReadingValue,
         company: String,
         sensor_id: String,
         raw: Option<Value>,
@@ -385,17 +402,19 @@ pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAver
     let mut daily_data: HashMap<NaiveDate, DailyAverage> = HashMap::new();
     for record in data {
         let day: NaiveDate = record.data_timestamp.date();
-        if record.sum >= 0.0 {
-            let element = daily_data.entry(day).or_insert(DailyAverage {
-                day,
-                sensors: HashMap::new(),
-            });
+        if let NestedReadingValue::Float(sum) = &record.sum {
+            if sum >= &0.0{
+                let element = daily_data.entry(day).or_insert(DailyAverage {
+                    day,
+                    sensors: HashMap::new(),
+                });
 
-            let sensor_avg = element.sensors.entry(record.sensor_id.clone()).or_default();
-            sensor_avg.records.push(record);
-            // for testing
-            sensor_avg.sum += record.sum;
-            sensor_avg.avg_val = sensor_avg.sum / sensor_avg.records.len() as f64;
+                let sensor_avg = element.sensors.entry(record.sensor_id.clone()).or_default();
+                sensor_avg.records.push(record);
+                // for testing
+                sensor_avg.sum += *sum as f64;
+                sensor_avg.avg_val = sensor_avg.sum / sensor_avg.records.len() as f64;
+            }
         }
     }
 

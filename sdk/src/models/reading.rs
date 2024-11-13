@@ -5,7 +5,7 @@ use std::str::FromStr;
 use alvarium_sdk_rust::annotations::Annotation;
 use chrono::{DateTime, Datelike, Timelike, Utc};
 use rocket_okapi::okapi::schemars;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value;
 
 use crate::models::json_scheme_wrap::AnnotationDef;
@@ -103,7 +103,6 @@ pub struct SheetData {
     pub simulated: String,
 }
 
-
 #[derive(Debug, Clone, Default, Deserialize, Serialize, schemars::JsonSchema)]
 pub struct NestedReading {
     pub id: String,
@@ -112,7 +111,7 @@ pub struct NestedReading {
     pub timestamp: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize, schemars::JsonSchema)]
+#[derive(Debug, Clone, Default, Serialize, schemars::JsonSchema)]
 pub enum NestedReadingValue {
     Float(f32),
     String(String),
@@ -122,10 +121,89 @@ pub enum NestedReadingValue {
     Empty,
 }
 
+impl<'de> Deserialize<'de> for NestedReadingValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+
+        // Check if the value is already a `NestedReadingValue`-like structure
+        if let Some(obj) = value.as_object() {
+            if let Some(float_value) = obj.get("Float").and_then(Value::as_f64) {
+                return Ok(NestedReadingValue::Float(float_value as f32));
+            } else if let Some(string_value) = obj.get("String").and_then(Value::as_str) {
+                return Ok(NestedReadingValue::String(string_value.to_string()));
+            } else if let Some(int_value) = obj.get("Int").and_then(Value::as_i64) {
+                if int_value <= i32::MAX as i64 && int_value >= i32::MIN as i64 {
+                    return Ok(NestedReadingValue::Int(int_value as i32));
+                } else {
+                    return Err(serde::de::Error::custom("Integer value out of range for i32"));
+                }
+            } else if let Some(bool_value) = obj.get("Bool").and_then(Value::as_bool) {
+                return Ok(NestedReadingValue::Bool(bool_value));
+            }
+        }
+
+        // Match different possible types for custom deserialization
+        if let Some(float_value) = value.as_f64() {
+            Ok(NestedReadingValue::Float(float_value as f32))
+        } else if let Some(string_value) = value.as_str() {
+            Ok(NestedReadingValue::String(string_value.to_string()))
+        } else if let Some(int_value) = value.as_i64() {
+            // Safely cast `i64` to `i32`
+            if int_value <= i32::MAX as i64 && int_value >= i32::MIN as i64 {
+                Ok(NestedReadingValue::Int(int_value as i32))
+            } else {
+                Err(serde::de::Error::custom("Integer value out of range for i32"))
+            }
+        } else if let Some(bool_value) = value.as_bool() {
+            Ok(NestedReadingValue::Bool(bool_value))
+        } else if value.is_null() {
+            Ok(NestedReadingValue::Empty)
+        } else {
+            log::info!("Unexpected type for NestedReadingValue: {:?}", value);
+            Err(serde::de::Error::custom("Unexpected type for NestedReadingValue"))
+        }
+    }
+}
+
+impl From<f32> for NestedReadingValue {
+    fn from(value: f32) -> Self {
+        NestedReadingValue::Float(value)
+    }
+}
+
+impl From<&str> for NestedReadingValue {
+    fn from(value: &str) -> Self {
+        NestedReadingValue::String(value.to_string())
+    }
+}
+
+impl From<String> for NestedReadingValue {
+    fn from(value: String) -> Self {
+        NestedReadingValue::String(value)
+    }
+}
+
+impl From<bool> for NestedReadingValue {
+    fn from(value: bool) -> Self {
+        NestedReadingValue::Bool(value)
+    }
+}
+
+impl From<i32> for NestedReadingValue {
+    fn from(value: i32) -> Self {
+        NestedReadingValue::Int(value)
+    }
+}
+
+
 pub type NestedMap = HashMap<String, Vec<NestedReading>>;
 
 
 pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> {
+    let csv_content = csv_content.replace("\\n", "\n");
     let mut reader = csv::ReaderBuilder::new()
         .flexible(true)
         .from_reader(csv_content.as_bytes());
@@ -169,10 +247,13 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
         }
     });
 
-
     for (pos, record) in columns.iter().enumerate() {
         let filename = headers.get(pos).cloned().unwrap_or_default(); // Assuming filename is in the first column
 
+        // Ignore file info section
+        if filename.eq("\\file_info") {
+            continue;
+        }
         sections.entry(filename.to_string())
             .or_insert_with(Vec::new)
             .push(NestedReading {

@@ -61,6 +61,7 @@ pub struct Reading {
     pub sheet_data: Option<Value>,
     pub annotations: HashMap<String, Annotation>,
     pub score: f32,
+    pub unit: Option<String>,
 }
 
 impl Default for Sensor {
