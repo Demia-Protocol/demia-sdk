@@ -2,10 +2,10 @@ use std::{collections::HashMap, fmt::Debug};
 
 use chrono::{DateTime, Utc};
 use log::{debug, info, warn};
-use rusoto_core::{credential::StaticProvider, Region};
+use rusoto_core::{Region, credential::StaticProvider};
 use rusoto_s3::{
     CopyObjectRequest, DeleteObjectRequest, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request, Object,
-    PutObjectRequest, S3Client, S3,
+    PutObjectRequest, S3, S3Client,
 };
 use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;

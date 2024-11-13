@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use base64::Engine;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{
     clients::SecretManager,
