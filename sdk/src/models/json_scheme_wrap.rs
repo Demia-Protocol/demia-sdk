@@ -1,6 +1,6 @@
 use alvarium_sdk_rust::annotations::{
-    constants::{AnnotationType, HashType, LayerType},
     Annotation as AlvariumAnnotation,
+    constants::{AnnotationType, HashType, LayerType},
 };
 use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};

@@ -1,10 +1,11 @@
 use rocket_okapi::okapi::schemars;
 use rusoto_core::RusotoError;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub type StorageResult<T> = core::result::Result<T, StorageError>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum StorageError {
     #[error("AWS Client error: {0}")]
     AwsClientError(String),

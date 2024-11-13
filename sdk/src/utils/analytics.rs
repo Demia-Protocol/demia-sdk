@@ -1,11 +1,11 @@
 use std::{collections::HashMap, vec};
 
-use chrono::{NaiveDate, NaiveDateTime};
-use rocket_okapi::okapi::schemars;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use chrono::NaiveDate;
 
-use crate::{models::ValueSet, utils::feedstock_types::feedstock_types};
+use crate::{
+    models::{Record, ValueSet},
+    utils::feedstock_types::feedstock_types,
+};
 
 // Constants
 const B_OWW_S: f64 = 0.21;
@@ -306,44 +306,6 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
         "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
         "t CH4".to_string(),
     )
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct Record {
-    pub id: String,
-    pub sensor_id: String,
-    pub data_timestamp: NaiveDateTime,
-    pub sum: f64,
-    pub company: String,
-    pub simulated: bool,
-    pub avg_val: f64,
-    pub total_count: u32,
-    pub residue: String,
-    pub raw: Option<Value>, // Add other fields as needed to match your data structure
-}
-
-impl Record {
-    pub fn new(
-        id: String,
-        date: NaiveDateTime,
-        value: f64,
-        company: String,
-        sensor_id: String,
-        raw: Option<Value>,
-    ) -> Self {
-        Record {
-            id,
-            sensor_id,
-            data_timestamp: date,
-            sum: value,
-            company,
-            simulated: false,
-            avg_val: 0.0,
-            total_count: 0,
-            residue: String::new(),
-            raw,
-        }
-    }
 }
 
 #[derive(Debug, Default, Clone)]

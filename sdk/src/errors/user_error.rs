@@ -2,11 +2,12 @@
 
 use log::error;
 use rocket_okapi::okapi::schemars;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub type UserResult<T> = core::result::Result<T, UserError>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum UserError {
     #[error("Streams node api client failed to start")]
     StreamsAPIClientError,

@@ -69,7 +69,7 @@ impl Storage for GoogleCloud {
     async fn download(
         &self,
         data: StorageInfo<'_>,
-        last_modified: Option<chrono::DateTime<Utc>>,
+        _last_modified: Option<chrono::DateTime<Utc>>,
     ) -> StorageResult<Vec<u8>> {
         self.client
             .download_object(

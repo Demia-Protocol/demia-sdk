@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use base64::Engine;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{
     clients::SecretManager,
@@ -56,10 +56,8 @@ impl Auth0Client {
         let mut validator = Validation::new(Algorithm::RS256);
         validator.set_audience(&["KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ"]);
 
-        Ok(
-            jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator)
-                .map_err(|e| SecretError::Jwt(e.to_string()))?,
-        )
+        jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator)
+            .map_err(|e| SecretError::Jwt(e.to_string()))
     }
 
     async fn token_from_response(
