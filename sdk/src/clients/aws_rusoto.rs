@@ -138,10 +138,8 @@ impl Storage for AwsRusotoClient {
                 Ok(data)
             }
             Err(e) => {
-                match e {
-                    // TODO: Check if unmodified was returned
-                    _ => Err(e.into()),
-                }
+                // TODO: Check if unmodified was returned
+                Err(e.into())
             }
         }
     }
