@@ -68,6 +68,7 @@ pub struct Site {
     #[serde(default)]
     pub records: HashMap<String, Record>,
     pub ghg_annual: GHGInfo,
+    #[serde(alias = "state_data")]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
 }
