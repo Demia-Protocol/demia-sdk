@@ -93,7 +93,7 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
         data_timestamp,
         "Methane emissions from solid waste disposal sites".to_string(),
         "t C02e".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -171,7 +171,7 @@ pub async fn equation10(bde: Vec<f64>, ch4: Vec<f64>, calc_data: &[Record]) -> V
         daily_f_mo.1,
         "Anaerobic Digestor".to_string(),
         "t C02e".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -203,7 +203,7 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
         daily_f_mo.1,
         "Quantity of Methane Collected and Metered".to_string(),
         "t CH4".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -225,7 +225,7 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
         daily_calc_data.1,
         "Weighted Biogas average of all destruction devices used".to_string(),
         "Nm3".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -252,7 +252,7 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
         daily_calc_data.1,
         "Volume of biogas collected for the given time interval".to_string(),
         "Nm3".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -280,7 +280,7 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
         daily_calc_data.1,
         "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
         "t C02e".to_string(),
-        vec![]
+        vec![],
     )
 }
 
@@ -320,7 +320,7 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
         data_timestamp,
         "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
         "t CH4".to_string(),
-        vec![]
+        vec![],
     )
 }
 

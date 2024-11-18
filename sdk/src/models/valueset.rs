@@ -23,7 +23,7 @@ impl ValueSet {
         timestamps: Vec<String>,
         title: String,
         label: String,
-        params: Vec<Parameter>
+        params: Vec<Parameter>,
     ) -> ValueSet {
         if values.len() == 1 {
             (1..timestamps.len()).for_each(|_| values.push(values[0]))
@@ -38,7 +38,7 @@ impl ValueSet {
             avg,
             title,
             label,
-            params
+            params,
         }
     }
 }
