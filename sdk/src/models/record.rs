@@ -6,12 +6,16 @@ use serde_json::Value;
 #[serde(rename_all = "camelCase")]
 pub struct Record {
     pub id: String,
+    #[serde(alias = "sensor_id")]
     pub sensor_id: String,
+    #[serde(alias = "data_timestamp")]
     pub data_timestamp: NaiveDateTime,
     pub sum: f64,
     pub company: String,
     pub simulated: bool,
+    #[serde(alias = "avg_val")]
     pub avg_val: f64,
+    #[serde(alias = "total_count")]
     pub total_count: u32,
     pub residue: String,
     pub raw: Option<Value>, // Add other fields as needed to match your data structure
