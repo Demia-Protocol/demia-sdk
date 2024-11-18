@@ -17,20 +17,28 @@ pub struct ValueSet {
 }
 
 impl ValueSet {
-    pub fn new(mut values: Vec<f64>, timestamps: Vec<String>, title: String, label: String) -> ValueSet {
+    pub fn new(
+        inputs: HashMap<String, Vec<f64>>,
+        mut values: Vec<f64>,
+        timestamps: Vec<String>,
+        title: String,
+        label: String,
+        params: Vec<Parameter>
+    ) -> ValueSet {
         if values.len() == 1 {
             (1..timestamps.len()).for_each(|_| values.push(values[0]))
         }
         let total = values.iter().sum();
         let avg = total / values.len() as f64;
         ValueSet {
+            inputs,
             values,
             timestamps,
             total,
             avg,
             title,
             label,
-            ..Default::default()
+            params
         }
     }
 }
