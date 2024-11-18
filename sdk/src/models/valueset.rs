@@ -4,7 +4,9 @@ use super::Parameter;
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ValueSet {
+    #[serde(default)]
     pub inputs: HashMap<String, Vec<f64>>,
+    #[serde(default)]
     pub params: Vec<Parameter>,
     pub title: String,
     pub label: String,
