@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use alvarium_annotator::SignProvider;
 use alvarium_sdk_rust::config::SignatureInfo;
 use iota_sdk::{
@@ -6,6 +8,9 @@ use iota_sdk::{
 };
 use iota_stronghold::Location;
 use streams::id::did::STREAMS_VAULT;
+use tokio::sync::RwLock;
+
+use crate::models::UserIdentity;
 
 #[derive(Debug, thiserror::Error)]
 pub enum StrongholdProviderError {
@@ -22,47 +27,57 @@ pub enum StrongholdProviderError {
 
 pub struct StrongholdProvider {
     config: SignatureInfo,
-    stronghold_password: String,
-    stronghold_signature_key_path: String,
+    // pub_stronghold_password: String,
+    // pub_stronghold_signature_key_path: String,
+    // private_stronghold_password: String,
+    // private_stronghold_signature_key_path: String,
+    manager: Arc<RwLock<SecretManager>>,
 }
 
 impl StrongholdProvider {
     pub fn new(
         config: &SignatureInfo,
-        stronghold_password: String,
-        stronghold_signature_key_path: String,
+        // pub_stronghold_password: String,
+        // pub_stronghold_signature_key_path: String,
+        // private_stronghold_password: String,
+        // private_stronghold_signature_key_path: String,
+        manager: Arc<RwLock<SecretManager>>,
     ) -> Result<Self, StrongholdProviderError> {
         Ok(StrongholdProvider {
             config: config.clone(),
-            stronghold_password,
-            stronghold_signature_key_path,
+            // pub_stronghold_password,
+            // pub_stronghold_signature_key_path,
+            // private_stronghold_password,
+            // private_stronghold_signature_key_path,
+            manager,
         })
     }
 
     fn get_adapter(&self) -> Result<SecretManager, StrongholdProviderError> {
         println!(
             "GetAdapter: {}, {}",
-            self.stronghold_password, self.config.private_key_info.path
+            self.config.private_key_info.path, self.config.private_key_stronghold.password
         );
         let stronghold_adapter = StrongholdSecretManager::builder()
-            .password(self.stronghold_password.clone())
+            .password(self.config.private_key_stronghold.password.clone())
             .build(self.config.private_key_info.path.clone())?;
         Ok(SecretManager::Stronghold(stronghold_adapter))
     }
 }
 
+// TODO replace with StrongholdAdapter
 #[async_trait::async_trait]
 impl SignProvider for StrongholdProvider {
-    type Error = StrongholdProviderError;
+    type Error = crate::errors::Error;
 
     async fn sign(&self, content: &[u8]) -> Result<String, Self::Error> {
         // Sign using the key stored in Stronghold
-        if let SecretManager::Stronghold(adapter) = self.get_adapter()? {
+        if let SecretManager::Stronghold(adapter) = &*self.manager.read().await {
             println!(
                 "StrongholdProvider.sign() adapter: {}",
-                self.stronghold_signature_key_path.clone()
+                self.config.private_key_stronghold.path.clone()
             );
-            let location = Location::generic(STREAMS_VAULT, self.stronghold_signature_key_path.clone());
+            let location = Location::generic(STREAMS_VAULT, self.config.private_key_stronghold.path.clone());
             let signature = adapter.ed25519_sign(location, content).await?;
             return Ok(hex::encode(signature.to_bytes()));
         }
@@ -72,8 +87,8 @@ impl SignProvider for StrongholdProvider {
     async fn verify(&self, content: &[u8], signed: &[u8]) -> Result<bool, Self::Error> {
         let sig = get_signature(signed)?;
         // Fetch public key from Stronghold and verify the signature
-        if let SecretManager::Stronghold(adapter) = self.get_adapter()? {
-            let location = Location::generic(STREAMS_VAULT, self.stronghold_signature_key_path.clone());
+        if let SecretManager::Stronghold(adapter) = &*self.manager.read().await {
+            let location = Location::generic(STREAMS_VAULT, self.config.private_key_stronghold.path.clone());
             let pub_key = adapter.ed25519_public_key(location).await?;
             return Ok(pub_key.verify(&sig, content));
         }
