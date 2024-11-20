@@ -13,8 +13,12 @@ identity_demia = { path = "../identity.rs/identity_demia", features = ["client",
 iota_stronghold = { path = "../stronghold.rs/client"}
 
 isocountry = { version = "0.3" }
-alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
-alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
+
+# alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
+# alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
+
+alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
+alvarium-annotator = { path = "../../alvarium-annotator" }
 
 tokio = { version = "1", features = ["full"] }
 
@@ -30,7 +34,6 @@ chrono = "0.4.26"
 fern = "0.6.2"
 async-trait = "0.1.68"
 
-thiserror = "1.0.40"
 rocket_okapi = "0.8.0"
 schemars = { version = "0.8", features = [ "chrono", "indexmap2" ] }
 
@@ -53,6 +56,8 @@ der = "0.7.6"
 uuid = { version = "1.8.0", features = ["v4"] }
 url = "2.4"
 jsonwebtoken = "8.3.0"
+
+thiserror = "2.0.3"
 
 [dev-dependencies]
 dotenv = "0.15.0"

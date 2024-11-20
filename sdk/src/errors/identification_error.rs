@@ -33,7 +33,7 @@ pub enum IdentityError {
     #[error("Stronghold type is unknown")]
     StrongholdTypeUnknown,
 
-    #[error("Mnemonic could not be generated from provided keypair")]
+    #[error("Mnemonic could not be generated")]
     StrongholdMnemonicError,
 
     #[error("Not enough balance found with address {0}")]
@@ -44,4 +44,46 @@ pub enum IdentityError {
 
     #[error("Identity document does not contain a method for fragment {0}")]
     MissingIdentityMethod(String),
+}
+
+impl From<identity_demia::demia::Error> for IdentityError {
+    fn from(error: identity_demia::demia::Error) -> Self {
+        log::warn!("Error: {}", error);
+        Self::IdentityError(error.to_string())
+    }
+}
+
+impl From<identity_demia::core::Error> for IdentityError {
+    fn from(error: identity_demia::core::Error) -> Self {
+        log::warn!("Error: {}", error);
+        Self::IdentityCoreError(error.to_string())
+    }
+}
+
+impl From<identity_demia::verification::Error> for IdentityError {
+    fn from(error: identity_demia::verification::Error) -> Self {
+        log::warn!("Error: {}", error);
+        Self::IdentityVerificationError(error.to_string())
+    }
+}
+
+impl From<identity_demia::did::Error> for IdentityError {
+    fn from(error: identity_demia::did::Error) -> Self {
+        log::warn!("Error: {}", error);
+        Self::IdentityDIDError(error.to_string())
+    }
+}
+
+impl From<iota_sdk::client::stronghold::Error> for IdentityError {
+    fn from(error: iota_sdk::client::stronghold::Error) -> Self {
+        log::warn!("Error: {}", error);
+        Self::StrongholdError(error.to_string())
+    }
+}
+
+impl From<iota_stronghold::ClientError> for IdentityError {
+    fn from(error: iota_stronghold::ClientError) -> Self {
+        log::warn!("Error: {}", error);
+        Self::StrongholdClientError(error.to_string())
+    }
 }

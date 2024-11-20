@@ -1,3 +1,4 @@
+mod identity;
 mod json_scheme_wrap;
 mod reading;
 mod sensor;
@@ -7,6 +8,7 @@ mod vault;
 
 use std::collections::HashSet;
 
+pub use identity::*;
 pub use json_scheme_wrap::*;
 pub use reading::*;
 use rocket_okapi::okapi::schemars;

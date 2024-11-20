@@ -25,4 +25,7 @@ pub enum UserError {
 
     #[error("No vault client stored in user instance")]
     NoVaultClient,
+
+    #[error("No token found of type {0}")]
+    TokenNotFound(String),
 }

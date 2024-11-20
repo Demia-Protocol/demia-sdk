@@ -17,3 +17,17 @@ pub enum NodeError {
     #[error("Node is not synced for connection")]
     NodeSyncIncomplete,
 }
+
+impl From<iota_sdk::client::Error> for NodeError {
+    fn from(error: iota_sdk::client::Error) -> Self {
+        log::warn!("Error: {}", error);
+        NodeError::NodeClientError(error.to_string())
+    }
+}
+
+impl From<iota_sdk::types::block::Error> for NodeError {
+    fn from(error: iota_sdk::types::block::Error) -> Self {
+        log::warn!("Error: {}", error);
+        NodeError::NodeClientBlockError(error.to_string())
+    }
+}
