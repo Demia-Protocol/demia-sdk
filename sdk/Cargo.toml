@@ -14,11 +14,11 @@ iota_stronghold = { path = "../stronghold.rs/client"}
 
 isocountry = { version = "0.3" }
 
-# alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
-# alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
+alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
+alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
 
-alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
-alvarium-annotator = { path = "../../alvarium-annotator" }
+# alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
+# alvarium-annotator = { path = "../../alvarium-annotator" }
 
 tokio = { version = "1", features = ["full"] }
 
