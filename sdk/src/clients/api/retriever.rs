@@ -11,7 +11,7 @@ use crate::{
 };
 
 impl ApiClient {
-    // TODO: Make this... cleaner we have a token!
+    // TODO: Make this... cleaner we have a token we can use to fetch!
     pub async fn add_retriever_new_user(
         &self,
         bearer: &str,
@@ -35,8 +35,6 @@ impl ApiClient {
             "logging": logging,
             "stream_addresses": stream_addresses,
         });
-
-        // TODO: Add bearer
 
         let res = self
             .http_client
@@ -62,8 +60,6 @@ impl ApiClient {
             "id": user_id,
             "address": addr,
         });
-
-        // TODO: Add bearer
 
         let res = self
             .http_client
