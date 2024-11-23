@@ -194,6 +194,7 @@ pub(crate) fn get_str(value: Value, name: &str) -> Result<String> {
 }
 
 #[derive(Deserialize, Serialize, Debug, Default, Clone, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianReport {
     #[serde(rename = "field0")]
     pub report_id: String,
@@ -222,68 +223,60 @@ pub struct HederaLoginForm {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianRegistryForm {
-    #[serde(rename = "operatorId", default = "String::new")]
+    #[serde(default = "String::new")]
     pub operator_id: String,
-    #[serde(rename = "operatorKey", default = "String::new")]
+    #[serde(default = "String::new")]
     pub operator_key: String,
     #[serde(default = "String::new")]
     pub policy: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianLoginResponse {
     pub username: String,
     #[serde(default)]
     pub did: String,
     pub role: String,
-    #[serde(rename = "refreshToken")]
     pub refresh_token: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianAccessTokenResponse {
-    #[serde(rename = "accessToken")]
     pub access_token: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianProfileResponse {
     pub username: String,
     pub role: String,
     pub did: String,
     pub parent: String,
-    #[serde(rename = "hederaAccountId")]
     pub hedera_account_id: String,
     pub confirmed: bool,
     pub failed: bool,
-    #[serde(rename = "hederaAccountKey")]
     pub hedera_account_key: Option<String>,
-    #[serde(rename = "topicId")]
     pub topic_id: String,
-    #[serde(rename = "parentTopicId")]
     pub parent_topic_id: String,
-    #[serde(rename = "didDocument")]
     pub did_document: GuardianDidDocument,
-    #[serde(rename = "vcDocument")]
     pub vc_document: Option<serde_json::Value>, // VcDocument
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct GuardianDidDocument {
-    #[serde(rename = "createDate")]
     pub create_date: DateTime<Utc>,
     pub did: String,
     pub document: Map<String, Value>, // CoreDocument "https://www.w3.org/ns/did/v1"
     pub id: String,
-    #[serde(rename = "messageId")]
     pub message_id: String,
     pub status: String,
-    #[serde(rename = "topicId")]
     pub topic_id: String,
-    #[serde(rename = "updateDate")]
     pub update_date: DateTime<Utc>,
-    #[serde(rename = "verificationMethods")]
     pub verification_methods: serde_json::Value, // map of [methd : did]
     pub _id: String,
 }
