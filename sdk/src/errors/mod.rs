@@ -1,5 +1,6 @@
 // src/errors/configuration
 
+mod analytics;
 mod api_error;
 mod identification_error;
 mod node;
@@ -8,6 +9,7 @@ mod storage;
 mod user_error;
 
 pub use streams::Error as StreamsError;
+pub use analytics::{AnalyticsError, AnalyticsResult};
 pub use api_error::{ApiError, ApiResult};
 pub use identification_error::{IdentityError, IdentityResult};
 use log::warn;
