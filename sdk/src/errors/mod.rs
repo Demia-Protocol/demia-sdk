@@ -8,7 +8,6 @@ mod secret;
 mod storage;
 mod user_error;
 
-pub use streams::Error as StreamsError;
 pub use analytics::{AnalyticsError, AnalyticsResult};
 pub use api_error::{ApiError, ApiResult};
 pub use identification_error::{IdentityError, IdentityResult};
@@ -16,6 +15,7 @@ use log::warn;
 pub use node::{NodeError, NodeResult};
 pub use secret::{SecretError, SecretResult};
 pub use storage::{StorageError, StorageResult};
+pub use streams::Error as StreamsError;
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
 

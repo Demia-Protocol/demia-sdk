@@ -1,6 +1,6 @@
 mod api;
-mod http_client;
 mod guardian;
+mod http_client;
 mod retriever;
 
 pub use api::ApiClient;

@@ -1,7 +1,10 @@
-use crate::errors::ApiResult as Result;
-use crate::models::{GuardianAccessTokenResponse, GuardianLoginResponse};
 use reqwest::Client;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
+
+use crate::{
+    errors::ApiResult as Result,
+    models::{GuardianAccessTokenResponse, GuardianLoginResponse},
+};
 
 pub struct GuardianApiClient {
     pub(crate) client: Client,

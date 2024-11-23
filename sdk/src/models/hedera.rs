@@ -3,7 +3,7 @@ use log::info;
 use rocket_okapi::okapi::schemars;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
 use crate::errors::{Error, SdkResult as Result};
 
@@ -38,12 +38,7 @@ impl GuardianClient {
         Ok(())
     }
 
-    pub async fn send_report(
-        &mut self,
-        report: GuardianReport,
-        username: &str,
-        password: &str,
-    ) -> Result<()> {
+    pub async fn send_report(&mut self, report: GuardianReport, username: &str, password: &str) -> Result<()> {
         let url = format!("{}/policies/{}/blocks", GUARDIAN_BASE, self.policy_id);
         info!("Connecting to guardian url: {}", url);
         self.log_in(username, password).await?;
@@ -124,10 +119,7 @@ impl GuardianClient {
     }
 
     pub async fn get_report_block(&self) -> Result<String> {
-        let url = format!(
-            "{}/policies/{}/tag/{}",
-            GUARDIAN_BASE, self.policy_id, self.send_block
-        );
+        let url = format!("{}/policies/{}/tag/{}", GUARDIAN_BASE, self.policy_id, self.send_block);
         let res = self
             .client
             .get(&url)
@@ -143,10 +135,7 @@ impl GuardianClient {
     }
 
     pub async fn get_ref_block(&self) -> Result<Value> {
-        let url = format!(
-            "{}/policies/{}/tag/{}",
-            GUARDIAN_BASE, self.policy_id, self.ref_block
-        );
+        let url = format!("{}/policies/{}/tag/{}", GUARDIAN_BASE, self.policy_id, self.ref_block);
         info!("Requesting ref block {}", url);
         let res = self
             .client
@@ -170,10 +159,7 @@ impl GuardianClient {
     }
 
     pub async fn get_block(&self, id: &str) -> Result<Value> {
-        let url = format!(
-            "{}/policies/{}/blocks/{}",
-            GUARDIAN_BASE, self.policy_id, id
-        );
+        let url = format!("{}/policies/{}/blocks/{}", GUARDIAN_BASE, self.policy_id, id);
         self.bearer(&url).await
     }
 
