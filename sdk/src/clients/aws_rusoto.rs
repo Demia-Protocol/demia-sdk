@@ -2,8 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use chrono::{DateTime, Utc};
 use log::{debug, info, warn};
-use reqwest::StatusCode;
-use rusoto_core::{Region, RusotoError, credential::StaticProvider};
+use rusoto_core::{Region, credential::StaticProvider};
 use rusoto_s3::{
     CopyObjectRequest, DeleteObjectRequest, GetObjectRequest, HeadObjectRequest, ListObjectsV2Request, Object,
     PutObjectRequest, S3, S3Client,

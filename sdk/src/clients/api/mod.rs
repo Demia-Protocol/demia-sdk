@@ -1,10 +1,11 @@
 mod api;
 mod http_client;
+mod guardian;
 mod retriever;
 
 pub use api::ApiClient;
+pub use guardian::GuardianApiClient;
 pub(crate) use http_client::*;
-pub use retriever::*;
 
 pub(crate) fn query_tuples_to_query_string(
     tuples: impl IntoIterator<Item = Option<(&'static str, String)>>,

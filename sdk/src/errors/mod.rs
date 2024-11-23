@@ -7,6 +7,7 @@ mod secret;
 mod storage;
 mod user_error;
 
+pub use streams::Error as StreamsError;
 pub use api_error::{ApiError, ApiResult};
 pub use identification_error::{IdentityError, IdentityResult};
 use log::warn;
@@ -15,6 +16,7 @@ pub use secret::{SecretError, SecretResult};
 pub use storage::{StorageError, StorageResult};
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
+
 pub type SdkResult<T> = core::result::Result<T, Error>;
 
 #[derive(Debug, Error, schemars::JsonSchema)]
@@ -37,11 +39,24 @@ pub enum Error {
     #[error("Secret error: {0}")]
     Secret(#[from] SecretError),
 
+    #[error("Streams error: {0}")]
+    Streams(String),
+
     #[error("Alvarium annotator Error: {0}")]
     AlvariumAnnotator(String),
 
     #[error("Alvarium SDK Error: {0}")]
     AlvariumSdk(String),
+
+    #[error("Hedera Error: {0}")]
+    Hedera(String),
+}
+
+impl From<streams::Error> for Error {
+    fn from(error: streams::Error) -> Self {
+        warn!("Error: {}", error);
+        Error::Streams(error.to_string())
+    }
 }
 
 impl From<identity_demia::demia::Error> for Error {

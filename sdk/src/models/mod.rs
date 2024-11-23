@@ -5,6 +5,7 @@ mod sensor;
 mod site;
 mod token;
 mod vault;
+mod hedera;
 
 use std::collections::HashSet;
 
@@ -15,6 +16,7 @@ use rocket_okapi::okapi::schemars;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
+pub use hedera::*;
 pub use vault::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
