@@ -31,16 +31,15 @@ pub struct Sensor {
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Equipment {
     pub id: String,
     pub group: String,
     pub units: String,
-    #[serde(rename = "eqType")]
     pub eq_type: String,
     pub name: String,
     pub accuracy: f32,
     pub installed: u16,
-    #[serde(rename = "serialNo")]
     pub serial_no: String,
     pub manufacturer: String,
 }
@@ -52,6 +51,7 @@ impl Equipment {
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Reading {
     pub id: String,
     pub address: String,

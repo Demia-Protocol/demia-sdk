@@ -1,18 +1,26 @@
+mod analytics;
 mod json_scheme_wrap;
+mod parameter;
 mod reading;
+mod record;
 mod sensor;
 mod site;
 mod token;
+mod valueset;
 mod vault;
 
 use std::collections::HashSet;
 
+pub use analytics::*;
 pub use json_scheme_wrap::*;
+pub use parameter::*;
 pub use reading::*;
+pub use record::*;
 use rocket_okapi::okapi::schemars;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
+pub use valueset::*;
 pub use vault::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -22,34 +30,6 @@ pub struct StreamsAddresses(pub HashSet<String>);
 pub struct Card {
     pub title: String,
     pub content: String,
-}
-
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-pub struct ValueSet {
-    pub title: String,
-    pub label: String,
-    pub values: Vec<f64>,
-    pub timestamps: Vec<String>,
-    pub total: f64,
-    pub avg: f64,
-}
-
-impl ValueSet {
-    pub fn new(mut values: Vec<f64>, timestamps: Vec<String>, title: String, label: String) -> ValueSet {
-        if values.len() == 1 {
-            (1..timestamps.len()).for_each(|_| values.push(values[0]))
-        }
-        let total = values.iter().sum();
-        let avg = total / values.len() as f64;
-        ValueSet {
-            values,
-            timestamps,
-            total,
-            avg,
-            title,
-            label,
-        }
-    }
 }
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]

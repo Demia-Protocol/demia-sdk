@@ -1,12 +1,9 @@
 use std::{collections::HashMap, vec};
 
-use chrono::{NaiveDate, NaiveDateTime};
-use rocket_okapi::okapi::schemars;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use chrono::NaiveDate;
 
 use crate::{models::ValueSet, utils::feedstock_types::feedstock_types};
-use crate::models::NestedReadingValue;
+use crate::models::{NestedReadingValue, Record};
 
 // Constants
 const B_OWW_S: f64 = 0.21;
@@ -48,10 +45,12 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
         .collect();
 
     ValueSet::new(
+        HashMap::new(),
         result,
         data_timestamp,
         "Waste Water (liquid industrial waste)".to_string(),
         "Tonnes".to_string(),
+        vec![],
     )
 }
 
@@ -103,10 +102,12 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
         .collect();
 
     ValueSet::new(
+        HashMap::new(),
         result,
         data_timestamp,
         "Methane emissions from solid waste disposal sites".to_string(),
         "t C02e".to_string(),
+        vec![],
     )
 }
 
@@ -179,10 +180,12 @@ pub async fn equation10(bde: Vec<f64>, ch4: Vec<f64>, calc_data: &[Record]) -> V
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         daily_f_mo.1,
         "Anaerobic Digestor".to_string(),
         "t C02e".to_string(),
+        vec![],
     )
 }
 
@@ -209,10 +212,12 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         daily_f_mo.1,
         "Quantity of Methane Collected and Metered".to_string(),
         "t CH4".to_string(),
+        vec![],
     )
 }
 
@@ -229,10 +234,12 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         daily_calc_data.1,
         "Weighted Biogas average of all destruction devices used".to_string(),
         "Nm3".to_string(),
+        vec![],
     )
 }
 
@@ -254,10 +261,12 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         daily_calc_data.1,
         "Volume of biogas collected for the given time interval".to_string(),
         "Nm3".to_string(),
+        vec![],
     )
 }
 
@@ -280,10 +289,12 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         daily_calc_data.1,
         "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
         "t C02e".to_string(),
+        vec![],
     )
 }
 
@@ -318,49 +329,13 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
     };
 
     ValueSet::new(
+        HashMap::new(),
         result,
         data_timestamp,
         "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
         "t CH4".to_string(),
+        vec![],
     )
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, schemars::JsonSchema)]
-pub struct Record {
-    pub id: String,
-    pub sensor_id: String,
-    pub data_timestamp: NaiveDateTime,
-    pub sum: NestedReadingValue,
-    pub company: String,
-    pub simulated: bool,
-    pub avg_val: f64,
-    pub total_count: u32,
-    pub residue: String,
-    pub raw: Option<Value>, // Add other fields as needed to match your data structure
-}
-
-impl Record {
-    pub fn new(
-        id: String,
-        date: NaiveDateTime,
-        value: NestedReadingValue,
-        company: String,
-        sensor_id: String,
-        raw: Option<Value>,
-    ) -> Self {
-        Record {
-            id,
-            sensor_id,
-            data_timestamp: date,
-            sum: value,
-            company,
-            simulated: false,
-            avg_val: 0.0,
-            total_count: 0,
-            residue: String::new(),
-            raw,
-        }
-    }
 }
 
 #[derive(Debug, Default, Clone)]

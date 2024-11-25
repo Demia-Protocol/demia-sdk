@@ -3,10 +3,7 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
-use crate::{
-    models::{Equipment, GHGInfo, Notification, ProjectInfo, Sensor, Sensors, ValueSet},
-    utils::Record,
-};
+use crate::models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteLocation {
@@ -27,18 +24,29 @@ pub struct NewSite {
 }
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct SiteState {
+    // ToDo: Temporary alias's to be replaced with a nesting of value_sets with arbitrary names
+    #[serde(alias = "ch4_emission")]
     pub ch4_emission: ValueSet,
     pub wws: ValueSet,
+    #[serde(alias = "elec_prod")]
     pub elec_prod: ValueSet,
+    #[serde(alias = "fossil_fuel")]
     pub fossil_fuel: ValueSet,
     pub ch4: ValueSet,
     pub bde: ValueSet,
+    #[serde(alias = "an_dig")]
     pub an_dig: ValueSet,
+    #[serde(alias = "biogas_adjusted")]
     pub biogas_adjusted: ValueSet,
+    #[serde(alias = "effluent_storage")]
     pub effluent_storage: ValueSet,
+    #[serde(alias = "ch4_destroyed")]
     pub ch4_destroyed: ValueSet,
+    #[serde(alias = "e_project")]
     pub e_project: ValueSet,
+    #[serde(alias = "calc_data")]
     pub calc_data: Vec<Record>,
 }
 
@@ -53,26 +61,25 @@ impl SiteState {
 }
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Site {
-    #[serde(rename = "projectId")]
-    pub id: String,
-    #[serde(rename = "projectAnnouncement")]
-    pub announcement: String,
-    #[serde(rename = "projectName")]
-    pub name: String,
+    #[serde(alias = "id")]
+    pub project_id: String,
+    #[serde(alias = "announcement")]
+    pub project_announcement: String,
+    #[serde(alias = "name")]
+    pub project_name: String,
     pub location: SiteLocation,
     pub sensors: Sensors,
     pub notifications: Vec<Notification>,
-    #[serde(rename = "projectInfo")]
-    pub project: ProjectInfo,
-    #[serde(rename = "ghgLast30Days")]
+    #[serde(alias = "project")]
+    pub project_info: ProjectInfo,
     pub ghg_last_30_days: GHGInfo,
     #[serde(default)]
     pub records: HashMap<String, Record>,
-    #[serde(rename = "ghgAnnual")]
     pub ghg_annual: GHGInfo,
+    #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
-    #[serde(rename = "avgDcf")]
     pub avg_dcf: Option<String>,
 }
 
@@ -86,12 +93,12 @@ impl Site {
         project: ProjectInfo,
     ) -> Self {
         Self {
-            id,
-            name,
+            project_id: id,
+            project_name: name,
             location,
             sensors,
-            project,
-            announcement,
+            project_info: project,
+            project_announcement: announcement,
             ..Default::default()
         }
     }

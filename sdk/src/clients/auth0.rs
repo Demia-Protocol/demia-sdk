@@ -2,12 +2,12 @@ use std::fmt::Debug;
 
 use base64::Engine;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::{
     clients::SecretManager,
     configuration::ApplicationConfiguration,
-    errors::SecretResult,
+    errors::{SecretError, SecretResult},
     models::{TokenResponse, TokenType, TokenWrap},
 };
 
@@ -31,30 +31,33 @@ impl Auth0Client {
         let jwks_url = format!("{}/.well-known/jwks.json", self.url);
         let jwks_json: Value = reqwest::get(jwks_url)
             .await
-            .expect("couldn't query jwks")
+            .map_err(|_| SecretError::Jwt("couldn't query jwks".to_string()))?
             .json()
             .await
-            .expect("couldn't convert to json");
+            .map_err(|_| SecretError::Jwt("couldn't convert jwk response to json".to_string()))?;
         let jwk = jwks_json["keys"][0]["x5c"][0]
             .as_str()
-            .expect("Failed to extract public key");
+            .ok_or_else(|| SecretError::Jwt("Failed to extract jwk public key".to_string()))?;
 
         // println!("Jwk: {}", jwk);
         // The public key is Base64-encoded in the JWKS, so decode it
         let engine = base64::engine::general_purpose::STANDARD_NO_PAD;
-        let public_key_der = engine.decode(jwk).expect("coudln't decode base64");
+        let public_key_der = engine
+            .decode(jwk)
+            .map_err(|_| SecretError::Jwt("coudln't decode jwk base64".to_string()))?;
 
         let public_key_pem = format!(
             "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----",
             engine.encode(public_key_der)
         );
 
-        let decoding_key =
-            DecodingKey::from_rsa_pem(public_key_pem.as_bytes()).expect("Failed to turn key into decodingkey");
+        let decoding_key = DecodingKey::from_rsa_pem(public_key_pem.as_bytes())
+            .map_err(|_| SecretError::Jwt("Failed to turn key into decodingkey".to_string()))?;
         let mut validator = Validation::new(Algorithm::RS256);
         validator.set_audience(&["KJO1MMQW7ae5aQykrpbNKZnyUJb7dsyZ"]);
 
-        Ok(jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator).expect("Could not decode jwt"))
+        jsonwebtoken::decode::<Value>(&token.id_token, &decoding_key, &validator)
+            .map_err(|e| SecretError::Jwt(e.to_string()))
     }
 
     async fn token_from_response(
@@ -62,7 +65,10 @@ impl Auth0Client {
         token_type: TokenType,
         response: reqwest::Response,
     ) -> SecretResult<TokenWrap> {
-        let token: TokenResponse = response.json().await.expect("Should be a token response");
+        let token: TokenResponse = response
+            .json()
+            .await
+            .map_err(|_| SecretError::Jwt("Should be a token response".to_string()))?;
         self.session_refresh.replace(token.refresh_token.clone());
         let token_data = self.get_token_data(&token).await?;
 
@@ -97,7 +103,7 @@ impl SecretManager for Auth0Client {
             .form(&params)
             .send()
             .await
-            .expect("Expect a response at least");
+            .map_err(|_| SecretError::Jwt("Failed to receive reponse from Auth0 client".to_string()))?;
 
         log::debug!("Response: {:?}", response);
 
@@ -122,7 +128,7 @@ impl SecretManager for Auth0Client {
             .form(&params)
             .send()
             .await
-            .expect("Expect a response at least");
+            .map_err(|_| SecretError::Jwt("Failed to receive reponse from Auth0 client".to_string()))?;
 
         log::debug!("Response: {:?}", response);
         self.token_from_response(token_type.clone(), response).await

@@ -2,11 +2,12 @@
 
 use log::error;
 use rocket_okapi::okapi::schemars;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub type ApiResult<T> = core::result::Result<T, ApiError>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum ApiError {
     #[error("Reqwest Error")]
     ReqwestError(String),

@@ -1,9 +1,10 @@
 use rocket_okapi::okapi::schemars;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub type SecretResult<T> = core::result::Result<T, SecretError>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum SecretError {
     #[error("AWS error: {0}")]
     Aws(String),
@@ -12,6 +13,9 @@ pub enum SecretError {
 
     #[error("No token found of type {0}")]
     TokenNotFound(String),
+
+    #[error("JWT error {0}")]
+    Jwt(String),
 }
 
 impl From<google_cloud_storage::http::Error> for SecretError {
