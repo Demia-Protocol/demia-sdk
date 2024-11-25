@@ -9,7 +9,7 @@ use identity_demia::demia::{DemiaDID, NetworkName};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let url = dotenv::var("URL")?;
+    let url = dotenvy::var("URL")?;
 
     // Initialize IOTA client
     let _iota_client = IotaClient::builder().with_node(&url)?.finish().await?;
