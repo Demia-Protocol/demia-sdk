@@ -19,13 +19,6 @@ const Y: f64 = 10.0;
 const F_Y: f64 = 0.26;
 
 
-fn get_float(nested: &NestedReadingValue) -> f64 {
-    match nested {
-        NestedReadingValue::Float(val) => *val as f64,
-        _ => 0.0
-    }
-}
-
 // Wastewater (liquid industrial waste) of the given stream
 pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSet {
     let q_ww_s_i = feedstock_data
@@ -127,7 +120,7 @@ pub async fn equation7(
             .0
             .iter()
             .enumerate()
-            .map(|(i, record)| get_float(&record.sum) - get_float(&daily_biogas_no_flare.0[i].sum))
+            .map(|(i, record)| record.f32() as f64 - daily_biogas_no_flare.0[i].f32() as f64)
             .collect()
     } else {
         vec![]
@@ -204,7 +197,7 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
             .enumerate()
             .map(|(i, record)| {
                 ////info!("Sum: {}", record.sum);
-                get_float(&record.sum) * get_float(&daily_ch4_conc_mo.0[i].sum) * methane_density * conversion_factor
+                (record.f32() * daily_ch4_conc_mo.0[i].f32() * methane_density * conversion_factor) as f64
             })
             .collect()
     } else {
@@ -228,7 +221,7 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
     let daily_calc_data = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
     let result: Vec<f64> = if !daily_calc_data.0.is_empty() {
-        daily_calc_data.0.iter().map(|record| get_float(&record.sum) * bde_dd).collect()
+        daily_calc_data.0.iter().map(|record| record.f32() as f64 * bde_dd).collect()
     } else {
         vec![]
     };
@@ -254,7 +247,7 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
         daily_calc_data
             .0
             .iter()
-            .map(|record| get_float(&record.sum) * (520.0 / t) * p)
+            .map(|record| record.f32() as f64 * (520.0 / t) * p)
             .collect()
     } else {
         vec![]
@@ -282,7 +275,7 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
         daily_calc_data
             .0
             .iter()
-            .map(|record| b_0_ef * methane_conversion_factor * gwp_ch4 * get_float(&record.sum))
+            .map(|record| b_0_ef * methane_conversion_factor * gwp_ch4 * record.f32() as f64)
             .collect()
     } else {
         vec![]
@@ -309,14 +302,14 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
 
     if !daily_biogas.0.is_empty() {
         for i in 0..daily_biogas.0.len() {
-            let n = if get_float(&daily_biogas.0[i].sum) == 0.0 || get_float(&daily_biogas_no_flare.0[i].sum) == 0.0 {
+            let n = if daily_biogas.0[i].f32() == 0.0 || daily_biogas_no_flare.0[i].f32() == 0.0 {
                 1.0
             } else {
                 2.0
             };
 
-            let value =
-                ((get_float(&daily_biogas.0[i].sum) + get_float(&daily_biogas_no_flare.0[i].sum)) / n) * get_float(&daily_ch4_meter.0[i].sum) * GWP_CH4;
+            let value = (daily_biogas.0[i].f32() + daily_biogas_no_flare.0[i].f32() / n) as f64
+                * daily_ch4_meter.0[i].f32() as f64 * GWP_CH4;
 
             result.push(value);
         }
