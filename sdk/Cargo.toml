@@ -12,7 +12,27 @@ identity_iota = { path = "../identity.rs/identity_iota"}
 identity_demia = { path = "../identity.rs/identity_demia", features = ["client", "iota-client"] }
 iota_stronghold = { path = "../stronghold.rs/client"}
 
+async-trait = "0.1.68"
+base64 = "0.22.1"
+chrono = "0.4.26"
+fern = "0.7.0"
+hex = "0.4.3"
+indexmap = "2.6.0"
 isocountry = { version = "0.3" }
+jsonwebtoken = "9.3.0"
+log = "0.4"
+rand = "0.8.5"
+reqwest = { version = "0.12", features = ["json"] }
+rocket_okapi = "0.9.0"
+schemars = { version = "0.8", features = [ "chrono", "indexmap2" ] }
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"
+thiserror = "2.0.3"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+url = "2.5"
+uuid = { version = "1.8.0", features = ["v4"] }
+vaultrs = "0.7.0"
 
 alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
 alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
@@ -20,50 +40,22 @@ alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annot
 # alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
 # alvarium-annotator = { path = "../../alvarium-annotator" }
 
-tokio = { version = "1", features = ["full"] }
+aws-credential-types = { version = "1.2.0", optional = true }
+aws-config = { version = "1.5.6", features=["behavior-version-latest"], optional = true }
+aws-sdk-s3 = { version = "1.62.0", optional = true }
+aws-sdk-sts = { version = "1.50.0", optional = true }
 
-serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.133"
-reqwest = { version = "0.12", features = ["json"] }
-tokio-stream = "0.1"
-log = "0.4"
-rand = "0.8.5"
-indexmap = "2.6.0"
+google-cloud-storage = { git = "https://github.com/yoshidan/google-cloud-rust", branch="main", default-features=false, features=["trace","rustls-tls"], optional = true}
 
-chrono = "0.4.26"
-fern = "0.7.0"
-async-trait = "0.1.68"
-
-rocket_okapi = "0.9.0"
-schemars = { version = "0.8", features = [ "chrono", "indexmap2" ] }
-
-google-cloud-storage = { git = "https://github.com/yoshidan/google-cloud-rust", branch="main", default-features=false, features=["trace","rustls-tls"]}
-
-rusoto_sts = "0.48.0"
-rusoto_core = "0.48.0"
-rusoto_s3 = "0.48.0"
-
-aws-credential-types = { version = "1.2.0" }
-aws-config = { version = "1.5.6", features=["behavior-version-latest"] }
-aws-sdk-s3 = { version = "1.62.0" }
-aws-sdk-sts = "1.50.0"
-
-vaultrs = "0.7.0"
-
-base64 = "0.22.1"
-hex = "0.4.3"
-der = "0.7.9"
-uuid = { version = "1.8.0", features = ["v4"] }
-url = "2.5"
-jsonwebtoken = "9.3.0"
-
-thiserror = "2.0.3"
+rusoto_sts = { version = "0.48.0", optional = true }
+rusoto_core = { version = "0.48.0", optional = true }
+rusoto_s3 = { version = "0.48.0", optional = true }
 
 [dev-dependencies]
 dotenvy = "0.15.0"
 
 [features]
-default = ["streams/default", "utangle-client", "did", "std", "test"]
+default = ["streams/default", "utangle-client", "did", "std", "test", "aws"]
 std = ["streams/std"]
 test = []
 
@@ -71,6 +63,11 @@ did = ["streams/did"]
 bucket = ["streams/did"]
 mysql-client = ["streams/mysql-client"]
 utangle-client = ["streams/utangle-client"]
+
+# storage providers 
+aws = ["aws-credential-types", "aws-config", "aws-sdk-s3", "aws-sdk-sts"]
+aws_rusoto = ["rusoto_sts", "rusoto_core", "rusoto_s3"]
+google_cloud = ["google-cloud-storage"]
 
 [profile.ci]
 inherits = "dev"

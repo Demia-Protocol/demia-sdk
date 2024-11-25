@@ -1,4 +1,5 @@
 use rocket_okapi::okapi::schemars;
+#[cfg(feature = "aws_rusoto")]
 use rusoto_core::RusotoError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -19,6 +20,7 @@ pub enum StorageError {
     NotModified,
 }
 
+#[cfg(feature = "google_cloud")]
 impl From<google_cloud_storage::http::Error> for StorageError {
     fn from(error: google_cloud_storage::http::Error) -> Self {
         Self::GoogleCloud(format!("{}", error))
@@ -31,30 +33,35 @@ impl<T, R> From<aws_sdk_s3::error::SdkError<T, R>> for StorageError {
     }
 }
 
+#[cfg(feature = "aws_rusoto")]
 impl From<RusotoError<rusoto_s3::HeadObjectError>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::HeadObjectError>) -> Self {
         Self::AwsClientError(format!("Metadata Object: {}", error))
     }
 }
 
+#[cfg(feature = "aws_rusoto")]
 impl From<RusotoError<rusoto_s3::DeleteObjectError>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::DeleteObjectError>) -> Self {
         Self::AwsClientError(format!("Delete Object: {}", error))
     }
 }
 
+#[cfg(feature = "aws_rusoto")]
 impl From<RusotoError<rusoto_s3::ListObjectsV2Error>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::ListObjectsV2Error>) -> Self {
         Self::AwsClientError(format!("List Object: {}", error))
     }
 }
 
+#[cfg(feature = "aws_rusoto")]
 impl From<RusotoError<rusoto_s3::PutObjectError>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::PutObjectError>) -> Self {
         Self::AwsClientError(format!("Put Object: {}", error))
     }
 }
 
+#[cfg(feature = "aws_rusoto")]
 impl From<RusotoError<rusoto_s3::GetObjectError>> for StorageError {
     fn from(error: RusotoError<rusoto_s3::GetObjectError>) -> Self {
         Self::AwsClientError(format!("Get Object: {}", error))
