@@ -7,11 +7,13 @@ use url::Url;
 use crate::{
     clients::{HttpClient, query_tuples_to_query_string},
     errors::{ApiError, ApiResult},
+    utils::constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API},
 };
 
 pub struct ApiClient {
     pub(crate) cloud_api_url: Url,
     pub(crate) retriever_url: Url,
+    pub(crate) guardian_url: Url,
     pub(crate) http_client: HttpClient,
 }
 
@@ -19,27 +21,37 @@ impl Default for ApiClient {
     fn default() -> Self {
         // Ensure its the same port as you set in the .env from the local_api folder
         Self {
-            cloud_api_url: Url::parse("http://localhost:1111").unwrap(),
-            retriever_url: Url::parse("http://localhost:9000").unwrap(),
+            cloud_api_url: Url::parse(LOCAL_API).unwrap(),
+            retriever_url: Url::parse(RETRIEVER_API).unwrap(),
+            guardian_url: Url::parse(GUARDIAN_API).unwrap(),
             http_client: HttpClient::new("demia".to_string()),
         }
     }
 }
 
 impl ApiClient {
-    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: T) -> ApiResult<Self>
+    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: Option<T>, guardian_url: Option<T>) -> ApiResult<Self>
     where
         T::Error: std::fmt::Display,
     {
-        Ok(Self {
+        let mut client = Self {
+            http_client: HttpClient::new("demia".to_string()),
             cloud_api_url: cloud_api_url
                 .try_into()
                 .map_err(|e| ApiError::NotFound(e.to_string()))?,
-            retriever_url: retriever_url
+            ..Default::default()
+        };
+
+        if let Some(retriever_url) = retriever_url {
+            client.retriever_url = retriever_url
                 .try_into()
-                .map_err(|e| ApiError::NotFound(e.to_string()))?,
-            http_client: HttpClient::new("demia".to_string()),
-        })
+                .map_err(|e| ApiError::NotFound(e.to_string()))?;
+        }
+        if let Some(guardian_url) = guardian_url {
+            client.guardian_url = guardian_url.try_into().map_err(|e| ApiError::NotFound(e.to_string()))?;
+        }
+
+        Ok(client)
     }
 
     pub(crate) fn get_timeout(&self) -> Duration {

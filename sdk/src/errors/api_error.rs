@@ -21,7 +21,10 @@ pub enum ApiError {
     NotFound(String),
 
     #[error("ResponseError for url {url}, Code={code}, text={text}")]
-    ResponseError { code: u16, text: String, url: String }, // ... other API-related error variants ...
+    ResponseError { code: u16, text: String, url: String },
+
+    #[error("Guardian {0}")]
+    Guardian(String),
 }
 
 impl From<reqwest::Error> for ApiError {

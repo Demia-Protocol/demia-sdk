@@ -29,34 +29,18 @@ impl From<iota_sdk::client::stronghold::Error> for StrongholdProviderError {
 
 pub struct StrongholdProvider {
     config: SignatureInfo,
-    // pub_stronghold_password: String,
-    // pub_stronghold_signature_key_path: String,
-    // private_stronghold_password: String,
-    // private_stronghold_signature_key_path: String,
     manager: Arc<RwLock<SecretManager>>,
 }
 
 impl StrongholdProvider {
-    pub fn new(
-        config: &SignatureInfo,
-        // pub_stronghold_password: String,
-        // pub_stronghold_signature_key_path: String,
-        // private_stronghold_password: String,
-        // private_stronghold_signature_key_path: String,
-        manager: Arc<RwLock<SecretManager>>,
-    ) -> Result<Self, StrongholdProviderError> {
+    pub fn new(config: &SignatureInfo, manager: Arc<RwLock<SecretManager>>) -> Result<Self, StrongholdProviderError> {
         Ok(StrongholdProvider {
             config: config.clone(),
-            // pub_stronghold_password,
-            // pub_stronghold_signature_key_path,
-            // private_stronghold_password,
-            // private_stronghold_signature_key_path,
             manager,
         })
     }
 }
 
-// TODO replace with StrongholdAdapter
 #[async_trait::async_trait]
 impl SignProvider for StrongholdProvider {
     type Error = Error;

@@ -8,8 +8,10 @@ pub type StorageResult<T> = core::result::Result<T, StorageError>;
 
 #[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum StorageError {
+    #[cfg(any(feature = "aws_rusoto", feature = "aws"))]
     #[error("AWS Client error: {0}")]
     AwsClientError(String),
+    #[cfg(feature = "google_cloud")]
     #[error("GC error: {0}")]
     GoogleCloud(String),
     #[error("File error: {0}")]
@@ -27,6 +29,7 @@ impl From<google_cloud_storage::http::Error> for StorageError {
     }
 }
 
+#[cfg(feature = "aws")]
 impl<T, R> From<aws_sdk_s3::error::SdkError<T, R>> for StorageError {
     fn from(value: aws_sdk_s3::error::SdkError<T, R>) -> Self {
         Self::AwsClientError(format!("AWS SDK error: {}", value))

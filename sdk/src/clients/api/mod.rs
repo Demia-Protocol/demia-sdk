@@ -4,7 +4,7 @@ mod http_client;
 mod retriever;
 
 pub use api::ApiClient;
-pub use guardian::GuardianApiClient;
+pub use guardian::{GuardianApiClient, GuardianClient};
 pub(crate) use http_client::*;
 
 pub(crate) fn query_tuples_to_query_string(
