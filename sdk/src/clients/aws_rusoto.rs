@@ -11,7 +11,10 @@ use rusoto_sts::{AssumeRoleWithWebIdentityRequest, Credentials, Sts, StsClient};
 use tokio::io::AsyncReadExt;
 
 use super::*;
-use crate::{errors::StorageResult, models::TokenWrap};
+use crate::{
+    errors::{StorageError, StorageResult},
+    models::TokenWrap,
+};
 
 #[derive(Clone)]
 pub struct AwsRusotoClient {

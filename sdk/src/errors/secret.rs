@@ -18,6 +18,7 @@ pub enum SecretError {
     Jwt(String),
 }
 
+#[cfg(feature = "google_cloud")]
 impl From<google_cloud_storage::http::Error> for SecretError {
     fn from(error: google_cloud_storage::http::Error) -> Self {
         Self::Aws(format!("{}", error))

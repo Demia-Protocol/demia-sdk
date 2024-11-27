@@ -1,4 +1,6 @@
 mod analytics;
+mod hedera;
+mod identity;
 mod json_scheme_wrap;
 mod parameter;
 mod reading;
@@ -12,6 +14,8 @@ mod vault;
 use std::collections::HashSet;
 
 pub use analytics::*;
+pub use hedera::*;
+pub use identity::*;
 pub use json_scheme_wrap::*;
 pub use parameter::*;
 pub use reading::*;

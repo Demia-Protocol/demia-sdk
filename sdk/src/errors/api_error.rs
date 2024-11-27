@@ -21,11 +21,23 @@ pub enum ApiError {
     NotFound(String),
 
     #[error("ResponseError for url {url}, Code={code}, text={text}")]
-    ResponseError { code: u16, text: String, url: String }, // ... other API-related error variants ...
+    ResponseError { code: u16, text: String, url: String },
+
+    #[error("Guardian {0}")]
+    Guardian(String),
+
+    #[error("Serde {0}")]
+    Serde(String),
 }
 
 impl From<reqwest::Error> for ApiError {
     fn from(error: reqwest::Error) -> Self {
         Self::ReqwestError(error.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ApiError {
+    fn from(error: serde_json::Error) -> Self {
+        Self::Serde(error.to_string())
     }
 }
