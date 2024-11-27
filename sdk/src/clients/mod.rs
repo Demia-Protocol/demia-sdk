@@ -1,5 +1,5 @@
-mod api;
 mod auth0;
+mod http;
 
 #[cfg(feature = "aws")]
 mod aws;
@@ -20,7 +20,6 @@ use std::{
     io::{Read, Write},
 };
 
-pub use api::*;
 pub use auth0::Auth0Client;
 #[cfg(feature = "aws")]
 pub use aws::AwsClient;
@@ -29,6 +28,7 @@ pub use aws_rusoto::AwsRusotoClient;
 use chrono::{DateTime, Utc};
 #[cfg(feature = "google_cloud")]
 pub use gc::GoogleCloud;
+pub use http::*;
 pub use keycloak::Keycloak;
 use rocket_okapi::okapi::schemars;
 pub use token::TokenManager;

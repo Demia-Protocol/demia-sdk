@@ -25,10 +25,19 @@ pub enum ApiError {
 
     #[error("Guardian {0}")]
     Guardian(String),
+
+    #[error("Serde {0}")]
+    Serde(String),
 }
 
 impl From<reqwest::Error> for ApiError {
     fn from(error: reqwest::Error) -> Self {
         Self::ReqwestError(error.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ApiError {
+    fn from(error: serde_json::Error) -> Self {
+        Self::Serde(error.to_string())
     }
 }

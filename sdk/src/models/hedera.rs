@@ -89,6 +89,7 @@ pub struct GuardianDidDocument {
     pub topic_id: String,
     pub update_date: DateTime<Utc>,
     pub verification_methods: serde_json::Value, // map of [methd : did]
+    #[serde(rename = "_id")]
     pub _id: String,
 }
 

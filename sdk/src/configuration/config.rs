@@ -47,6 +47,20 @@ fn secrets_api() -> String {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct BaseConfiguration {
+    #[serde(default)]
+    pub logging: LoggingConfiguration,
+    #[serde(default)]
+    pub application: ApplicationConfiguration,
+    #[serde(default)]
+    pub streams: StreamsConfiguration,
+    #[serde(default)]
+    pub stronghold: StrongholdConfiguration,
+    #[serde(default)]
+    pub identity: IdentityConfiguration,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct LoggingConfiguration {
     #[serde(default = "level_info")]
     pub level: String,

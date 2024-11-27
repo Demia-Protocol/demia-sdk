@@ -225,7 +225,7 @@ impl UserIdentity {
                 let iota_did = DemiaDID::parse(id)?;
                 Ok(iota_did)
             }
-            None => Err(IdentityError::MissingIdentityDoc.into()),
+            None => Err(IdentityError::MissingIdentityDoc),
         }
     }
 

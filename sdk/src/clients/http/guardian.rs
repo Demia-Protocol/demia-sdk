@@ -93,7 +93,7 @@ impl GuardianClient {
             .client
             .ref_block(self.access_token()?, &self.policy_id, &self.send_block)
             .await?;
-        Ok(get_str(res, "id")?)
+        get_str(res, "id")
     }
 
     pub async fn get_ref_block(&self) -> Result<Value> {
