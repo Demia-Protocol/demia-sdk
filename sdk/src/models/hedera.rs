@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use rocket_okapi::okapi::schemars;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{de::value::MapDeserializer, Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 #[derive(Deserialize, Serialize, Debug, Default, Clone, JsonSchema)]
@@ -91,6 +91,14 @@ pub struct GuardianDidDocument {
     pub verification_methods: serde_json::Value, // map of [methd : did]
     #[serde(rename = "_id")]
     pub _id: String,
+}
+
+impl GuardianDidDocument {
+    /// Turns the document map into a CoreDocument
+    pub fn document(&self) -> Result<identity_demia::document::CoreDocument, serde_json::Error> {
+        log::info!("{:?}", self.document);
+        identity_demia::document::CoreDocument::deserialize(MapDeserializer::new(self.document.clone().into_iter()))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, schemars::JsonSchema)]
