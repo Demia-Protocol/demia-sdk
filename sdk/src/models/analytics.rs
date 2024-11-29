@@ -26,6 +26,15 @@ pub struct Calculation {
 #[derive(Clone)]
 pub struct AsyncCalculationFunctionWrapper<E>(pub AsyncCalculationFunction<E>);
 
+impl<E> core::ops::Deref for AsyncCalculationFunctionWrapper<E> {
+    type Target = AsyncCalculationFunction<E>;
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+
 impl<E> Default for AsyncCalculationFunctionWrapper<E>
 where
     E: Send + Sync + 'static,
