@@ -62,6 +62,15 @@ impl SiteState {
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
+pub struct SiteAssets {
+    // Parent path of site assets folder
+    pub digital_twin_path: String,
+    // Map of sensor id to sensor image path
+    pub sensor_images: HashMap<String, String>
+}
+
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct Site {
     #[serde(alias = "id")]
     pub project_id: String,
@@ -81,6 +90,8 @@ pub struct Site {
     #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
+    #[serde(default)]
+    pub custom_assets: Option<SiteAssets>
 }
 
 impl Site {
