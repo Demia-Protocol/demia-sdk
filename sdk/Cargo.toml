@@ -16,6 +16,7 @@ async-trait = "0.1.68"
 base64 = "0.22.1"
 chrono = "0.4.26"
 fern = "0.7.0"
+futures-util = "0.3.30"
 hex = "0.4.3"
 indexmap = "2.6.0"
 isocountry = { version = "0.3" }
