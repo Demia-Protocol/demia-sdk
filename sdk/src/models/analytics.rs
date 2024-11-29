@@ -1,5 +1,6 @@
-use std::{future::Future, sync::Arc};
+use std::sync::Arc;
 
+use futures_util::future::BoxFuture;
 use serde::{Deserialize, Serialize};
 
 use super::{InputParameter, Parameter, Record, ValueSet};
@@ -34,13 +35,12 @@ impl<E> core::ops::Deref for AsyncCalculationFunctionWrapper<E> {
     }
 }
 
-
 impl<E> Default for AsyncCalculationFunctionWrapper<E>
 where
     E: Send + Sync + 'static,
 {
     fn default() -> Self {
-        let default_func: AsyncCalculationFunction<E> = Arc::new(|_, _| Box::new(async { Ok(ValueSet::default()) }));
+        let default_func: AsyncCalculationFunction<E> = Arc::new(|_, _| Box::pin(async { Ok(ValueSet::default()) }));
         AsyncCalculationFunctionWrapper(default_func)
     }
 }
@@ -51,5 +51,5 @@ impl<E> std::fmt::Debug for AsyncCalculationFunctionWrapper<E> {
     }
 }
 
-type AsyncCalculationFunction<E> =
-    Arc<dyn Fn(Vec<InputParameter>, Vec<Record>) -> Box<dyn Future<Output = Result<ValueSet, E>> + Send + Sync>>;
+pub type AsyncCalculationFunction<E> =
+    Arc<dyn Fn(Vec<InputParameter>, Vec<Record>) -> BoxFuture<'static, Result<ValueSet, E>> + Send + Sync>;

@@ -14,11 +14,11 @@ pub use identification_error::{IdentityError, IdentityResult};
 use log::warn;
 pub use node::{NodeError, NodeResult};
 pub use secret::{SecretError, SecretResult};
+use serde::{Deserialize, Serialize};
 pub use storage::{StorageError, StorageResult};
 pub use streams::Error as StreamsError;
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
-use serde::{Deserialize, Serialize};
 
 pub type SdkResult<T> = core::result::Result<T, Error>;
 
