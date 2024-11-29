@@ -30,6 +30,12 @@ pub enum ApiError {
     Serde(String),
 }
 
+impl From<url::ParseError> for ApiError {
+    fn from(error: url::ParseError) -> Self {
+        Self::NotFound(error.to_string())
+    }
+}
+
 impl From<reqwest::Error> for ApiError {
     fn from(error: reqwest::Error) -> Self {
         Self::ReqwestError(error.to_string())

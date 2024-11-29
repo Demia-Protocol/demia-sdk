@@ -6,6 +6,7 @@ use url::Url;
 
 use crate::{
     clients::{HttpClient, query_tuples_to_query_string},
+    configuration::ApplicationConfiguration,
     errors::{ApiError, ApiResult},
     utils::constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API},
 };
@@ -26,6 +27,18 @@ impl Default for ApiClient {
             guardian_url: Url::parse(GUARDIAN_API).unwrap(),
             http_client: HttpClient::new("demia".to_string()),
         }
+    }
+}
+
+impl TryFrom<&ApplicationConfiguration> for ApiClient {
+    type Error = ApiError;
+    fn try_from(config: &ApplicationConfiguration) -> Result<Self, Self::Error> {
+        Ok(Self {
+            cloud_api_url: Url::parse(&config.amazon_api)?,
+            retriever_url: Url::parse(&config.retriever_api)?,
+            guardian_url: Url::parse(&config.guardian_api)?,
+            ..Default::default()
+        })
     }
 }
 

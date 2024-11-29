@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+
+use identity_demia::{credential::Credential, document::CoreDocument};
 use serde::{Deserialize, Serialize};
 
 use crate::utils::constants::*;
@@ -133,4 +136,13 @@ pub struct StrongholdKeyFragments {
     pub signature_keys: String,
     #[serde(default = "stronghold_ke_keys")]
     pub key_exchange_keys: String,
+}
+
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct GuardianConfigs {
+    pub operator_id: String,
+    pub username: String,
+    pub did_doc: Option<CoreDocument>,
+    pub policy: String,
+    pub vcs: HashMap<String, (String, Credential)>,
 }
