@@ -18,10 +18,11 @@ pub use storage::{StorageError, StorageResult};
 pub use streams::Error as StreamsError;
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
+use serde::{Deserialize, Serialize};
 
 pub type SdkResult<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, Error, schemars::JsonSchema)]
+#[derive(Clone, Debug, Error, schemars::JsonSchema, Serialize, Deserialize)]
 pub enum Error {
     #[error("Node Service Error: {0}")]
     Node(#[from] NodeError),
