@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::utils::deserialize_null_default;
 
 use super::Parameter;
 
@@ -13,6 +14,9 @@ pub struct ValueSet {
     pub values: Vec<f64>,
     pub timestamps: Vec<String>,
     pub total: f64,
+    // Since we occasionally divide by 0.0 this can become NAN so default to 0, or it will serialize
+    // as NAN/null and break deserialization https://github.com/serde-rs/json/issues/202
+    #[serde(deserialize_with="deserialize_null_default")]
     pub avg: f64,
 }
 

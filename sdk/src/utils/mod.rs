@@ -6,6 +6,7 @@ use base64::Engine;
 pub use constants::*;
 use iota_sdk::crypto::signatures::ed25519::SecretKey;
 use log::info;
+use serde::Deserialize;
 
 pub fn new_stronghold_key() -> String {
     let key = SecretKey::generate().expect("Shouldn't be a problem to generate a new key");
@@ -150,4 +151,14 @@ pub mod feedstock_types {
 
 pub fn make_session_id() -> String {
     uuid::Uuid::new_v4().to_string()
+}
+
+
+pub fn deserialize_null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    T: Default + Deserialize<'de>,
+    D: serde::Deserializer<'de>,
+{
+    let opt = Option::deserialize(deserializer)?;
+    Ok(opt.unwrap_or_default())
 }
