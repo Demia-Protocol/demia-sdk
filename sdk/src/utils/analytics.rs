@@ -1,7 +1,6 @@
 use std::{collections::HashMap, vec};
 
 use chrono::{DateTime, NaiveDate, Utc};
-use indexmap::IndexMap;
 use crate::{
     models::{Record, ValueSet},
     utils::feedstock_types::feedstock_types,
@@ -103,12 +102,12 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
 
 // Emissions for the Reporting Period
 pub async fn equation7(
-    eq8: IndexMap<DateTime<Utc>, f64>,
-    eq9: IndexMap<DateTime<Utc>, f64>,
-    eq10: IndexMap<DateTime<Utc>, f64>,
+    eq8: Vec<(DateTime<Utc>, f64)>,
+    eq9: Vec<(DateTime<Utc>, f64)>,
+    eq10: Vec<(DateTime<Utc>, f64)>,
     calc_data: &[Record],
-    eq12: IndexMap<DateTime<Utc>, f64>,
-    eq15: IndexMap<DateTime<Utc>, f64>,
+    eq12: Vec<(DateTime<Utc>, f64)>,
+    eq15: Vec<(DateTime<Utc>, f64)>,
 ) -> ValueSet {
     let daily_biogas = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
     let daily_biogas_no_flare = daily_average(calc_data, "Biogás Generado sin antorcha (Nm3)", true).await;
@@ -130,7 +129,7 @@ pub async fn equation7(
             .enumerate()
             .map(|(i, (timestamp, record))| (
                 timestamp.clone(),
-                record + eq8[i] + eq9[i] + eq10[i] + flare_e[i].1 + eq15[i]
+                record + eq8[i].1 + eq9[i].1 + eq10[i].1 + flare_e[i].1 + eq15[i].1
             ))
             .collect()
     } else {
@@ -162,7 +161,7 @@ pub async fn equation9() -> f64 {
 }
 
 // Anaerobic Digestor
-pub async fn equation10(bde: IndexMap<DateTime<Utc>, f64>, ch4: IndexMap<DateTime<Utc>, f64>, calc_data: &[Record]) -> ValueSet {
+pub async fn equation10(bde: Vec<(DateTime<Utc>, f64)>, ch4: Vec<(DateTime<Utc>, f64)>, calc_data: &[Record]) -> ValueSet {
     let ad = 0.98;
     let ch4_vent = 0.0;
 
@@ -171,9 +170,9 @@ pub async fn equation10(bde: IndexMap<DateTime<Utc>, f64>, ch4: IndexMap<DateTim
     let result: Vec<(DateTime<Utc>, f64)> = if !bde.is_empty() && !ch4.is_empty() && !daily_f_mo.is_empty() {
         bde.iter()
             .enumerate()
-            .map(|(i, (date, &record))| {
-                let n = if record == 0.0 || ch4[i] == 0.0 { 1.0 } else { 2.0 };
-                (date.clone(), GWP_CH4 * (ch4[i] * (n / (ad - record) + ch4_vent)))
+            .map(|(i, (date, record))| {
+                let n = if *record == 0.0 || ch4[i].1 == 0.0 { 1.0 } else { 2.0 };
+                (date.clone(), GWP_CH4 * (ch4[i].1 * (n / (ad - record) + ch4_vent)))
             })
             .collect()
     } else {
