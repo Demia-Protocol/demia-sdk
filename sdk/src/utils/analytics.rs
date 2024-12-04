@@ -40,8 +40,10 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
         })
         .collect();
 
+    let mut inputs = HashMap::new();
+    inputs.insert("WasteWaterVolume".to_string(), q_ww_s_i.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Waste Water (liquid industrial waste)".to_string(),
         "Tonnes".to_string(),
@@ -92,8 +94,10 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
         })
         .collect();
 
+    let mut inputs = HashMap::new();
+    inputs.insert("FeedstockType".to_string(), daily_feedstock.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Methane emissions from solid waste disposal sites".to_string(),
         "t C02e".to_string(),
@@ -141,8 +145,11 @@ pub async fn equation7(
         Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_biogas.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("BiogasGeneratedNoFlare".to_string(), daily_biogas_no_flare.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Emissions for the Reporting Period".to_string(),
         "t C02e".to_string(),
@@ -220,8 +227,12 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
         Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_f_mo.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("MethaneConcentration".to_string(), daily_ch4_conc_mo.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Quantity of Methane Collected and Metered".to_string(),
         "t CH4".to_string(),
@@ -244,8 +255,11 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
         Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Weighted Biogas average of all destruction devices used".to_string(),
         "Nm3".to_string(),
@@ -269,8 +283,11 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
         Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Volume of biogas collected for the given time interval".to_string(),
         "Nm3".to_string(),
@@ -300,8 +317,11 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
         Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
         "t C02e".to_string(),
@@ -337,8 +357,13 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
         }
     }
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_biogas.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("BiogasGeneratedNoFlare".to_string(), daily_biogas_no_flare.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("MethaneConcentration".to_string(), daily_ch4_meter.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
         "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
         "t CH4".to_string(),
