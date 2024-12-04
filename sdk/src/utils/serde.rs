@@ -10,8 +10,7 @@ where
 }
 
 pub mod map_serialize {
-    use std::iter::FromIterator;
-    use std::{collections::HashMap, fmt};
+    use std::{collections::HashMap, fmt, iter::FromIterator};
 
     use convert_case::{Boundary, Case, Casing};
     use serde::{
