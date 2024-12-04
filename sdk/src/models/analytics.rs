@@ -7,7 +7,6 @@ use super::{InputParameter, Parameter, Record, ValueSet};
 use crate::errors::AnalyticsError;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
-#[serde(bound(deserialize = "'de: 'static"))]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyticsProfile {
     pub id: String,
@@ -17,8 +16,8 @@ pub struct AnalyticsProfile {
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct Calculation {
-    pub id: &'static str,
-    pub text: &'static str,
+    pub id: String,
+    pub text: String,
     pub parameters: Vec<Parameter>,
     #[serde(skip)]
     pub calculation_function: AsyncCalculationFunctionWrapper<AnalyticsError>,
