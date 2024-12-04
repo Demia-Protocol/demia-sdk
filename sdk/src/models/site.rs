@@ -3,7 +3,12 @@ use std::collections::HashMap;
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
-use crate::models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet};
+use super::AnalyticsProfile;
+use crate::{
+    errors::AnalyticsError,
+    models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
+    utils::map_serialize,
+};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteLocation {
@@ -26,37 +31,18 @@ pub struct NewSite {
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SiteState {
-    // ToDo: Temporary alias's to be replaced with a nesting of value_sets with arbitrary names
-    #[serde(alias = "ch4_emission")]
-    pub ch4_emission: ValueSet,
-    pub wws: ValueSet,
-    #[serde(alias = "elec_prod")]
-    pub elec_prod: ValueSet,
-    #[serde(alias = "fossil_fuel")]
-    pub fossil_fuel: ValueSet,
-    pub ch4: ValueSet,
-    pub bde: ValueSet,
-    #[serde(alias = "an_dig")]
-    pub an_dig: ValueSet,
-    #[serde(alias = "biogas_adjusted")]
-    pub biogas_adjusted: ValueSet,
-    #[serde(alias = "effluent_storage")]
-    pub effluent_storage: ValueSet,
-    #[serde(alias = "ch4_destroyed")]
-    pub ch4_destroyed: ValueSet,
-    #[serde(alias = "e_project")]
-    pub e_project: ValueSet,
+    #[serde(with = "map_serialize")]
+    #[serde(flatten)]
+    #[schemars(with = "HashMap<String, ValueSet>")] // Needs to added due to with breaking jsonSchema
+    pub value_sets: HashMap<String, ValueSet>,
     #[serde(alias = "calc_data")]
     pub calc_data: Vec<Record>,
 }
 
 impl SiteState {
     pub fn get_map(&self) -> HashMap<String, serde_json::Value> {
-        // map to string to include labels
-        let str = serde_json::to_string(self).unwrap();
-        // parse the string to a HashMap
-        let map: HashMap<String, serde_json::Value> = serde_json::from_str(&str).unwrap();
-        map
+        let json_value = serde_json::to_value(self).unwrap();
+        serde_json::from_value(json_value).unwrap()
     }
 }
 
@@ -81,6 +67,8 @@ pub struct Site {
     #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profiles: Option<Vec<AnalyticsProfile>>,
 }
 
 impl Site {
@@ -101,6 +89,17 @@ impl Site {
             project_announcement: announcement,
             ..Default::default()
         }
+    }
+
+    pub fn get_analytics_profile(&self, id: String) -> Result<&AnalyticsProfile, AnalyticsError> {
+        self.profiles
+            .as_ref()
+            .and_then(|profiles| profiles.iter().find(|p| p.id == id))
+            .ok_or_else(|| AnalyticsError::NoProfileFound(id))
+    }
+
+    pub fn add_analytics_profile(&mut self, profile: AnalyticsProfile) {
+        self.profiles.get_or_insert_with(Vec::new).push(profile);
     }
 }
 
@@ -129,5 +128,36 @@ impl From<&NewSite> for Site {
             sensors,
             new_site.project.clone(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tokio::test;
+
+    use super::*;
+
+    #[test]
+    async fn test_get_map_with_camel_case_keys() {
+        let mut value_sets = HashMap::new();
+        value_sets.insert("ch4_emission".to_string(), ValueSet::default());
+        value_sets.insert("elec_prod".to_string(), ValueSet::default());
+
+        let site_state = SiteState {
+            value_sets,
+            calc_data: vec![],
+        };
+
+        let map = serde_json::to_value(site_state).unwrap();
+
+        assert!(map.get("ch4Emission").is_some());
+        assert!(map.get("elecProd").is_some());
+        assert!(map.get("calcData").is_some());
+
+        let site_state: SiteState = serde_json::from_value(map).unwrap();
+
+        assert!(site_state.value_sets.contains_key("ch4_emission"));
+        assert!(site_state.value_sets.contains_key("elec_prod"));
+        assert!(site_state.value_sets.contains_key("calc_data"));
     }
 }
