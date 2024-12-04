@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    ops::{Index, IndexMut},
+};
 
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
@@ -43,6 +46,20 @@ impl SiteState {
     pub fn get_map(&self) -> HashMap<String, serde_json::Value> {
         let json_value = serde_json::to_value(self).unwrap();
         serde_json::from_value(json_value).unwrap()
+    }
+}
+
+impl Index<&str> for SiteState {
+    type Output = ValueSet;
+
+    fn index(&self, index: &str) -> &Self::Output {
+        &self.value_sets[index]
+    }
+}
+
+impl IndexMut<&str> for SiteState {
+    fn index_mut(&mut self, index: &str) -> &mut Self::Output {
+        self.value_sets.entry(index.to_string()).or_default()
     }
 }
 
@@ -95,7 +112,7 @@ impl Site {
         self.profiles
             .as_ref()
             .and_then(|profiles| profiles.iter().find(|p| p.id == id))
-            .ok_or_else(|| AnalyticsError::NoProfileFound(id))
+            .ok_or(AnalyticsError::NoProfileFound(id))
     }
 
     pub fn add_analytics_profile(&mut self, profile: AnalyticsProfile) {

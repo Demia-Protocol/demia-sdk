@@ -10,14 +10,10 @@ where
 }
 
 pub mod map_serialize {
-    use std::{collections::HashMap, fmt, iter::FromIterator};
+    use std::{collections::HashMap, fmt};
 
     use convert_case::{Boundary, Case, Casing};
-    use serde::{
-        Deserialize, Deserializer, Serialize, Serializer,
-        de::{self, MapAccess, Visitor},
-        ser::SerializeMap,
-    };
+    use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor, ser::SerializeMap};
 
     pub fn serialize<'a, T, K, V, S>(target: T, ser: S) -> Result<S::Ok, S::Error>
     where
