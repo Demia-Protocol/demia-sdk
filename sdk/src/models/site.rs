@@ -35,7 +35,7 @@ pub struct NewSite {
 #[serde(rename_all = "camelCase")]
 pub struct SiteState {
     #[serde(with = "map_serialize")]
-    #[serde(flatten)]
+    #[serde(default)]
     #[schemars(with = "HashMap<String, ValueSet>")] // Needs to added due to with breaking jsonSchema
     pub value_sets: HashMap<String, ValueSet>,
     #[serde(alias = "calc_data")]
