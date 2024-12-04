@@ -1,10 +1,16 @@
 use std::collections::HashMap;
-
 use chrono::{DateTime, Utc};
 
 use super::Parameter;
 use crate::utils::deserialize_null_default;
 use serde::Deserialize;
+
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct ValueSetsWrap {
+    site_id: String,
+    value_sets: Vec<ValueSet>,
+}
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ValueSet {

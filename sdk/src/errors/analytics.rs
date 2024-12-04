@@ -11,4 +11,6 @@ pub type AnalyticsResult<T> = core::result::Result<T, AnalyticsError>;
 pub enum AnalyticsError {
     #[error("No vault client stored in user instance")]
     NoVaultClient,
+    #[error("No profile found by the name of {0}")]
+    NoProfileFound(String),
 }
