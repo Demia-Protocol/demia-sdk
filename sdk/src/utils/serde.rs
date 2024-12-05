@@ -77,3 +77,45 @@ pub mod map_serialize {
         })
     }
 }
+
+pub mod valueset_serialize {
+    use chrono::{DateTime, Utc};
+    pub fn deserialize_data_map_or_vec<'de, D>(deserializer: D) -> Result<Vec<(DateTime<Utc>, f64)>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct MapOrVec;
+
+        impl<'de> serde::de::Visitor<'de> for MapOrVec {
+            type Value = Vec<(DateTime<Utc>, f64)>;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a map or a sequence of tuples")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut vec = Vec::new();
+                while let Some(elem) = seq.next_element()? {
+                    vec.push(elem);
+                }
+                Ok(vec)
+            }
+
+            fn visit_map<M>(self, mut map: M) -> Result<Self::Value, M::Error>
+            where
+                M: serde::de::MapAccess<'de>,
+            {
+                let mut vec = Vec::new();
+                while let Some((key, value)) = map.next_entry()? {
+                    vec.push((key, value));
+                }
+                Ok(vec)
+            }
+        }
+
+        deserializer.deserialize_any(MapOrVec)
+    }
+}

@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 
 use super::Parameter;
-use crate::utils::deserialize_null_default;
-use serde::Deserialize;
+use crate::utils::{deserialize_null_default, valueset_serialize::deserialize_data_map_or_vec};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +19,7 @@ pub struct ValueSet {
     pub params: Vec<Parameter>,
     pub title: String,
     pub label: String,
-    #[serde(default, deserialize_with = "deserialize_map_to_vec")]
+    #[serde(default, deserialize_with = "deserialize_data_map_or_vec")]
     pub data: Vec<(DateTime<Utc>, f64)>,
     pub total: f64,
     // Since we occasionally divide by 0.0 this can become NAN so default to 0, or it will serialize
@@ -49,16 +48,4 @@ impl ValueSet {
             params,
         }
     }
-}
-
-
-
-fn deserialize_map_to_vec<'de, D>(deserializer: D) -> Result<Vec<(DateTime<Utc>, f64)>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    // Deserialize into a HashMap first
-    let map: HashMap<DateTime<Utc>, f64> = HashMap::deserialize(deserializer)?;
-    // Convert HashMap into a Vec of tuples
-    Ok(map.into_iter().collect())
 }
