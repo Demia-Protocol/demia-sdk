@@ -27,7 +27,7 @@ pub struct Sensor {
     pub total: usize,
     // Since we occasionally divide by 0.0 this can become NAN so default to 0, or it will serialize
     // as NAN/null and break deserialization https://github.com/serde-rs/json/issues/202
-    #[serde(deserialize_with="deserialize_null_default")]
+    #[serde(deserialize_with = "deserialize_null_default")]
     pub avgcf: f32,
     pub equipment: Equipment,
     pub readings: HashMap<String, Reading>,
