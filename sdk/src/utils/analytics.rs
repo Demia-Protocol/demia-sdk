@@ -401,6 +401,7 @@ pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> Vec<R
     });
     ////info!("Daily sensor Data: {}", daily_sensor_data.len());
 
+    daily_sensor_data.sort_by(|a, b| a.data_timestamp.cmp(&b.data_timestamp));
     daily_sensor_data
 }
 
