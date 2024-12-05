@@ -1,6 +1,6 @@
 use std::{collections::HashMap, vec};
 
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 
 use crate::{
     models::{Record, ValueSet},
@@ -28,17 +28,23 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
         .cloned()
         .collect::<Vec<Record>>();
 
-    let (daily_feedstock, data_timestamp) = daily_average(&q_ww_s_i, "Toneladas ", true).await;
+    let daily_feedstock = daily_average(&q_ww_s_i, "Toneladas ", true).await;
 
-    let result: Vec<f64> = daily_feedstock
+    let result: Vec<(DateTime<Utc>, f64)> = daily_feedstock
         .iter()
-        .map(|record| (record.sum + cod_lab_sheet) * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR)
+        .map(|record| {
+            (
+                record.data_timestamp.and_utc(),
+                (record.sum + cod_lab_sheet) * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR,
+            )
+        })
         .collect();
 
+    let mut inputs = HashMap::new();
+    inputs.insert("WasteWaterVolume".to_string(), q_ww_s_i.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        data_timestamp,
         "Waste Water (liquid industrial waste)".to_string(),
         "Tonnes".to_string(),
         vec![],
@@ -47,9 +53,9 @@ pub async fn equation5(feedstock_data: &[Record], cod_lab_sheet: f64) -> ValueSe
 
 // Methane emissions from solid waste disposal sites (using first order decay method)
 pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
-    let (daily_feedstock, data_timestamp) = daily_average(feedstock_data, "Toneladas ", true).await;
+    let daily_feedstock = daily_average(feedstock_data, "Toneladas ", true).await;
 
-    let result: Vec<f64> = daily_feedstock
+    let result: Vec<(DateTime<Utc>, f64)> = daily_feedstock
         .iter()
         .map(|record| {
             let cod_ww_s_i = 1.0;
@@ -66,7 +72,7 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
                 record.sum
             };
 
-            if feedstock_type.is_some() && feedstock_type.unwrap().type_of_feedstock.as_str() == "Manure" {
+            let value = if feedstock_type.is_some() && feedstock_type.unwrap().type_of_feedstock.as_str() == "Manure" {
                 0.21 * 0.03 * GWP_CH4 * UNCERTAINTY_FACTOR * (sum + cod_ww_s_i)
             } else {
                 let (doc, fie, f_y) = feedstock_type
@@ -83,14 +89,16 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
                     * doc
                     * f64::exp(-K * Y - X)
                     * (1.0 - f64::exp(-K))
-            }
+            };
+            (record.data_timestamp.and_utc(), value)
         })
         .collect();
 
+    let mut inputs = HashMap::new();
+    inputs.insert("FeedstockType".to_string(), daily_feedstock.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        data_timestamp,
         "Methane emissions from solid waste disposal sites".to_string(),
         "t C02e".to_string(),
         vec![],
@@ -99,36 +107,54 @@ pub async fn equation6(feedstock_data: &[Record]) -> ValueSet {
 
 // Emissions for the Reporting Period
 pub async fn equation7(
-    eq8: Vec<f64>,
-    eq9: Vec<f64>,
-    eq10: Vec<f64>,
+    eq8: Vec<(DateTime<Utc>, f64)>,
+    eq9: Vec<(DateTime<Utc>, f64)>,
+    eq10: Vec<(DateTime<Utc>, f64)>,
     calc_data: &[Record],
-    eq12: Vec<f64>,
-    eq15: Vec<f64>,
-) -> Vec<f64> {
+    eq12: Vec<(DateTime<Utc>, f64)>,
+    eq15: Vec<(DateTime<Utc>, f64)>,
+) -> ValueSet {
     let daily_biogas = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
     let daily_biogas_no_flare = daily_average(calc_data, "Biogás Generado sin antorcha (Nm3)", true).await;
-    let flare_e: Vec<f64> = if !daily_biogas.0.is_empty() && !daily_biogas_no_flare.0.is_empty() {
+    let flare_e: Vec<(DateTime<Utc>, f64)> = if !daily_biogas.is_empty() && !daily_biogas_no_flare.is_empty() {
         daily_biogas
-            .0
             .iter()
             .enumerate()
-            .map(|(i, record)| record.sum - daily_biogas_no_flare.0[i].sum)
+            .map(|(i, record)| {
+                (
+                    record.data_timestamp.and_utc(),
+                    record.sum - daily_biogas_no_flare[i].sum,
+                )
+            })
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
-    let result: Vec<f64> = if !eq12.is_empty() {
+    let result: Vec<(DateTime<Utc>, f64)> = if !eq12.is_empty() {
         eq12.iter()
             .enumerate()
-            .map(|(i, &record)| record + eq8[i] + eq9[i] + eq10[i] + flare_e[i] + eq15[i])
+            .map(|(i, (timestamp, record))| {
+                (
+                    *timestamp,
+                    record + eq8[i].1 + eq9[i].1 + eq10[i].1 + flare_e[i].1 + eq15[i].1,
+                )
+            })
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
-    result
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_biogas.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("BiogasGeneratedNoFlare".to_string(), daily_biogas_no_flare.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    ValueSet::new(
+        inputs,
+        result,
+        "Emissions for the Reporting Period".to_string(),
+        "t C02e".to_string(),
+        vec![],
+    )
 }
 
 // Electricity Generation and Transmission
@@ -147,28 +173,31 @@ pub async fn equation9() -> f64 {
 }
 
 // Anaerobic Digestor
-pub async fn equation10(bde: Vec<f64>, ch4: Vec<f64>, calc_data: &[Record]) -> ValueSet {
+pub async fn equation10(
+    bde: Vec<(DateTime<Utc>, f64)>,
+    ch4: Vec<(DateTime<Utc>, f64)>,
+    calc_data: &[Record],
+) -> ValueSet {
     let ad = 0.98;
     let ch4_vent = 0.0;
 
     let daily_f_mo = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
-    let result: Vec<f64> = if !bde.is_empty() && !ch4.is_empty() && !daily_f_mo.0.is_empty() {
+    let result: Vec<(DateTime<Utc>, f64)> = if !bde.is_empty() && !ch4.is_empty() && !daily_f_mo.is_empty() {
         bde.iter()
             .enumerate()
-            .map(|(i, &record)| {
-                let n = if record == 0.0 || ch4[i] == 0.0 { 1.0 } else { 2.0 };
-                GWP_CH4 * (ch4[i] * (n / (ad - record) + ch4_vent))
+            .map(|(i, (date, record))| {
+                let n = if *record == 0.0 || ch4[i].1 == 0.0 { 1.0 } else { 2.0 };
+                (*date, GWP_CH4 * (ch4[i].1 * (n / (ad - record) + ch4_vent)))
             })
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
     ValueSet::new(
         HashMap::new(),
         result,
-        daily_f_mo.1,
         "Anaerobic Digestor".to_string(),
         "t C02e".to_string(),
         vec![],
@@ -183,24 +212,28 @@ pub async fn equation11(calc_data: &[Record]) -> ValueSet {
     let daily_f_mo = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
     let daily_ch4_conc_mo = daily_average(calc_data, "%CH4 DF", true).await;
 
-    let result: Vec<f64> = if !daily_f_mo.0.is_empty() && !daily_ch4_conc_mo.0.is_empty() {
+    let result: Vec<(DateTime<Utc>, f64)> = if !daily_f_mo.is_empty() && !daily_ch4_conc_mo.is_empty() {
         daily_f_mo
-            .0
             .iter()
             .enumerate()
             .map(|(i, record)| {
-                ////info!("Sum: {}", record.sum);
-                record.sum * daily_ch4_conc_mo.0[i].sum * methane_density * conversion_factor
+                (
+                    record.data_timestamp.and_utc(),
+                    record.sum * daily_ch4_conc_mo[i].sum * methane_density * conversion_factor,
+                )
             })
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_f_mo.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("MethaneConcentration".to_string(), daily_ch4_conc_mo.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        daily_f_mo.1,
         "Quantity of Methane Collected and Metered".to_string(),
         "t CH4".to_string(),
         vec![],
@@ -213,16 +246,21 @@ pub async fn equation12(calc_data: &[Record]) -> ValueSet {
 
     let daily_calc_data = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
-    let result: Vec<f64> = if !daily_calc_data.0.is_empty() {
-        daily_calc_data.0.iter().map(|record| record.sum * bde_dd).collect()
+    let result: Vec<(DateTime<Utc>, f64)> = if !daily_calc_data.is_empty() {
+        daily_calc_data
+            .iter()
+            .map(|record| (record.data_timestamp.and_utc(), record.sum * bde_dd))
+            .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        daily_calc_data.1,
         "Weighted Biogas average of all destruction devices used".to_string(),
         "Nm3".to_string(),
         vec![],
@@ -236,20 +274,21 @@ pub async fn equation14(calc_data: &[Record]) -> ValueSet {
 
     let daily_calc_data = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
-    let result: Vec<f64> = if !daily_calc_data.0.is_empty() {
+    let result: Vec<(DateTime<Utc>, f64)> = if !daily_calc_data.is_empty() {
         daily_calc_data
-            .0
             .iter()
-            .map(|record| record.sum * (520.0 / t) * p)
+            .map(|record| (record.data_timestamp.and_utc(), record.sum * (520.0 / t) * p))
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        daily_calc_data.1,
         "Volume of biogas collected for the given time interval".to_string(),
         "Nm3".to_string(),
         vec![],
@@ -264,20 +303,26 @@ pub async fn equation15(calc_data: &[Record]) -> ValueSet {
 
     let daily_calc_data = daily_average(calc_data, "Biogás Generado (Nm3)", true).await;
 
-    let result: Vec<f64> = if !daily_calc_data.0.is_empty() {
+    let result: Vec<(DateTime<Utc>, f64)> = if !daily_calc_data.is_empty() {
         daily_calc_data
-            .0
             .iter()
-            .map(|record| b_0_ef * methane_conversion_factor * gwp_ch4 * record.sum)
+            .map(|record| {
+                (
+                    record.data_timestamp.and_utc(),
+                    b_0_ef * methane_conversion_factor * gwp_ch4 * record.sum,
+                )
+            })
             .collect()
     } else {
-        vec![]
+        Vec::new()
     };
 
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_calc_data.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        daily_calc_data.1,
         "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
         "t C02e".to_string(),
         vec![],
@@ -291,33 +336,35 @@ pub async fn equation18(calc_data: &[Record]) -> ValueSet {
     let daily_biogas_no_flare = daily_average(calc_data, "Biogás Generado sin antorcha (Nm3)", true).await;
     let daily_ch4_meter = daily_average(calc_data, "%CH4 DF", true).await;
 
-    let mut result: Vec<f64> = Vec::new();
+    let mut result: Vec<(DateTime<Utc>, f64)> = Vec::new();
 
-    if !daily_biogas.0.is_empty() {
-        for i in 0..daily_biogas.0.len() {
-            let n = if daily_biogas.0[i].sum == 0.0 || daily_biogas_no_flare.0[i].sum == 0.0 {
+    if !daily_biogas.is_empty() {
+        for i in 0..daily_biogas.len() {
+            let n = if daily_biogas[i].sum == 0.0 || daily_biogas_no_flare[i].sum == 0.0 {
                 1.0
             } else {
                 2.0
             };
 
-            let value =
-                ((daily_biogas.0[i].sum + daily_biogas_no_flare.0[i].sum) / n) * daily_ch4_meter.0[i].sum * GWP_CH4;
+            let value = ((daily_biogas[i].sum + daily_biogas_no_flare[i].sum) / n) * daily_ch4_meter[i].sum * GWP_CH4;
 
-            result.push(value);
+            if !result
+                .iter()
+                .any(|(timestamp, _)| timestamp == &daily_biogas[i].data_timestamp.and_utc())
+            {
+                result.push((daily_biogas[i].data_timestamp.and_utc(), value));
+            }
         }
     }
 
-    let data_timestamp = if daily_biogas.1.len() > 1 {
-        daily_biogas.1.clone()
-    } else {
-        vec![]
-    };
+    let mut inputs = HashMap::new();
+    inputs.insert("BiogasGenerated".to_string(), daily_biogas.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("BiogasGeneratedNoFlare".to_string(), daily_biogas_no_flare.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
+    inputs.insert("MethaneConcentration".to_string(), daily_ch4_meter.iter().map(|record| (record.data_timestamp.and_utc(), record.sum)).collect());
 
     ValueSet::new(
-        HashMap::new(),
+        inputs,
         result,
-        data_timestamp,
         "Total Metered Quantity of Methane Captured and Destroyed by Anaerobic Digestion".to_string(),
         "t CH4".to_string(),
         vec![],
@@ -337,9 +384,8 @@ pub struct SensorAverage<'a> {
     pub records: Vec<&'a Record>,
 }
 
-pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> (Vec<Record>, Vec<String>) {
+pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> Vec<Record> {
     let mut daily_sensor_data: Vec<Record> = Vec::new();
-    let mut period_timestamp_arr: Vec<String> = Vec::new();
     let daily_data = all_daily_averages(data).await;
 
     ////info!("Daily Data: {:?}", daily_data);
@@ -349,14 +395,14 @@ pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> (Vec<
                 ////info!("Raw? {}", record.raw.as_ref().and_then(|raw| raw.get(dataset)).is_some());
                 if dataset.eq("Toneladas ") || record.raw.as_ref().and_then(|raw| raw.get(dataset)).is_some() {
                     daily_sensor_data.push((*record).clone());
-                    period_timestamp_arr.push(record.data_timestamp.and_utc().to_rfc3339());
                 }
             }
         })
     });
     ////info!("Daily sensor Data: {}", daily_sensor_data.len());
 
-    (daily_sensor_data, period_timestamp_arr)
+    daily_sensor_data.sort_by(|a, b| a.data_timestamp.cmp(&b.data_timestamp));
+    daily_sensor_data
 }
 
 pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAverage> {
