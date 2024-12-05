@@ -25,7 +25,7 @@ pub mod map_serialize {
         let container: Vec<_> = target.into_iter().collect();
         let mut map = ser.serialize_map(Some(container.len()))?;
         for (k, v) in container {
-            let key = k.to_case(Case::Camel);
+            let key = k.to_case(Case::Pascal);
             map.serialize_entry(&key, v)?;
         }
         map.end()
@@ -60,7 +60,7 @@ pub mod map_serialize {
 
                 while let Some((k, v)) = de_map.next_entry::<String, _>()? {
                     map.insert(
-                        k.from_case(Case::Camel)
+                        k.from_case(Case::Pascal)
                             .without_boundaries(&[Boundary::UpperDigit, Boundary::LowerDigit]) // Needed to not make ch_4_emission
                             .to_case(Case::Snake)
                             .into(),
