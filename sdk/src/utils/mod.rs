@@ -153,7 +153,6 @@ pub fn make_session_id() -> String {
     uuid::Uuid::new_v4().to_string()
 }
 
-
 pub fn deserialize_null_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
     T: Default + Deserialize<'de>,

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use crate::utils::deserialize_null_default;
 
 use super::Parameter;
+use crate::utils::deserialize_null_default;
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ValueSet {
@@ -16,7 +16,7 @@ pub struct ValueSet {
     pub total: f64,
     // Since we occasionally divide by 0.0 this can become NAN so default to 0, or it will serialize
     // as NAN/null and break deserialization https://github.com/serde-rs/json/issues/202
-    #[serde(deserialize_with="deserialize_null_default")]
+    #[serde(deserialize_with = "deserialize_null_default")]
     pub avg: f64,
 }
 
