@@ -7,8 +7,8 @@ use crate::utils::{deserialize_null_default, valueset_serialize::deserialize_dat
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ValueSetsWrap {
-    site_id: String,
-    value_sets: Vec<ValueSet>,
+    pub site_id: String,
+    pub value_sets: Vec<ValueSet>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
