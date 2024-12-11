@@ -118,6 +118,11 @@ impl Site {
     pub fn add_analytics_profile(&mut self, profile: AnalyticsProfile) {
         self.profiles.get_or_insert_with(Vec::new).push(profile);
     }
+
+    pub fn remove_analytics_profile(&mut self, id: &str) {
+        let profiles = self.profiles.get_or_insert_with(Vec::new);
+        profiles.retain(|p| p.id != id);
+    }
 }
 
 impl From<&NewSite> for Site {
