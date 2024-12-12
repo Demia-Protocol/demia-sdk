@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use url::Url;
 
 use crate::{
     errors::{ApiError as Error, ApiResult as Result},
     models::{GuardianAccessTokenResponse, GuardianLoginResponse, GuardianProfileResponse, GuardianReport},
+    utils::GUARDIAN_API,
 };
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -108,19 +110,31 @@ impl GuardianClient {
     }
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GuardianApiClient {
     #[serde(skip_serializing, skip_deserializing)]
     pub(crate) client: reqwest::Client,
-    pub(crate) url: String,
+    pub(crate) url: Url,
+}
+
+impl Default for GuardianApiClient {
+    fn default() -> Self {
+        Self {
+            url: Url::parse(GUARDIAN_API).unwrap(),
+            client: reqwest::Client::new(),
+        }
+    }
 }
 
 impl GuardianApiClient {
-    pub fn new(url: String) -> Self {
-        Self {
+    pub fn new<T: TryInto<Url>>(url: T) -> Result<Self>
+    where
+        T::Error: std::fmt::Display,
+    {
+        Ok(Self {
             client: reqwest::Client::new(),
-            url,
-        }
+            url: url.try_into().map_err(|e| Error::NotFound(e.to_string()))?,
+        })
     }
 
     pub async fn login(&self, username: &str, password: &str) -> Result<GuardianLoginResponse> {

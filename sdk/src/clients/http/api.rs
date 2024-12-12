@@ -4,17 +4,21 @@ use iota_sdk::types::block::address::Address;
 use serde::{Serialize, de::DeserializeOwned};
 use url::Url;
 
+use super::{GuardianApiClient, retriever::RetrieverApi};
 use crate::{
     clients::{HttpClient, query_tuples_to_query_string},
     configuration::ApplicationConfiguration,
     errors::{ApiError, ApiResult},
-    utils::constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API},
+    utils::{
+        API_TIMEOUT,
+        constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API},
+    },
 };
 
 pub struct ApiClient {
     pub(crate) cloud_api_url: Url,
-    pub(crate) retriever_url: Url,
-    pub(crate) guardian_url: Url,
+    pub(crate) retriever: RetrieverApi,
+    pub(crate) guardian: GuardianApiClient,
     pub(crate) http_client: HttpClient,
 }
 
@@ -23,8 +27,8 @@ impl Default for ApiClient {
         // Ensure its the same port as you set in the .env from the local_api folder
         Self {
             cloud_api_url: Url::parse(LOCAL_API).unwrap(),
-            retriever_url: Url::parse(RETRIEVER_API).unwrap(),
-            guardian_url: Url::parse(GUARDIAN_API).unwrap(),
+            retriever: RetrieverApi::new(RETRIEVER_API).unwrap(),
+            guardian: GuardianApiClient::new(GUARDIAN_API).unwrap(),
             http_client: HttpClient::new("demia".to_string()),
         }
     }
@@ -35,8 +39,8 @@ impl TryFrom<&ApplicationConfiguration> for ApiClient {
     fn try_from(config: &ApplicationConfiguration) -> Result<Self, Self::Error> {
         Ok(Self {
             cloud_api_url: Url::parse(&config.amazon_api)?,
-            retriever_url: Url::parse(&config.retriever_api)?,
-            guardian_url: Url::parse(&config.guardian_api)?,
+            guardian: GuardianApiClient::new(config.guardian_api.as_ref())?,
+            retriever: RetrieverApi::new(config.retriever_api.as_ref())?,
             ..Default::default()
         })
     }
@@ -56,19 +60,25 @@ impl ApiClient {
         };
 
         if let Some(retriever_url) = retriever_url {
-            client.retriever_url = retriever_url
-                .try_into()
-                .map_err(|e| ApiError::NotFound(e.to_string()))?;
+            client.retriever = RetrieverApi::new(retriever_url)?;
         }
         if let Some(guardian_url) = guardian_url {
-            client.guardian_url = guardian_url.try_into().map_err(|e| ApiError::NotFound(e.to_string()))?;
+            client.guardian = GuardianApiClient::new(guardian_url)?;
         }
 
         Ok(client)
     }
 
-    pub(crate) fn get_timeout(&self) -> Duration {
-        Duration::from_secs(10)
+    pub(crate) fn get_timeout() -> Duration {
+        API_TIMEOUT
+    }
+
+    pub fn retriever(&self) -> &RetrieverApi {
+        &self.retriever
+    }
+
+    pub fn guardian(&self) -> &GuardianApiClient {
+        &self.guardian
     }
 
     pub async fn request_balance(&self, bearer: &str, address: &Address) -> ApiResult<String> {
@@ -82,7 +92,7 @@ impl ApiClient {
 
         // TODO: Add bearer
 
-        let res = self.http_client.get_bytes(url, bearer, self.get_timeout()).await?;
+        let res = self.http_client.get_bytes(url, bearer, Self::get_timeout()).await?;
         print!("code: {}", &res.status());
         res.into_text().await
     }
@@ -101,7 +111,7 @@ impl ApiClient {
 
         // TODO set username & password?
 
-        let res = self.http_client.post_json(url, bearer, self.get_timeout(), json).await;
+        let res = self.http_client.post_json(url, bearer, Self::get_timeout(), json).await;
         match res {
             Ok(r) => r.into_json().await,
             Err(e) => Err(e),
@@ -121,7 +131,7 @@ impl ApiClient {
 
         // TODO: Add bearer
 
-        let res = self.http_client.get_bytes(url, bearer, self.get_timeout()).await;
+        let res = self.http_client.get_bytes(url, bearer, Self::get_timeout()).await;
         match res {
             Ok(r) => r.into_json().await,
             Err(e) => Err(e),

@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 // Stronghold keys
 pub const STRONGHOLD_KEY_HEDERA_PASSWORD: &str = "HEDERA_PASSWORD";
 pub const STRONGHOLD_KEY_HEDERA_USERNAME: &str = "HEDERA_USERNAME";
@@ -13,3 +15,6 @@ pub const LOCAL_API: &str = "http://localhost:1111";
 pub const RETRIEVER_API: &str = "http://localhost:9000";
 pub const GUARDIAN_API: &str = "http://guardian.demia-nodes.net/api/v1";
 pub const SECRETS_API: &str = "https://auth.demia-testing-domain.com/realms/DemiaTest";
+
+// Timeouts
+pub const API_TIMEOUT: Duration = Duration::from_secs(10);
