@@ -138,7 +138,13 @@ impl UserIdentity {
         };
 
         // fetch identity via client
-        let iota_doc = identity.doc().await?;
+        let iota_doc = identity.doc().await;
+        if let Err(_e) = iota_doc {
+            // Most likely from a different network, or it was pruned.
+            // Throw error for now
+            return Err(IdentityError::IdentityDIDError("Failed to fetch doc".to_string()).into());
+        }
+        let iota_doc = iota_doc?;
 
         // check that all vars are retrievable
         let signing_key = &stronghold_config.key_locations.signature_keys;

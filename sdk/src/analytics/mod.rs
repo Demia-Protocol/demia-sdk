@@ -60,10 +60,23 @@ pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> Vec<R
         daily_avg.sensors.iter().for_each(|(_id, sensor_avg)| {
             for record in sensor_avg.records.iter() {
                 if record.raw.as_ref().and_then(|raw| raw.get(dataset)).is_some() {
-                    daily_sensor_data.push((*record).clone());
+                    let mut record = (*record).clone();
+                    if let Some(raw) = record.raw.as_ref() {
+                        let raw = raw.get(dataset).unwrap();
+                        record.sum = raw
+                            .clone()
+                            .as_str()
+                            .map(|s| {
+                                // Temp, some values may use commas as decimal separators
+                                s.replace(",", "").parse::<f64>().unwrap_or_default()
+                            })
+                            .unwrap();
+                    }
+                    daily_sensor_data.push(record);
                 }
             }
         })
     });
+    daily_sensor_data.sort_by(|a, b| a.data_timestamp.cmp(&b.data_timestamp));
     daily_sensor_data
 }

@@ -84,7 +84,6 @@ pub struct Site {
     #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
-    #[serde(skip_serializing_if = "HashSet::is_empty")]
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
 }
 

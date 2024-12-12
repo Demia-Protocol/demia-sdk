@@ -189,8 +189,33 @@ pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<
     } else {
         Vec::new()
     };
-
-    let mut new_params = vec![];
+    let mut new_params = vec![
+        Parameter::Calculation(CalculationParameter {
+            id: "ElectricityConsumed".to_string(),
+            text: "Emissions from electricity consumed from the grid".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+        Parameter::Calculation(CalculationParameter {
+            id: "FossilFuelConsumption".to_string(),
+            text: "Fossil Fuel Use for AD Project (daily)".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+        Parameter::Calculation(CalculationParameter {
+            id: "AnaerobicDigestion".to_string(),
+            text: "Anaerobic Digestion Emissions".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+        Parameter::Calculation(CalculationParameter {
+            id: "EffluentStorageGHGEmissions".to_string(),
+            text: "Total GHG Emissions for Effluent Storage for the Reporting Period".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+        Parameter::Calculation(CalculationParameter {
+            id: "WeightedBiogasAvg".to_string(),
+            text: "Weighted average of all destruction devices used (flaring)".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+    ];
     for param in params {
         new_params.push(Parameter::Input(param.clone()));
     }
@@ -281,6 +306,16 @@ pub async fn equation10(params: &[InputParameter], records: &[Record]) -> Result
         Parameter::Static(GWP_CH4.clone()),
         Parameter::Static(AD_EFFICIENCY.clone()),
         Parameter::Static(CH4_VENT.clone()),
+        Parameter::Calculation(CalculationParameter {
+            id: "WeightedBiogasAvg".to_string(),
+            text: "Weighted average of all destruction devices used (flaring)".to_string(),
+            unit: "t CO2e".to_string(),
+        }),
+        Parameter::Calculation(CalculationParameter {
+            id: "MethaneCollected".to_string(),
+            text: "Quantity of Methane Collected and Metered".to_string(),
+            unit: "t CH4".to_string(),
+        }),
     ];
 
     for param in params {
