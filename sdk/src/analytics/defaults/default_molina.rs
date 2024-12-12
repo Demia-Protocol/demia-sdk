@@ -36,19 +36,19 @@ pub static MOLINA_CALCULATIONS: LazyLock<Vec<Calculation>> = LazyLock::new(|| {
             })),
         },
         Calculation {
-            id: "ElectricityGeneration".to_string(),
-            text: "Electricity Generation and Transmission".to_string(),
+            id: "ElectricityConsumed".to_string(),
+            text: "Emissions from electricity consumed from the grid".to_string(),
             parameters: vec![],
-            calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|_params, _records| {
-                Box::pin(async move { equation8().await })
+            calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
+                Box::pin(async move { equation8(&params, &records).await })
             })),
         },
         Calculation {
             id: "FossilFuelConsumption".to_string(),
             text: "Fossil Fuel Use for AD Project (daily)".to_string(),
             parameters: vec![],
-            calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|_params, _records| {
-                Box::pin(async move { equation9().await })
+            calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
+                Box::pin(async move { equation9(&params, &records).await })
             })),
         },
         Calculation {

@@ -4,9 +4,26 @@ use chrono::{DateTime, NaiveDate, Utc};
 
 use super::{defaults::constants::*, get_values_and_inputs};
 use crate::{
-    errors::AnalyticsResult as Result,
+    errors::{AnalyticsError, AnalyticsResult as Result},
     models::{CalculationParameter, InputParameter, Parameter, Record, ValueSet},
 };
+
+pub async fn run_equation(label: &str, params: &[InputParameter], records: &[Record]) -> Result<ValueSet> {
+    match label {
+        "WasteWaterTreatment" => equation5(params, records).await,
+        "SolidWasteEmissions" => equation6(params, records).await,
+        "TotalGHGEmissions" => equation7(params, records).await,
+        "ElectricityConsumed" => equation8(params, records).await,
+        "FossilFuelConsumption" => equation9(params, records).await,
+        "AnaerobicDigestion" => equation10(params, records).await,
+        "MethaneCollected" => equation11(params, records).await,
+        "WeightedBiogasAvg" => equation12(params, records).await,
+        "BiogasCollected" => equation14(params, records).await,
+        "EffluentStorageGHGEmissions" => equation15(params, records).await,
+        "TotalMeteredMethaneDestroyed" => equation18(params, records).await,
+        _ => Err(AnalyticsError::NoCalculationFound(label.to_string())),
+    }
+}
 
 // Wastewater (liquid industrial waste) of the given stream
 pub async fn equation5(params: &[InputParameter], records: &[Record]) -> Result<ValueSet> {
@@ -133,11 +150,11 @@ pub async fn equation6(params: &[InputParameter], records: &[Record]) -> Result<
 
 // Total Emissions for the Reporting Period
 pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<ValueSet> {
-    let eq8 = equation8().await?.data;
-    let eq9 = equation9().await?.data;
-    let eq10 = equation10(params, records).await?.data;
-    let eq12 = equation12(params, records).await?;
-    let eq15 = equation15(params, records).await?.data;
+    let elec_use = equation8(params, records).await?.data;
+    let fossil_fuel = equation9(params, records).await?.data;
+    let ann_dig = equation10(params, records).await?.data;
+    let bde = equation12(params, records).await?;
+    let effluent_storage = equation15(params, records).await?.data;
 
     let (values, inputs) = get_values_and_inputs(params, records).await;
 
@@ -157,18 +174,18 @@ pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<
         }
     }
 
-    let result: Vec<(DateTime<Utc>, f64)> = if !eq12.data.is_empty() {
-        eq12.data
+    let result: Vec<(DateTime<Utc>, f64)> = if !bde.data.is_empty() {
+        bde.data
             .iter()
             // For Equations 8 and 9 there is only one value in the array
             .map(|(timestamp, record)| {
-                let eq_10_val = eq10
+                let ann_dig_val = ann_dig
                     .iter()
                     .find(|(t, _)| timestamp.eq(t))
                     .map(|(_, v)| v)
                     .cloned()
                     .unwrap_or_default();
-                let eq_15_val = eq15
+                let effl_storage_val = effluent_storage
                     .iter()
                     .find(|(t, _)| timestamp.eq(t))
                     .map(|(_, v)| v)
@@ -181,8 +198,8 @@ pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<
                     .cloned()
                     .unwrap_or_default();
                 (
-                    timestamp.clone(),
-                    record + eq8[0].1 + eq9[0].1 + eq_10_val + flare_e_val + eq_15_val,
+                    *timestamp,
+                    record + elec_use[0].1 + fossil_fuel[0].1 + ann_dig_val + flare_e_val + effl_storage_val,
                 )
             })
             .collect()
@@ -229,47 +246,47 @@ pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<
     ))
 }
 
-// Electricity Generation and Transmission (No active monitoring)
-pub async fn equation8() -> Result<ValueSet> {
-    let (_, inputs) = get_values_and_inputs(
-        &[InputParameter {
-            id: String::from("ElectricityProduced"),
-            unit: String::from("kWh"),
-            text: String::from("Electricity Produced"),
-            label: None,
-        }],
-        &[],
-    )
-    .await;
-    let params = vec![
-        Parameter::Static(EF_ELEC.clone()),
-        Parameter::Input(InputParameter {
-            id: String::from("ElectricityProduced"),
-            unit: String::from("kWh"),
-            text: String::from("Electricity Produced"),
-            label: None,
-        }),
-    ];
+// Electricity Consumption (No active monitoring)
+pub async fn equation8(_params: &[InputParameter], records: &[Record]) -> Result<ValueSet> {
+    let params = vec![BIOGAS_GENERATED.clone()];
+    let (values, inputs) = get_values_and_inputs(&params, records).await;
+    let mut results = Vec::new();
+
+    if let Some(daily_biogas) = values.get("BiogasGenerated") {
+        results = daily_biogas.iter().map(|r| (r.data_timestamp.and_utc(), 0.0)).collect()
+    }
+
+    let params = vec![Parameter::Static(EF_ELEC.clone())];
 
     Ok(ValueSet::new(
         inputs,
-        [(Utc::now(), 0.0)].into(),
-        "Electricity Generation and Transmission".to_string(),
+        results,
+        "Emissions from electricity consumed from the grid".to_string(),
         "t CO2e".to_string(),
         params,
     ))
 }
 
 // Fossil Fuel Use for AD Project (daily)
-pub async fn equation9() -> Result<ValueSet> {
+pub async fn equation9(_params: &[InputParameter], records: &[Record]) -> Result<ValueSet> {
     // Calculation is conducted on daily intervals
     let daily_result = FUEL_CONSUMPTION.value / 365.0;
+    let params = vec![BIOGAS_GENERATED.clone()];
+    let (values, inputs) = get_values_and_inputs(&params, records).await;
+    let mut results = Vec::new();
+
+    if let Some(daily_biogas) = values.get("BiogasGenerated") {
+        results = daily_biogas
+            .iter()
+            .map(|r| (r.data_timestamp.and_utc(), daily_result * 2.8316846592)) // tonnes to m^3
+            .collect()
+    }
+
     let params = vec![Parameter::Static(FUEL_CONSUMPTION.clone())];
 
     Ok(ValueSet::new(
-        HashMap::new(),
-        // tonnes to m^3
-        [(Utc::now(), daily_result * 2.8316846592)].into(),
+        inputs,
+        results,
         "Daily Fossil Fuel Use for Anaerobic Digestion".to_string(),
         "m3".to_string(),
         params,
@@ -294,7 +311,7 @@ pub async fn equation10(params: &[InputParameter], records: &[Record]) -> Result
                     let n = if *r == 0.0 || ch4_data == 0.0 { 1.0 } else { 2.0 };
 
                     (
-                        i.clone(),
+                        *i,
                         GWP_CH4.value * (ch4_data * (n / (AD_EFFICIENCY.value - r) + CH4_VENT.value)),
                     )
                 })

@@ -1,7 +1,10 @@
 pub mod analytics;
+pub mod baseline_emissions;
+
 use std::collections::HashMap;
 
 pub use analytics::*;
+pub use baseline_emissions::*;
 use chrono::{DateTime, NaiveDate, Utc};
 
 use crate::models::{InputParameter, Record};
