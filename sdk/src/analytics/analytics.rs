@@ -5,7 +5,7 @@ use chrono::{DateTime, NaiveDate, Utc};
 use super::{defaults::constants::*, get_values_and_inputs};
 use crate::{
     errors::AnalyticsResult as Result,
-    models::{InputParameter, Parameter, Record, ValueSet},
+    models::{CalculationParameter, InputParameter, Parameter, Record, ValueSet},
 };
 
 // Wastewater (liquid industrial waste) of the given stream
