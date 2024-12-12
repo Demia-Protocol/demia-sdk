@@ -42,6 +42,9 @@ pub enum Error {
     #[error("Secret error: {0}")]
     Secret(#[from] SecretError),
 
+    #[error("Analytics error: {0}")]
+    Analytics(#[from] AnalyticsError),
+
     #[error("Streams error: {0}")]
     Streams(String),
 
