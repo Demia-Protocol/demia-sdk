@@ -1,6 +1,7 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     ops::{Index, IndexMut},
+    sync::Arc,
 };
 
 use indexmap::IndexMap;
@@ -8,7 +9,6 @@ use rocket_okapi::okapi::schemars;
 
 use super::AnalyticsProfile;
 use crate::{
-    errors::AnalyticsError,
     models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
     utils::map_serialize,
 };
@@ -84,8 +84,7 @@ pub struct Site {
     #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub profiles: Option<Vec<AnalyticsProfile>>,
+    pub profiles: HashSet<Arc<AnalyticsProfile>>,
 }
 
 impl Site {
@@ -108,20 +107,34 @@ impl Site {
         }
     }
 
-    pub fn get_analytics_profile(&self, id: String) -> Result<&AnalyticsProfile, AnalyticsError> {
-        self.profiles
-            .as_ref()
-            .and_then(|profiles| profiles.iter().find(|p| p.id == id))
-            .ok_or(AnalyticsError::NoProfileFound(id))
+    pub fn get_analytics_profiles(&self) -> &HashSet<Arc<AnalyticsProfile>> {
+        &self.profiles
     }
 
-    pub fn add_analytics_profile(&mut self, profile: AnalyticsProfile) {
-        self.profiles.get_or_insert_with(Vec::new).push(profile);
+    pub fn get_analytics_profile(&self, profile_id: String) -> Option<&AnalyticsProfile> {
+        self.profiles.iter().find_map(|profile| {
+            if profile.id == profile_id {
+                Some(profile.as_ref())
+            } else {
+                None
+            }
+        })
     }
 
-    pub fn remove_analytics_profile(&mut self, id: &str) {
-        let profiles = self.profiles.get_or_insert_with(Vec::new);
-        profiles.retain(|p| p.id != id);
+    pub fn add_analytics_profile(&mut self, profile: Arc<AnalyticsProfile>) -> bool {
+        self.profiles.insert(profile)
+    }
+    pub fn remove_analytics_profile_by_id(&mut self, profile: String) -> bool {
+        let profile = self.profiles.iter().find(|p| p.id == profile);
+        if let Some(p) = profile {
+            self.profiles.remove(&p.clone())
+        } else {
+            false
+        }
+    }
+
+    pub fn remove_analytics_profile(&mut self, profile: &Arc<AnalyticsProfile>) -> bool {
+        self.profiles.remove(profile)
     }
 }
 

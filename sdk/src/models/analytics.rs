@@ -1,4 +1,8 @@
-use std::sync::Arc;
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+    sync::Arc,
+};
 
 use futures_util::future::BoxFuture;
 use serde::{Deserialize, Serialize};
@@ -14,13 +18,60 @@ pub struct AnalyticsProfile {
     pub calculations: Vec<Calculation>,
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
+impl PartialEq for AnalyticsProfile {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for AnalyticsProfile {}
+
+impl Hash for AnalyticsProfile {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl AnalyticsProfile {
+    pub async fn get_calculation(&mut self, id: &str) -> Option<&AsyncCalculationFunction<AnalyticsError>> {
+        if let Some(calc) = self.calculations.iter_mut().find(|calc| calc.id.eq(id)) {
+            Some(&calc.calculation_function.0)
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct Calculation {
     pub id: String,
     pub text: String,
     pub parameters: Vec<Parameter>,
     #[serde(skip)]
     pub calculation_function: AsyncCalculationFunctionWrapper<AnalyticsError>,
+}
+
+impl Default for Calculation {
+    fn default() -> Self {
+        Calculation {
+            id: "".to_owned(),
+            text: "".to_owned(),
+            parameters: Vec::new(),
+            calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|_, _| {
+                Box::pin(async { Ok(ValueSet::default()) })
+            })),
+        }
+    }
+}
+
+impl fmt::Debug for Calculation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AnalyticsProfile")
+            .field("id", &self.id)
+            .field("text", &self.text)
+            .field("parameters", &self.parameters)
+            .finish()
+    }
 }
 
 #[derive(Clone)]

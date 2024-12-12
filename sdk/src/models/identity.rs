@@ -72,17 +72,21 @@ impl UserIdentity {
             Some(doc_id) => {
                 info!("There is one, gonna try and return it");
 
-                info!("Found existing Identity doc id: {:?}", doc_id);
                 // TODO: Error
-                let doc_id_str = String::from_utf8(doc_id).unwrap();
-                info!("Doc id: {}", doc_id_str);
-                let doc_id = DemiaDID::parse(doc_id_str)?;
-
-                UserIdentity {
-                    stronghold: Arc::new(RwLock::new(SecretManager::Stronghold(stronghold_adapter))),
-                    config: stronghold_config.clone(),
-                    doc_id,
-                    client: client.clone(),
+                let doc_id_str = String::from_utf8(doc_id)
+                    .map_err(|_| IdentityError::IdentityError("invalid utf8 doc id".to_string()))?;
+                let doc_id = DemiaDID::parse(doc_id_str);
+                if let Ok(doc_id) = doc_id {
+                    UserIdentity {
+                        stronghold: Arc::new(RwLock::new(SecretManager::Stronghold(stronghold_adapter))),
+                        config: stronghold_config.clone(),
+                        doc_id,
+                        client: client.clone(),
+                    }
+                } else {
+                    // Most likely from a different network, or it was pruned.
+                    // Throw error for now
+                    return Err(IdentityError::IdentityDIDError("Failed to fetch doc".to_string()).into());
                 }
             }
             None => {
@@ -138,7 +142,13 @@ impl UserIdentity {
         };
 
         // fetch identity via client
-        let iota_doc = identity.doc().await?;
+        let iota_doc = identity.doc().await;
+        if let Err(_e) = iota_doc {
+            // Most likely from a different network, or it was pruned.
+            // Throw error for now
+            return Err(IdentityError::IdentityDIDError("Failed to fetch doc".to_string()).into());
+        }
+        let iota_doc = iota_doc?;
 
         // check that all vars are retrievable
         let signing_key = &stronghold_config.key_locations.signature_keys;
