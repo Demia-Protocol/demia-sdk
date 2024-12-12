@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, slice::Iter};
+
 use chrono::{DateTime, Utc};
 
 use super::Parameter;
@@ -7,8 +8,8 @@ use crate::utils::{deserialize_null_default, valueset_serialize::deserialize_dat
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ValueSetsWrap {
-    site_id: String,
-    value_sets: Vec<ValueSet>,
+    pub site_id: String,
+    pub value_sets: Vec<ValueSet>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -26,6 +27,15 @@ pub struct ValueSet {
     // as NAN/null and break deserialization https://github.com/serde-rs/json/issues/202
     #[serde(deserialize_with = "deserialize_null_default")]
     pub avg: f64,
+}
+
+impl<'a> IntoIterator for &'a ValueSet {
+    type Item = &'a (DateTime<Utc>, f64);
+    type IntoIter = Iter<'a, (DateTime<Utc>, f64)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
 }
 
 impl ValueSet {

@@ -34,10 +34,19 @@ impl Response {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct HttpClient {
     client: reqwest::Client,
     pub(crate) user_agent: String,
+}
+
+impl Default for HttpClient {
+    fn default() -> Self {
+        Self {
+            client: reqwest::Client::new(),
+            user_agent: "demia".to_string(),
+        }
+    }
 }
 
 impl HttpClient {

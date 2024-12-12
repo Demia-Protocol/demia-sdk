@@ -13,4 +13,6 @@ pub enum AnalyticsError {
     NoVaultClient,
     #[error("No profile found by the name of {0}")]
     NoProfileFound(String),
+    #[error("No calculation found with the id {0}")]
+    NoCalculationFound(String),
 }
