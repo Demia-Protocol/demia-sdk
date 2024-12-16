@@ -1,19 +1,24 @@
+use std::collections::HashMap;
+
+use identity_demia::{credential::Credential, document::CoreDocument};
 use serde::{Deserialize, Serialize};
+
+use crate::utils::constants::*;
 
 fn base_url() -> String {
     "http://localhost:14265".to_string()
 }
 
 fn stronghold_doc_keys() -> String {
-    "streams_doc_keys".to_string()
+    STRONGHOLD_DOC_KEYS.to_string()
 }
 
 fn stronghold_sig_keys() -> String {
-    "streams_sig_keys".to_string()
+    STRONGHOLD_SIG_KEYS.to_string()
 }
 
 fn stronghold_ke_keys() -> String {
-    "streams_ke_keys".to_string()
+    STRONGHOLD_KE_KEYS.to_string()
 }
 
 fn streams_backup() -> String {
@@ -29,11 +34,33 @@ fn debug_location() -> String {
 }
 
 fn local_api() -> String {
-    "http://localhost:1111".to_string()
+    LOCAL_API.to_string()
+}
+
+fn retriever_api() -> String {
+    RETRIEVER_API.to_string()
+}
+
+fn guardian_api() -> String {
+    GUARDIAN_API.to_string()
 }
 
 fn secrets_api() -> String {
-    "https://auth.demia-testing-domain.com/realms/DemiaTest".to_string()
+    SECRETS_API.to_string()
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct BaseConfiguration {
+    #[serde(default)]
+    pub logging: LoggingConfiguration,
+    #[serde(default)]
+    pub application: ApplicationConfiguration,
+    #[serde(default)]
+    pub streams: StreamsConfiguration,
+    #[serde(default)]
+    pub stronghold: StrongholdConfiguration,
+    #[serde(default)]
+    pub identity: IdentityConfiguration,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -54,6 +81,10 @@ pub struct ApplicationConfiguration {
     pub use_local_api: bool,
     #[serde(default = "secrets_api")]
     pub secrets_api: String,
+    #[serde(default = "retriever_api")]
+    pub retriever_api: String,
+    #[serde(default = "guardian_api")]
+    pub guardian_api: String,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -105,4 +136,13 @@ pub struct StrongholdKeyFragments {
     pub signature_keys: String,
     #[serde(default = "stronghold_ke_keys")]
     pub key_exchange_keys: String,
+}
+
+#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct GuardianConfigs {
+    pub operator_id: String,
+    pub username: String,
+    pub did_doc: Option<CoreDocument>,
+    pub policy: String,
+    pub vcs: HashMap<String, (String, Credential)>,
 }

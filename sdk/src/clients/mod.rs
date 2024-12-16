@@ -1,9 +1,15 @@
-mod api;
 mod auth0;
+mod http;
+
+#[cfg(feature = "aws")]
 mod aws;
+
+#[cfg(feature = "aws_rusoto")]
 mod aws_rusoto;
+
+#[cfg(feature = "google_cloud")]
 mod gc;
-mod http_client;
+
 mod keycloak;
 mod token;
 
@@ -14,19 +20,21 @@ use std::{
     io::{Read, Write},
 };
 
-pub use api::ApiClient;
 pub use auth0::Auth0Client;
+#[cfg(feature = "aws")]
 pub use aws::AwsClient;
+#[cfg(feature = "aws_rusoto")]
 pub use aws_rusoto::AwsRusotoClient;
 use chrono::{DateTime, Utc};
+#[cfg(feature = "google_cloud")]
 pub use gc::GoogleCloud;
-pub(crate) use http_client::*;
+pub use http::*;
 pub use keycloak::Keycloak;
 use rocket_okapi::okapi::schemars;
 pub use token::TokenManager;
 
 use crate::{
-    errors::{SecretResult, StorageError, StorageResult},
+    errors::{SecretResult, StorageResult},
     models::{TokenType, TokenWrap},
 };
 
@@ -134,7 +142,9 @@ pub(crate) fn default_secret() -> Box<impl SecretManager> {
 
 pub enum Clients {
     AWS(AwsClient),
+    #[cfg(feature = "aws_rusoto")]
     AWSRusoto(AwsRusotoClient),
+    #[cfg(feature = "google_cloud")]
     GC(GoogleCloud),
 }
 

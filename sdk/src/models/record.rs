@@ -45,11 +45,7 @@ impl Record {
         }
     }
 
-    pub fn f32(&self) -> f32 {
-        match &self.sum {
-            NestedReadingValue::Float(val) => *val,
-            NestedReadingValue::Int(val) => *val as f32,
-            _ => 0.0,
-        }
+    pub fn f64(&self) -> f64 {
+        self.sum.as_f64().unwrap_or_default()
     }
 }

@@ -1,5 +1,7 @@
 // Demia SDK
 
+pub mod analytics;
+pub mod annotator;
 pub mod clients;
 pub mod configuration;
 pub mod errors;

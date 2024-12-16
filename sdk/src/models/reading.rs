@@ -39,14 +39,14 @@ impl WrappedReadingType {
     // TODO: Make a more universal way of extracting custom columns with expected value type
     pub fn val(&self) -> NestedReadingValue {
         match self {
-            WrappedReadingType::Sensor(reading) => NestedReadingValue::Float(reading.value),
+            WrappedReadingType::Sensor(reading) => reading.value.clone(),
             WrappedReadingType::Sheet(sheet) => match sheet.value.get("Toneladas ") {
                 Some(str) => NestedReadingValue::Float(
-                    f32::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
+                    f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
                 ),
                 None => match sheet.value.get("Biogás Generado (Nm3)") {
                     Some(str) => NestedReadingValue::Float(
-                        f32::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
+                        f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
                     ),
                     None => NestedReadingValue::Empty,
                 },
@@ -69,7 +69,7 @@ impl WrappedReadingType {
 #[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
 pub struct SensorReading {
     pub id: String,
-    pub value: f32,
+    pub value: NestedReadingValue,
     pub timestamp: DateTime<Utc>,
 }
 
@@ -113,12 +113,23 @@ pub struct NestedReading {
 
 #[derive(Debug, Clone, Default, Serialize, schemars::JsonSchema)]
 pub enum NestedReadingValue {
-    Float(f32),
+    Float(f64),
     String(String),
     Int(i32),
     Bool(bool),
     #[default]
     Empty,
+}
+
+
+impl NestedReadingValue {
+    pub fn as_f64(&self) -> Option<f64> {
+        match self {
+            NestedReadingValue::Float(val) => Some(*val),
+            NestedReadingValue::Int(val) => Some(*val as f64),
+            _ => None,
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for NestedReadingValue {
@@ -131,7 +142,7 @@ impl<'de> Deserialize<'de> for NestedReadingValue {
         // Check if the value is already a `NestedReadingValue`-like structure
         if let Some(obj) = value.as_object() {
             if let Some(float_value) = obj.get("Float").and_then(Value::as_f64) {
-                return Ok(NestedReadingValue::Float(float_value as f32));
+                return Ok(NestedReadingValue::Float(float_value));
             } else if let Some(string_value) = obj.get("String").and_then(Value::as_str) {
                 return Ok(NestedReadingValue::String(string_value.to_string()));
             } else if let Some(int_value) = obj.get("Int").and_then(Value::as_i64) {
@@ -147,7 +158,7 @@ impl<'de> Deserialize<'de> for NestedReadingValue {
 
         // Match different possible types for custom deserialization
         if let Some(float_value) = value.as_f64() {
-            Ok(NestedReadingValue::Float(float_value as f32))
+            Ok(NestedReadingValue::Float(float_value))
         } else if let Some(string_value) = value.as_str() {
             Ok(NestedReadingValue::String(string_value.to_string()))
         } else if let Some(int_value) = value.as_i64() {
@@ -170,9 +181,16 @@ impl<'de> Deserialize<'de> for NestedReadingValue {
 
 impl From<f32> for NestedReadingValue {
     fn from(value: f32) -> Self {
+        NestedReadingValue::Float(value as f64)
+    }
+}
+
+impl From<f64> for NestedReadingValue {
+    fn from(value: f64) -> Self {
         NestedReadingValue::Float(value)
     }
 }
+
 
 impl From<&str> for NestedReadingValue {
     fn from(value: &str) -> Self {
@@ -289,7 +307,7 @@ fn fill_empty_headers(headers: &csv::StringRecord) -> Vec<String> {
 }
 
 fn parse_value(value: &str) -> NestedReadingValue {
-    if let Ok(f) = value.parse::<f32>() {
+    if let Ok(f) = value.parse::<f64>() {
         NestedReadingValue::Float(f)
     } else if let Ok(i) = value.parse::<i32>() {
         NestedReadingValue::Int(i)
