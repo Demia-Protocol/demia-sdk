@@ -12,8 +12,5 @@ pub mod default_molina;
 pub static PROFILES: LazyLock<Vec<Arc<AnalyticsProfile>>> = LazyLock::new(|| vec![(*MOLINA_PROFILE).clone()]);
 
 pub fn profile_by_id(profile_id: &str) -> Option<Arc<AnalyticsProfile>> {
-    PROFILES
-        .iter()
-        .find(|&profile| profile.id == profile_id)
-        .cloned()
+    PROFILES.iter().find(|&profile| profile.id == profile_id).cloned()
 }
