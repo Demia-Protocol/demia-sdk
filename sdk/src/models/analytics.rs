@@ -46,6 +46,8 @@ impl AnalyticsProfile {
 pub struct Calculation {
     pub id: String,
     pub text: String,
+    #[serde(default)]
+    pub equation: String,
     pub parameters: Vec<Parameter>,
     #[serde(skip)]
     pub calculation_function: AsyncCalculationFunctionWrapper<AnalyticsError>,
@@ -56,6 +58,7 @@ impl Default for Calculation {
         Calculation {
             id: "".to_owned(),
             text: "".to_owned(),
+            equation: "".to_owned(),
             parameters: Vec::new(),
             calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|_, _| {
                 Box::pin(async { Ok(ValueSet::default()) })
@@ -69,6 +72,7 @@ impl fmt::Debug for Calculation {
         f.debug_struct("AnalyticsProfile")
             .field("id", &self.id)
             .field("text", &self.text)
+            .field("equation", &self.equation)
             .field("parameters", &self.parameters)
             .finish()
     }
