@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, NaiveDate, Utc};
-use crate::analytics::defaults::analytics::DailyAverage;
-use crate::models::{InputParameter, NestedReadingValue, Record};
+
+use crate::{
+    analytics::defaults::analytics::DailyAverage,
+    models::{InputParameter, NestedReadingValue, Record},
+};
 
 pub mod defaults;
 
@@ -61,14 +64,14 @@ pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> Vec<R
                     let mut record = (*record).clone();
                     if let Some(raw) = record.raw.as_ref() {
                         let raw = raw.get(dataset).unwrap();
-                        record.sum = NestedReadingValue::Float(raw
-                            .clone()
-                            .as_str()
-                            .map(|s| {
-                                // Temp, some values may use commas as decimal separators
-                                s.replace(",", "").parse::<f64>().unwrap_or_default()
-                            })
-                            .unwrap()
+                        record.sum = NestedReadingValue::Float(
+                            raw.clone()
+                                .as_str()
+                                .map(|s| {
+                                    // Temp, some values may use commas as decimal separators
+                                    s.replace(",", "").parse::<f64>().unwrap_or_default()
+                                })
+                                .unwrap(),
                         )
                     }
                     daily_sensor_data.push(record);

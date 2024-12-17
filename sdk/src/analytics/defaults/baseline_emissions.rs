@@ -1,5 +1,7 @@
-use crate::analytics::{all_daily_averages, defaults::constants::feedstock_types::feedstock_types};
-use crate::models::Record;
+use crate::{
+    analytics::{all_daily_averages, defaults::constants::feedstock_types::feedstock_types},
+    models::Record,
+};
 
 // Constants
 const B_OWW_S: f64 = 0.21;

@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-use std::error::Error;
-use std::str::FromStr;
+use std::{collections::HashMap, error::Error, str::FromStr};
 
 use alvarium_sdk_rust::annotations::Annotation;
 use chrono::{DateTime, Datelike, Timelike, Utc};
@@ -41,13 +39,13 @@ impl WrappedReadingType {
         match self {
             WrappedReadingType::Sensor(reading) => reading.value.clone(),
             WrappedReadingType::Sheet(sheet) => match sheet.value.get("Toneladas ") {
-                Some(str) => NestedReadingValue::Float(
-                    f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
-                ),
+                Some(str) => {
+                    NestedReadingValue::Float(f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap())
+                }
                 None => match sheet.value.get("Biogás Generado (Nm3)") {
-                    Some(str) => NestedReadingValue::Float(
-                        f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap()
-                    ),
+                    Some(str) => {
+                        NestedReadingValue::Float(f64::from_str(&str.to_string().replace([',', '"'], "")).unwrap())
+                    }
                     None => NestedReadingValue::Empty,
                 },
             },
@@ -121,7 +119,6 @@ pub enum NestedReadingValue {
     Empty,
 }
 
-
 impl NestedReadingValue {
     pub fn as_f64(&self) -> Option<f64> {
         match self {
@@ -191,7 +188,6 @@ impl From<f64> for NestedReadingValue {
     }
 }
 
-
 impl From<&str> for NestedReadingValue {
     fn from(value: &str) -> Self {
         NestedReadingValue::String(value.to_string())
@@ -216,9 +212,7 @@ impl From<i32> for NestedReadingValue {
     }
 }
 
-
 pub type NestedMap = HashMap<String, Vec<NestedReading>>;
-
 
 pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> {
     let csv_content = csv_content.replace("\\n", "\n");
@@ -229,14 +223,15 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
     let mut sections = HashMap::new();
 
     let h = reader.headers()?;
-    let headers = fill_empty_headers(&h);
+    let headers = fill_empty_headers(h);
 
     // Collect all records into a vector of StringRecords.
-    let records: Vec<csv::StringRecord> = reader.records()
+    let records: Vec<csv::StringRecord> = reader
+        .records()
         .collect::<Result<Vec<csv::StringRecord>, csv::Error>>()?;
 
     // Transpose the data (swap rows and columns).
-    let num_columns = records.iter().map(|r| r.len()).max().unwrap_or(0);  // Get max columns count
+    let num_columns = records.iter().map(|r| r.len()).max().unwrap_or(0); // Get max columns count
     let mut columns: Vec<Vec<String>> = vec![Vec::new(); num_columns];
 
     for record in records {
@@ -247,22 +242,27 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
 
     // Extract date time values from mappings
     let mut datetime = chrono::Utc::now();
-    columns.iter().for_each(|c| {
-        match c[0].as_str() {
-            "DOY" => {
-                println!("DOY: {}", c[2].parse::<f32>().unwrap().floor() as u32);
-                datetime = datetime.with_ordinal(c[2].parse::<f32>().unwrap().floor() as u32).unwrap()
-            },
-            "time" => {
-                let hour = c[2].split(":").nth(0).unwrap().parse::<u32>().unwrap();
-                let minute = c[2].split(":").nth(1).unwrap().parse::<u32>().unwrap();
-                datetime = datetime.with_hour(hour).unwrap()
-                    .with_minute(minute).unwrap()
-                    .with_second(0).unwrap()
-                    .with_nanosecond(0).unwrap();
-            },
-            _ => ()
+    columns.iter().for_each(|c| match c[0].as_str() {
+        "DOY" => {
+            println!("DOY: {}", c[2].parse::<f32>().unwrap().floor() as u32);
+            datetime = datetime
+                .with_ordinal(c[2].parse::<f32>().unwrap().floor() as u32)
+                .unwrap()
         }
+        "time" => {
+            let hour = c[2].split(":").next().unwrap().parse::<u32>().unwrap();
+            let minute = c[2].split(":").nth(1).unwrap().parse::<u32>().unwrap();
+            datetime = datetime
+                .with_hour(hour)
+                .unwrap()
+                .with_minute(minute)
+                .unwrap()
+                .with_second(0)
+                .unwrap()
+                .with_nanosecond(0)
+                .unwrap();
+        }
+        _ => (),
     });
 
     for (pos, record) in columns.iter().enumerate() {
@@ -272,7 +272,8 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
         if filename.eq("\\file_info") {
             continue;
         }
-        sections.entry(filename.to_string())
+        sections
+            .entry(filename.to_string())
             .or_insert_with(Vec::new)
             .push(NestedReading {
                 id: record[0].clone(),
@@ -284,7 +285,6 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
 
     Ok(sections)
 }
-
 
 fn fill_empty_headers(headers: &csv::StringRecord) -> Vec<String> {
     // Create a mutable reference to store the last non-empty header.

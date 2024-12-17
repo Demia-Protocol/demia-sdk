@@ -4,10 +4,10 @@ use default_molina::MOLINA_PROFILE;
 
 use crate::models::AnalyticsProfile;
 
+pub mod analytics;
+pub mod baseline_emissions;
 pub mod constants;
 pub mod default_molina;
-pub mod baseline_emissions;
-pub mod analytics;
 
 pub static PROFILES: LazyLock<Vec<Arc<AnalyticsProfile>>> = LazyLock::new(|| vec![(*MOLINA_PROFILE).clone()]);
 
@@ -15,5 +15,5 @@ pub fn profile_by_id(profile_id: &str) -> Option<Arc<AnalyticsProfile>> {
     PROFILES
         .iter()
         .find(|&profile| profile.id == profile_id)
-        .map(|v| v.clone())
+        .cloned()
 }
