@@ -36,6 +36,7 @@ pub use token::TokenManager;
 use crate::{
     errors::{SecretResult, StorageResult},
     models::{Asset, TokenType, TokenWrap},
+    utils::PUBLIC_BUCKET_PATH,
 };
 
 pub const STRONGHOLD_PATH: &str = "stronghold";
@@ -54,7 +55,7 @@ pub enum StorageDataType<'a> {
     StrongholdSnapshot(&'a str),
     IdentityMetadata(&'a str),
     Document(&'a str, &'a str), // Site, filename
-    Asset(&'a str, Asset)
+    Asset(&'a str, Asset),
 }
 
 impl<'a> StorageDataType<'a> {
@@ -65,6 +66,13 @@ impl<'a> StorageDataType<'a> {
             Self::IdentityMetadata(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, IDENTITY_METADATA.to_owned())),
             Self::Document(site, file) => (file, format!("{}/{}/{}/{}", SITES_PATH, site, sub, file)),
             Self::Asset(site, asset) => (site, asset.storage_path()),
+        }
+    }
+
+    pub fn is_public(&self) -> bool {
+        match self {
+            Self::Asset(_, _) => true,
+            _ => false,
         }
     }
 }
@@ -154,19 +162,36 @@ pub struct StorageClient<T: Storage> {
     storage: T,
     pub sub: String,
     pub bucket_path: String,
+    pub bucket_path_public: String,
 }
 
 impl<T: Storage> StorageClient<T> {
     pub async fn new(bucket_path: String, jwt_token: TokenWrap, storage: T) -> StorageResult<Self> {
         let sub = jwt_token.get_sub().unwrap();
-        Ok(Self { bucket_path, storage, sub })
+        Ok(Self {
+            bucket_path_public: PUBLIC_BUCKET_PATH.to_string(),
+            bucket_path,
+            storage,
+            sub,
+        })
+    }
+
+    fn get_bucket(&self, data: &StorageDataType<'_>) -> &str {
+        self.get_bucket_path(data.is_public())
+    }
+
+    fn get_bucket_path(&self, public: bool) -> &str {
+        match public {
+            true => &self.bucket_path_public,
+            false => &self.bucket_path,
+        }
     }
 
     /// Uploads the data from the optional parameter if it exists.
     /// Otherwise, upload from file system.
     pub async fn upload(&self, data: StorageDataType<'_>, content: Option<Vec<u8>>) -> StorageResult<()> {
         let (file_path, storage_path) = data.get_paths(&self.sub);
-
+        let bucket = self.get_bucket(&data);
         let data = content.unwrap_or_else(|| {
             let file = File::open(file_path).expect("File not found");
             let mut data = Vec::new();
@@ -179,7 +204,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
-                bucket: &self.bucket_path,
+                bucket: bucket,
                 data: Some(data),
             })
             .await
@@ -190,12 +215,12 @@ impl<T: Storage> StorageClient<T> {
         self.upload(data, None).await
     }
 
-    pub async fn list_objects(&self, path: String, get_metadata: bool) -> StorageResult<Vec<FileInfo>> {
+    pub async fn list_objects(&self, path: String, get_metadata: bool, public: bool) -> StorageResult<Vec<FileInfo>> {
         let mut objs = self
             .storage
             .list_objects(StorageInfo {
                 url: path,
-                bucket: &self.bucket_path,
+                bucket: self.get_bucket_path(public),
                 data: None,
             })
             .await?;

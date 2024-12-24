@@ -1,13 +1,15 @@
-use crate::{errors::{StorageResult, StorageError}};
+use crate::errors::{StorageError, StorageResult};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum Asset {
     /// User ID
-    Profile(String), 
+    Profile(String),
     /// Site ID
     Site(String),
     /// Sensor ID
     Sensor(String),
+    /// Equipment name
+    Equipment(String),
     /// custom ID
     Custom(String),
     /// Site ID
@@ -19,13 +21,14 @@ impl Asset {
         match self {
             Asset::Profile(id) => format!("{}", id),
             Asset::Site(id) => format!("{}", id),
+            Asset::Equipment(name) => format!("{}", name),
             Asset::Sensor(id) => format!("{}", id),
             Asset::Custom(id) => format!("{}", id),
             Asset::Link(id) => format!("{}", id),
         }
     }
 
-    // 
+    //
     pub fn from_id(url: String) -> StorageResult<Self> {
         let segments = &url.split('/').collect::<Vec<_>>();
         let segment = segments.last().ok_or(StorageError::InvalidName(url.clone()))?;
@@ -33,6 +36,8 @@ impl Asset {
         let name = parts.first().ok_or(StorageError::InvalidName(url.clone()))?;
         if *name == "site" {
             Ok(Self::Site(url))
+        } else if *name == "equipment" {
+            Ok(Self::Equipment(url))
         } else if *name == "sensor" {
             Ok(Self::Sensor(url))
         } else if *name == "custom" {
@@ -40,7 +45,7 @@ impl Asset {
         } else if *name == "link" {
             Ok(Self::Link(parts[1].to_string())) // link.site_id, has no file extension
         } else {
-            Err(StorageError::InvalidName(url.clone()))
+            Ok(Self::Custom(url))
         }
     }
 }

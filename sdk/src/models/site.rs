@@ -1,15 +1,20 @@
 use std::{
-    collections::{HashMap, HashSet}, ops::{Index, IndexMut}, path::Path, sync::Arc
+    collections::{HashMap, HashSet},
+    ops::{Index, IndexMut},
+    path::Path,
+    sync::Arc,
 };
 
-use futures_util::{future::BoxFuture, FutureExt};
+use futures_util::{FutureExt, future::BoxFuture};
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
 use super::{AnalyticsProfile, Asset};
 use crate::{
+    clients::{AwsClient, StorageClient},
     errors::StorageResult,
-    clients::{AwsClient, StorageClient}, models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet}, utils::map_serialize
+    models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
+    utils::map_serialize,
 };
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -85,7 +90,7 @@ pub struct Site {
     pub avg_dcf: Option<String>,
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
     // Custom assets used in displaying the site
-    pub assets: Option<Vec<Asset>>
+    pub assets: Option<Vec<Asset>>,
 }
 
 impl std::fmt::Debug for Site {
@@ -98,7 +103,7 @@ impl std::fmt::Debug for Site {
             .field("assets", &self.assets)
             .finish()
     }
-  }
+}
 
 impl Site {
     pub fn new(
@@ -162,14 +167,18 @@ impl Site {
         assets: &'a mut Vec<Asset>,
     ) -> BoxFuture<'a, StorageResult<()>> {
         async move {
-            let path = format!("sites/{}/assets/", project_id);
-            let files = storage.list_objects(path.to_string(), false).await?;
-    
+            let path = format!("assets/{}/", project_id);
+            let files = storage.list_objects(path.to_string(), false, true).await?;
+
             let mut links = vec![];
             for file in files {
+                if file.name.ends_with("/") {
+                    continue;
+                }
+
                 let asset = Asset::from_id(file.name.clone())?;
                 if let Asset::Link(l) = &asset {
-                    if !assets.contains(&asset) && !(l == &project_id){
+                    if !assets.contains(&asset) && !(l == &project_id) {
                         links.push(l.clone());
                     } else {
                         continue;
@@ -178,17 +187,17 @@ impl Site {
 
                 assets.push(asset);
             }
-    
+
             for site_id in links {
                 Site::fetch_site_assets(site_id.to_string(), storage, assets).await?;
             }
-    
+
             Ok(())
         }
         .boxed()
     }
 
-    pub async fn get_assets(&self) -> Option<&Vec<Asset>>{
+    pub async fn get_assets(&self) -> Option<&Vec<Asset>> {
         self.assets.as_ref()
     }
 

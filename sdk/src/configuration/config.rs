@@ -97,7 +97,7 @@ pub struct ApplicationConfiguration {
     #[serde(default = "public_bucket_path")]
     pub public_bucket_path: String,
     #[serde(default = "protected_bucket_path")]
-    pub protected_bucket_path: String
+    pub protected_bucket_path: String,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

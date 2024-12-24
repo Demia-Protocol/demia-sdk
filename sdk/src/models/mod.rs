@@ -13,6 +13,8 @@ mod token;
 mod valueset;
 mod vault;
 
+use std::collections::HashSet;
+
 pub use analytics::*;
 pub use asset::*;
 pub use hedera::*;
@@ -28,8 +30,6 @@ pub use site::*;
 pub use token::*;
 pub use valueset::*;
 pub use vault::*;
-
-use std::collections::HashSet;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
