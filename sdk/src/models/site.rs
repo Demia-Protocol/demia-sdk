@@ -1,16 +1,15 @@
 use std::{
-    collections::{HashMap, HashSet},
-    ops::{Index, IndexMut},
-    sync::Arc,
+    collections::{HashMap, HashSet}, ops::{Index, IndexMut}, path::Path, sync::Arc
 };
 
+use futures_util::{future::BoxFuture, FutureExt};
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
-use super::AnalyticsProfile;
+use super::{AnalyticsProfile, Asset};
 use crate::{
-    models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
-    utils::map_serialize,
+    errors::StorageResult,
+    clients::{AwsClient, StorageClient}, models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet}, utils::map_serialize
 };
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -63,7 +62,7 @@ impl IndexMut<&str> for SiteState {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Default, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Site {
     #[serde(alias = "id")]
@@ -85,7 +84,21 @@ pub struct Site {
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
+    // Custom assets used in displaying the site
+    pub assets: Option<Vec<Asset>>
 }
+
+impl std::fmt::Debug for Site {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Site")
+            .field("project_id", &self.project_id)
+            .field("project_announcement", &self.project_announcement)
+            .field("project_name", &self.project_name)
+            .field("sensors", &self.sensors)
+            .field("assets", &self.assets)
+            .finish()
+    }
+  }
 
 impl Site {
     pub fn new(
@@ -135,6 +148,52 @@ impl Site {
 
     pub fn remove_analytics_profile(&mut self, profile: &Arc<AnalyticsProfile>) -> bool {
         self.profiles.remove(profile)
+    }
+
+    pub async fn fetch_custom_assets(&self, storage: &StorageClient<AwsClient>) -> StorageResult<Vec<Asset>> {
+        let mut assets = vec![];
+        Site::fetch_site_assets(self.project_id.clone(), storage, &mut assets).await?;
+        Ok(assets)
+    }
+
+    pub fn fetch_site_assets<'a>(
+        project_id: String,
+        storage: &'a StorageClient<AwsClient>,
+        assets: &'a mut Vec<Asset>,
+    ) -> BoxFuture<'a, StorageResult<()>> {
+        async move {
+            let path = format!("sites/{}/assets/", project_id);
+            let files = storage.list_objects(path.to_string(), false).await?;
+    
+            let mut links = vec![];
+            for file in files {
+                let asset = Asset::from_id(file.name.clone())?;
+                if let Asset::Link(l) = &asset {
+                    if !assets.contains(&asset) && !(l == &project_id){
+                        links.push(l.clone());
+                    } else {
+                        continue;
+                    }
+                }
+
+                assets.push(asset);
+            }
+    
+            for site_id in links {
+                Site::fetch_site_assets(site_id.to_string(), storage, assets).await?;
+            }
+    
+            Ok(())
+        }
+        .boxed()
+    }
+
+    pub async fn get_assets(&self) -> Option<&Vec<Asset>>{
+        self.assets.as_ref()
+    }
+
+    pub fn set_assets(&mut self, assets: Vec<Asset>) {
+        self.assets.get_or_insert_with(Vec::new).extend(assets);
     }
 }
 

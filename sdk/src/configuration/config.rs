@@ -49,6 +49,14 @@ fn secrets_api() -> String {
     SECRETS_API.to_string()
 }
 
+fn public_bucket_path() -> String {
+    PUBLIC_BUCKET_PATH.to_string()
+}
+
+fn protected_bucket_path() -> String {
+    PROTECTED_BUCKET_PATH.to_string()
+}
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct BaseConfiguration {
     #[serde(default)]
@@ -85,6 +93,11 @@ pub struct ApplicationConfiguration {
     pub retriever_api: String,
     #[serde(default = "guardian_api")]
     pub guardian_api: String,
+
+    #[serde(default = "public_bucket_path")]
+    pub public_bucket_path: String,
+    #[serde(default = "protected_bucket_path")]
+    pub protected_bucket_path: String
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

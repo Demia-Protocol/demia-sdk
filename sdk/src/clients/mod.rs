@@ -35,10 +35,9 @@ pub use token::TokenManager;
 
 use crate::{
     errors::{SecretResult, StorageResult},
-    models::{TokenType, TokenWrap},
+    models::{Asset, TokenType, TokenWrap},
 };
 
-pub const BUCKET_PATH: &str = "stronghold-snapshots";
 pub const STRONGHOLD_PATH: &str = "stronghold";
 pub const IDENTITY_METADATA: &str = "metadata";
 pub const STREAMS_PATH: &str = "stream";
@@ -55,6 +54,7 @@ pub enum StorageDataType<'a> {
     StrongholdSnapshot(&'a str),
     IdentityMetadata(&'a str),
     Document(&'a str, &'a str), // Site, filename
+    Asset(&'a str, Asset)
 }
 
 impl<'a> StorageDataType<'a> {
@@ -64,6 +64,7 @@ impl<'a> StorageDataType<'a> {
             Self::StrongholdSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STRONGHOLD_PATH.to_owned())),
             Self::IdentityMetadata(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, IDENTITY_METADATA.to_owned())),
             Self::Document(site, file) => (file, format!("{}/{}/{}/{}", SITES_PATH, site, sub, file)),
+            Self::Asset(site, asset) => (site, asset.storage_path()),
         }
     }
 }
@@ -79,7 +80,7 @@ pub struct StorageInfo<'a> {
     data: Option<Vec<u8>>,
 }
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct FileInfo {
     pub name: String,
     pub owner: String,
@@ -88,7 +89,7 @@ pub struct FileInfo {
     pub metadata: Option<FileMetadata>,
 }
 
-#[derive(Default, Clone, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Default, Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct FileMetadata {
     pub size: String,
     pub r#type: String,
@@ -152,12 +153,13 @@ pub enum Clients {
 pub struct StorageClient<T: Storage> {
     storage: T,
     pub sub: String,
+    pub bucket_path: String,
 }
 
 impl<T: Storage> StorageClient<T> {
-    pub async fn new(jwt_token: TokenWrap, storage: T) -> StorageResult<Self> {
+    pub async fn new(bucket_path: String, jwt_token: TokenWrap, storage: T) -> StorageResult<Self> {
         let sub = jwt_token.get_sub().unwrap();
-        Ok(Self { storage, sub })
+        Ok(Self { bucket_path, storage, sub })
     }
 
     /// Uploads the data from the optional parameter if it exists.
@@ -177,7 +179,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
-                bucket: BUCKET_PATH,
+                bucket: &self.bucket_path,
                 data: Some(data),
             })
             .await
@@ -193,7 +195,7 @@ impl<T: Storage> StorageClient<T> {
             .storage
             .list_objects(StorageInfo {
                 url: path,
-                bucket: BUCKET_PATH,
+                bucket: &self.bucket_path,
                 data: None,
             })
             .await?;
@@ -215,7 +217,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .get_metadata(StorageInfo {
                 url: file,
-                bucket: BUCKET_PATH,
+                bucket: &self.bucket_path,
                 data: None,
             })
             .await
@@ -226,7 +228,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .delete(StorageInfo {
                 url: storage_path,
-                bucket: BUCKET_PATH,
+                bucket: &self.bucket_path,
                 data: None,
             })
             .await
@@ -237,7 +239,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
-                bucket: BUCKET_PATH,
+                bucket: &self.bucket_path,
                 data: Some(serde_json::to_vec(&metadata).expect("Metadata is serializable, should not fail")),
             })
             .await
@@ -251,7 +253,7 @@ impl<T: Storage> StorageClient<T> {
         let (file_path, storage_path) = storage_type.get_paths(&self.sub);
         let info = StorageInfo {
             url: storage_path,
-            bucket: BUCKET_PATH,
+            bucket: &self.bucket_path,
             ..Default::default()
         };
 
