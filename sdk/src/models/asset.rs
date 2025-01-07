@@ -6,7 +6,7 @@ pub enum Asset {
     Profile(String),
     /// Site ID
     Site(String),
-    /// Sensor ID
+    /// Sensor name
     Sensor(String),
     /// Equipment name
     Equipment(String),

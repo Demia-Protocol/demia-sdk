@@ -1,7 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
     ops::{Index, IndexMut},
-    path::Path,
     sync::Arc,
 };
 
