@@ -138,7 +138,7 @@ impl<'de> Deserialize<'de> for NestedReadingValue {
 
         // Check if the value is already a `NestedReadingValue`-like structure
         if let Some(obj) = value.as_object() {
-            if let Some(float_value) = obj.get("Float").and_then(Value::as_f64) {
+            if let Some(float_value) = obj.get("Float").and_then(|v| v.as_f64().or(Some(0.0))) {
                 return Ok(NestedReadingValue::Float(float_value));
             } else if let Some(string_value) = obj.get("String").and_then(Value::as_str) {
                 return Ok(NestedReadingValue::String(string_value.to_string()));

@@ -32,6 +32,8 @@ pub struct Sensor {
     pub equipment: Equipment,
     pub readings: HashMap<String, Reading>,
     pub last_updated: Option<NaiveDateTime>,
+    #[serde(default)]
+    pub state: SensorStateData
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
@@ -83,6 +85,7 @@ impl Default for Sensor {
             equipment: Equipment::default(),
             readings: HashMap::new(),
             last_updated: None,
+            state: SensorStateData::default()
         }
     }
 }
@@ -96,6 +99,15 @@ impl From<Equipment> for Sensor {
             equipment,
             readings: HashMap::new(),
             last_updated: None,
+            state: SensorStateData::default()
         }
     }
+}
+
+#[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SensorStateData {
+    pub real_time_flow: f64,
+    pub total_flow: f64,
+    pub current_day_avg: f64,
 }
