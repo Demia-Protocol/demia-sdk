@@ -46,6 +46,7 @@ pub const MESSAGE_PATH: &str = "demia-messages";
 
 pub const USERS_PATH: &str = "users";
 pub const SITES_PATH: &str = "sites";
+pub const ASSETS_PATH: &str = "assets";
 
 pub const MAX_FILE_SIZE: u64 = 10 * 1024 * 1024;
 
@@ -65,7 +66,7 @@ impl<'a> StorageDataType<'a> {
             Self::StrongholdSnapshot(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, STRONGHOLD_PATH.to_owned())),
             Self::IdentityMetadata(path) => (path, format!("{}/{}/{}", USERS_PATH, sub, IDENTITY_METADATA.to_owned())),
             Self::Document(site, file) => (file, format!("{}/{}/{}/{}", SITES_PATH, site, sub, file)),
-            Self::Asset(site, asset) => (site, asset.storage_path()),
+            Self::Asset(site, asset) => (site, format!("{}/{}/{}", ASSETS_PATH, site, asset.storage_path())),
         }
     }
 

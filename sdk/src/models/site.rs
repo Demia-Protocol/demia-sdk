@@ -88,6 +88,7 @@ pub struct Site {
     #[serde(alias = "state_data", default)]
     pub state_data: SiteState,
     pub avg_dcf: Option<String>,
+    #[serde(default)]
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
     // Custom assets used in displaying the site
     pub assets: Option<Vec<Asset>>,
