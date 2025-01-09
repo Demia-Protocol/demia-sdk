@@ -1,6 +1,17 @@
-use crate::errors::{StorageError, StorageResult};
+use crate::{
+    clients::FileInfo,
+    errors::{StorageError, StorageResult},
+};
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+
+pub struct AssetFileWrapper {
+    pub asset: Asset,
+    pub file: FileInfo,
+}
+
+#[derive(Debug, Clone, Eq, Hash, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[serde(tag = "type", content = "name")]
 pub enum Asset {
     /// User ID
     Profile(String),
@@ -35,17 +46,17 @@ impl Asset {
         let parts = &segment.split('.').collect::<Vec<_>>();
         let name = parts.first().ok_or(StorageError::InvalidName(url.clone()))?;
         if *name == "site" {
-            Ok(Self::Site(url))
+            Ok(Self::Site(segment.to_string()))
         } else if *name == "equipment" {
-            Ok(Self::Equipment(url))
+            Ok(Self::Equipment(segment.to_string()))
         } else if *name == "sensor" {
-            Ok(Self::Sensor(url))
+            Ok(Self::Sensor(segment.to_string()))
         } else if *name == "custom" {
-            Ok(Self::Custom(url))
+            Ok(Self::Custom(segment.to_string()))
         } else if *name == "link" {
             Ok(Self::Link(parts[1].to_string())) // link.site_id, has no file extension
         } else {
-            Ok(Self::Custom(url))
+            Ok(Self::Custom(segment.to_string()))
         }
     }
 }

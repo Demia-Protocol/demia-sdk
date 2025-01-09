@@ -10,7 +10,7 @@ use rocket_okapi::okapi::schemars;
 
 use super::{AnalyticsProfile, Asset};
 use crate::{
-    clients::{AwsClient, StorageClient},
+    clients::{AwsClient, FileInfo, StorageClient},
     errors::StorageResult,
     models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
     utils::map_serialize,
@@ -155,8 +155,11 @@ impl Site {
         self.profiles.remove(profile)
     }
 
-    pub async fn fetch_custom_assets(&self, storage: &StorageClient<AwsClient>) -> StorageResult<Vec<Asset>> {
-        let mut assets = vec![];
+    pub async fn fetch_custom_assets(
+        &self,
+        storage: &StorageClient<AwsClient>,
+    ) -> StorageResult<HashMap<Asset, FileInfo>> {
+        let mut assets = HashMap::new();
         Site::fetch_site_assets(self.project_id.clone(), storage, &mut assets).await?;
         Ok(assets)
     }
@@ -164,7 +167,7 @@ impl Site {
     pub fn fetch_site_assets<'a>(
         project_id: String,
         storage: &'a StorageClient<AwsClient>,
-        assets: &'a mut Vec<Asset>,
+        assets: &'a mut HashMap<Asset, FileInfo>,
     ) -> BoxFuture<'a, StorageResult<()>> {
         async move {
             let path = format!("assets/{}/", project_id);
@@ -178,14 +181,14 @@ impl Site {
 
                 let asset = Asset::from_id(file.name.clone())?;
                 if let Asset::Link(l) = &asset {
-                    if !assets.contains(&asset) && !(l == &project_id) {
+                    if !assets.contains_key(&asset) && !(l == &project_id) {
                         links.push(l.clone());
                     } else {
                         continue;
                     }
                 }
 
-                assets.push(asset);
+                assets.insert(asset, file);
             }
 
             for site_id in links {

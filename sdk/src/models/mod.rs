@@ -80,6 +80,3 @@ impl GHGInfo {
         }
     }
 }
-
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-pub struct Notification {}
