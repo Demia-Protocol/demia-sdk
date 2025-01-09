@@ -4,11 +4,14 @@ use std::{
     sync::Arc,
 };
 
+use futures_util::{FutureExt, future::BoxFuture};
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
-use super::AnalyticsProfile;
+use super::{AnalyticsProfile, Asset};
 use crate::{
+    clients::{AwsClient, FileInfo, StorageClient},
+    errors::StorageResult,
     models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
     utils::map_serialize,
 };
@@ -63,7 +66,7 @@ impl IndexMut<&str> for SiteState {
     }
 }
 
-#[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Default, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Site {
     #[serde(alias = "id")]
@@ -86,6 +89,20 @@ pub struct Site {
     pub avg_dcf: Option<String>,
     #[serde(default)]
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
+    // Custom assets used in displaying the site
+    pub assets: Option<Vec<Asset>>,
+}
+
+impl std::fmt::Debug for Site {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Site")
+            .field("project_id", &self.project_id)
+            .field("project_announcement", &self.project_announcement)
+            .field("project_name", &self.project_name)
+            .field("sensors", &self.sensors)
+            .field("assets", &self.assets)
+            .finish()
+    }
 }
 
 impl Site {
@@ -136,6 +153,59 @@ impl Site {
 
     pub fn remove_analytics_profile(&mut self, profile: &Arc<AnalyticsProfile>) -> bool {
         self.profiles.remove(profile)
+    }
+
+    pub async fn fetch_custom_assets(
+        &self,
+        storage: &StorageClient<AwsClient>,
+    ) -> StorageResult<HashMap<Asset, FileInfo>> {
+        let mut assets = HashMap::new();
+        Site::fetch_site_assets(self.project_id.clone(), storage, &mut assets).await?;
+        Ok(assets)
+    }
+
+    pub fn fetch_site_assets<'a>(
+        project_id: String,
+        storage: &'a StorageClient<AwsClient>,
+        assets: &'a mut HashMap<Asset, FileInfo>,
+    ) -> BoxFuture<'a, StorageResult<()>> {
+        async move {
+            let path = format!("assets/{}/", project_id);
+            let files = storage.list_objects(path.to_string(), false, true).await?;
+
+            let mut links = vec![];
+            for file in files {
+                if file.name.ends_with("/") {
+                    continue;
+                }
+
+                let asset = Asset::from_id(file.name.clone())?;
+                if let Asset::Link(l) = &asset {
+                    if !assets.contains_key(&asset) && !(l == &project_id) {
+                        links.push(l.clone());
+                    } else {
+                        continue;
+                    }
+                }
+
+                assets.insert(asset, file);
+            }
+
+            for site_id in links {
+                Site::fetch_site_assets(site_id.to_string(), storage, assets).await?;
+            }
+
+            Ok(())
+        }
+        .boxed()
+    }
+
+    pub async fn get_assets(&self) -> Option<&Vec<Asset>> {
+        self.assets.as_ref()
+    }
+
+    pub fn set_assets(&mut self, assets: Vec<Asset>) {
+        self.assets.get_or_insert_with(Vec::new).extend(assets);
     }
 }
 
