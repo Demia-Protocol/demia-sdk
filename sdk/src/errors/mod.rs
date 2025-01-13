@@ -1,5 +1,3 @@
-// src/errors/configuration
-
 mod analytics;
 mod api_error;
 mod identification_error;
@@ -11,7 +9,6 @@ mod user_error;
 pub use analytics::{AnalyticsError, AnalyticsResult};
 pub use api_error::{ApiError, ApiResult};
 pub use identification_error::{IdentityError, IdentityResult};
-use log::warn;
 pub use node::{NodeError, NodeResult};
 pub use secret::{SecretError, SecretResult};
 use serde::{Deserialize, Serialize};
@@ -60,83 +57,83 @@ pub enum Error {
 
 impl From<streams::Error> for Error {
     fn from(error: streams::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Streams(error.to_string())
     }
 }
 
 impl From<identity_demia::demia::Error> for Error {
     fn from(error: identity_demia::demia::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::IdentityError(error.to_string()))
     }
 }
 
 impl From<identity_demia::core::Error> for Error {
     fn from(error: identity_demia::core::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::IdentityCoreError(error.to_string()))
     }
 }
 
 impl From<identity_demia::verification::Error> for Error {
     fn from(error: identity_demia::verification::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::IdentityVerificationError(error.to_string()))
     }
 }
 
 impl From<identity_demia::did::Error> for Error {
     fn from(error: identity_demia::did::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::IdentityDIDError(error.to_string()))
     }
 }
 
 impl From<iota_sdk::client::stronghold::Error> for Error {
     fn from(error: iota_sdk::client::stronghold::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::StrongholdError(error.to_string()))
     }
 }
 
 impl From<crate::iota_stronghold::ClientError> for Error {
     fn from(error: crate::iota_stronghold::ClientError) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Identity(IdentityError::StrongholdClientError(error.to_string()))
     }
 }
 
 impl From<iota_sdk::client::Error> for Error {
     fn from(error: iota_sdk::client::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Node(NodeError::NodeClientError(error.to_string()))
     }
 }
 
 impl From<iota_sdk::types::block::Error> for Error {
     fn from(error: iota_sdk::types::block::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Node(NodeError::NodeClientBlockError(error.to_string()))
     }
 }
 
 impl From<reqwest::Error> for Error {
     fn from(error: reqwest::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::Api(ApiError::ReqwestError(error.to_string()))
     }
 }
 
 impl From<alvarium_annotator::Error> for Error {
     fn from(error: alvarium_annotator::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::AlvariumAnnotator(error.to_string())
     }
 }
 impl From<alvarium_sdk_rust::errors::Error> for Error {
     fn from(error: alvarium_sdk_rust::errors::Error) -> Self {
-        warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Error::AlvariumSdk(error.to_string())
     }
 }
