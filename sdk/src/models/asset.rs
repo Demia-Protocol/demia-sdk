@@ -50,7 +50,8 @@ impl Asset {
         let name = if r#type.len() + 1 <= segment.len() {
             segment[r#type.len() + 1..].to_string()
         } else {
-            segment
+            // Shouldnt happen but just in case....
+            segment.to_string()
         };
 
         if *r#type == "site" {
