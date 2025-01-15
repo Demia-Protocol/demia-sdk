@@ -30,6 +30,7 @@ pub static MOLINA_CALCULATIONS: LazyLock<Vec<Calculation>> = LazyLock::new(|| {
             parameters: vec![
                 Parameter::Input(BIOGAS_GENERATED.clone()),
                 Parameter::Input(BIOGAS_GENERATED_NO_FLARE.clone()),
+                Parameter::Input(METHANE_CONCENTRATION.clone()),
             ],
             calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
                 Box::pin(async move { equation7(&params, &records).await })
@@ -54,7 +55,10 @@ pub static MOLINA_CALCULATIONS: LazyLock<Vec<Calculation>> = LazyLock::new(|| {
         Calculation {
             id: "AnaerobicDigestion".to_string(),
             text: "Anaerobic Digestion Emissions".to_string(),
-            parameters: vec![],
+            parameters: vec![
+                Parameter::Input(BIOGAS_GENERATED.clone()),
+                Parameter::Input(METHANE_CONCENTRATION.clone()),
+            ],
             calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
                 Box::pin(async move { equation10(&params, &records).await })
             })),
