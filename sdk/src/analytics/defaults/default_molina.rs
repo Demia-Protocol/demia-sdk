@@ -2,7 +2,7 @@ use std::sync::{Arc, LazyLock};
 
 use super::constants::*;
 use crate::{
-    analytics::analytics::*,
+    analytics::defaults::analytics::*,
     models::{AnalyticsProfile, AsyncCalculationFunctionWrapper, Calculation, Parameter},
 };
 
@@ -33,6 +33,7 @@ pub static MOLINA_CALCULATIONS: LazyLock<Vec<Calculation>> = LazyLock::new(|| {
             parameters: vec![
                 Parameter::Input(BIOGAS_GENERATED.clone()),
                 Parameter::Input(BIOGAS_GENERATED_NO_FLARE.clone()),
+                Parameter::Input(METHANE_CONCENTRATION.clone()),
             ],
             calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
                 Box::pin(async move { equation7(&params, &records).await })
@@ -60,7 +61,10 @@ pub static MOLINA_CALCULATIONS: LazyLock<Vec<Calculation>> = LazyLock::new(|| {
             id: "AnaerobicDigestion".to_string(),
             text: "Anaerobic Digestion Emissions".to_string(),
             equation: "E_{SSRP9} = GWP_{CH_{4}} * \\sum_{i} (CH_{4,meter,mo} * (\\frac{1}{AD} - BDE_{mo,weighted}) + CH_{4,vent,mo})".to_string(),
-            parameters: vec![],
+            parameters: vec![
+                Parameter::Input(BIOGAS_GENERATED.clone()),
+                Parameter::Input(METHANE_CONCENTRATION.clone()),
+            ],
             calculation_function: AsyncCalculationFunctionWrapper(Arc::new(|params, records| {
                 Box::pin(async move { equation10(&params, &records).await })
             })),

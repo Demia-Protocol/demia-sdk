@@ -259,7 +259,7 @@ impl UserIdentity {
 
         addresses.0.remove(&address.to_string());
 
-        self.set_stronghold_bytes(VAULT_STREAMS_ADDRESSES, &addresses.to_json_vec().unwrap())
+        self.set_stronghold_bytes(VAULT_STREAMS_ADDRESSES, &addresses.to_json_vec()?)
             .await
     }
 

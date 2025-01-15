@@ -1,5 +1,7 @@
-use super::{all_daily_averages, defaults::constants::feedstock_types::feedstock_types};
-use crate::models::Record;
+use crate::{
+    analytics::{all_daily_averages, defaults::constants::feedstock_types::feedstock_types},
+    models::Record,
+};
 
 // Constants
 const B_OWW_S: f64 = 0.21;
@@ -24,7 +26,7 @@ pub async fn baseline_emissions(calc_data: &[Record]) -> Vec<f64> {
             if let Some(ft) = feedstock_type {
                 if ft.__empty == "landfill" {
                     Some(
-                        record.sum
+                        record.f64()
                             * ft.doc
                             * ft.fie
                             * (1.0 - ft.f_y)
@@ -51,7 +53,7 @@ pub async fn baseline_emissions(calc_data: &[Record]) -> Vec<f64> {
             let feedstock_type = feedstock_types.iter().find(|&ft| ft.company == record.company);
             if let Some(ft) = feedstock_type {
                 if ft.__empty == "wws" {
-                    Some(record.sum * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR)
+                    Some(record.f64() * B_OWW_S * MCF_ATS * GWP_CH4 * UNCERTAINTY_FACTOR)
                 } else {
                     None
                 }

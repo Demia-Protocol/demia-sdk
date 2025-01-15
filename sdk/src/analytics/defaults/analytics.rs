@@ -2,8 +2,8 @@ use std::{collections::HashMap, vec};
 
 use chrono::{DateTime, NaiveDate, Utc};
 
-use super::{defaults::constants::*, get_values_and_inputs};
 use crate::{
+    analytics::{defaults::constants::*, get_values_and_inputs},
     errors::{AnalyticsError, AnalyticsResult as Result},
     models::{CalculationParameter, InputParameter, Parameter, Record, ValueSet},
 };
@@ -50,7 +50,7 @@ pub async fn equation5(params: &[InputParameter], records: &[Record]) -> Result<
             .map(|record| {
                 (
                     record.data_timestamp.and_utc(),
-                    (record.sum + 1.0) * B_OWW_S.value * MCF_ATS.value * GWP_CH4.value * UNCERTAINTY_FACTOR.value,
+                    (record.f64() + 1.0) * B_OWW_S.value * MCF_ATS.value * GWP_CH4.value * UNCERTAINTY_FACTOR.value,
                 )
             })
             .collect()
@@ -93,10 +93,10 @@ pub async fn equation6(params: &[InputParameter], records: &[Record]) -> Result<
                 let types = feedstock_types::feedstock_types();
                 let feedstock_type = types.iter().find(|element| element.company.eq(record.company.as_str()));
 
-                let sum = if record.sum > 10000.0 {
-                    record.sum / 1000.0
+                let sum = if record.f64() > 10000.0 {
+                    record.f64() / 1000.0
                 } else {
-                    record.sum
+                    record.f64()
                 };
                 let cod_ww_s_i = 1.0;
 
@@ -167,7 +167,7 @@ pub async fn equation7(params: &[InputParameter], records: &[Record]) -> Result<
                 .map(|(i, record)| {
                     (
                         record.data_timestamp.and_utc(),
-                        record.sum - daily_biogas_no_flare[i].sum,
+                        record.f64() - daily_biogas_no_flare[i].f64(),
                     )
                 })
                 .collect()
@@ -362,7 +362,7 @@ pub async fn equation11(params: &[InputParameter], records: &[Record]) -> Result
                     .map(|(i, record)| {
                         (
                             record.data_timestamp.and_utc(),
-                            record.sum * methane_concentration[i].sum * CH4_DENSITY.value * LBS_TO_TONNES.value,
+                            record.f64() * methane_concentration[i].f64() * CH4_DENSITY.value * LBS_TO_TONNES.value,
                         )
                     })
                     .collect();
@@ -396,7 +396,7 @@ pub async fn equation12(params: &[InputParameter], records: &[Record]) -> Result
     if let Some(biogas) = values.get("BiogasGenerated") {
         results = biogas
             .iter()
-            .map(|r| (r.data_timestamp.and_utc(), r.sum * BDE_DD.value))
+            .map(|r| (r.data_timestamp.and_utc(), r.f64() * BDE_DD.value))
             .collect();
     }
 
@@ -425,7 +425,7 @@ pub async fn equation14(params: &[InputParameter], records: &[Record]) -> Result
             .map(|r| {
                 (
                     r.data_timestamp.and_utc(),
-                    r.sum * (520.0 / AMBIENT_GAS_TEMP.value) * NORMALIZED_PRESSURE.value,
+                    r.f64() * (520.0 / AMBIENT_GAS_TEMP.value) * NORMALIZED_PRESSURE.value,
                 )
             })
             .collect();
@@ -460,7 +460,7 @@ pub async fn equation15(params: &[InputParameter], records: &[Record]) -> Result
             .map(|r| {
                 (
                     r.data_timestamp.and_utc(),
-                    r.sum * CH4_CONVERSION_FACTOR.value * GWP_CH4.value * B_OWW_S.value,
+                    r.f64() * CH4_CONVERSION_FACTOR.value * GWP_CH4.value * B_OWW_S.value,
                 )
             })
             .collect();
@@ -497,7 +497,7 @@ pub async fn equation18(params: &[InputParameter], records: &[Record]) -> Result
                     .iter()
                     .enumerate()
                     .map(|(i, record)| {
-                        let n = if biogas_no_flare[i].sum == 0.0 || record.sum == 0.0 {
+                        let n = if biogas_no_flare[i].f64() == 0.0 || record.f64() == 0.0 {
                             1.0
                         } else {
                             2.0
@@ -505,7 +505,9 @@ pub async fn equation18(params: &[InputParameter], records: &[Record]) -> Result
 
                         (
                             record.data_timestamp.and_utc(),
-                            ((record.sum + biogas_no_flare[i].sum) / n) * methane_concentration[i].sum * GWP_CH4.value,
+                            ((record.f64() + biogas_no_flare[i].f64()) / n)
+                                * methane_concentration[i].f64()
+                                * GWP_CH4.value,
                         )
                     })
                     .collect();
@@ -566,7 +568,7 @@ pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAver
     let mut daily_data: HashMap<NaiveDate, DailyAverage> = HashMap::new();
     for record in data {
         let day: NaiveDate = record.data_timestamp.date();
-        if record.sum >= 0.0 {
+        if record.f64() >= 0.0 {
             let element = daily_data.entry(day).or_insert(DailyAverage {
                 day,
                 sensors: HashMap::new(),
@@ -575,7 +577,7 @@ pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAver
             let sensor_avg = element.sensors.entry(record.sensor_id.clone()).or_default();
             sensor_avg.records.push(record);
             // for testing
-            sensor_avg.sum += record.sum;
+            sensor_avg.sum += record.f64();
             sensor_avg.avg_val = sensor_avg.sum / sensor_avg.records.len() as f64;
         }
     }

@@ -1,13 +1,11 @@
-pub mod analytics;
-pub mod baseline_emissions;
-
 use std::collections::HashMap;
 
-pub use analytics::*;
-pub use baseline_emissions::*;
 use chrono::{DateTime, NaiveDate, Utc};
 
-use crate::models::{InputParameter, Record};
+use crate::{
+    analytics::defaults::analytics::DailyAverage,
+    models::{InputParameter, NestedReadingValue, Record},
+};
 
 pub mod defaults;
 
@@ -24,7 +22,7 @@ pub async fn get_values_and_inputs(
                 param.id.to_string(),
                 feedstock
                     .iter()
-                    .map(|record| (record.data_timestamp.and_utc(), record.sum))
+                    .map(|record| (record.data_timestamp.and_utc(), record.f64()))
                     .collect(),
             );
             values.insert(param.id.to_string(), feedstock);
@@ -38,7 +36,7 @@ pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAver
     let mut daily_data: HashMap<NaiveDate, DailyAverage> = HashMap::new();
     for record in data {
         let day: NaiveDate = record.data_timestamp.date();
-        if record.sum >= 0.0 {
+        if record.f64() >= 0.0 {
             let element = daily_data.entry(day).or_insert(DailyAverage {
                 day,
                 sensors: HashMap::new(),
@@ -47,7 +45,7 @@ pub async fn all_daily_averages(data: &[Record]) -> HashMap<NaiveDate, DailyAver
             let sensor_avg = element.sensors.entry(record.sensor_id.clone()).or_default();
             sensor_avg.records.push(record);
             // for testing
-            sensor_avg.sum += record.sum;
+            sensor_avg.sum += record.f64();
             sensor_avg.avg_val = sensor_avg.sum / sensor_avg.records.len() as f64;
         }
     }
@@ -66,14 +64,15 @@ pub async fn daily_average(data: &[Record], dataset: &str, _calc: bool) -> Vec<R
                     let mut record = (*record).clone();
                     if let Some(raw) = record.raw.as_ref() {
                         let raw = raw.get(dataset).unwrap();
-                        record.sum = raw
-                            .clone()
-                            .as_str()
-                            .map(|s| {
-                                // Temp, some values may use commas as decimal separators
-                                s.replace(",", "").parse::<f64>().unwrap_or_default()
-                            })
-                            .unwrap();
+                        record.sum = NestedReadingValue::Float(
+                            raw.clone()
+                                .as_str()
+                                .map(|s| {
+                                    // Temp, some values may use commas as decimal separators
+                                    s.replace(",", "").parse::<f64>().unwrap_or_default()
+                                })
+                                .unwrap(),
+                        )
                     }
                     daily_sensor_data.push(record);
                 }

@@ -9,7 +9,7 @@ use serde_json::Value;
 
 // Missing JsonSchema on alvarium
 // use alvarium_sdk_rust::annotations::Annotation;
-use crate::models::{Annotation, AnnotationWrap};
+use crate::models::{Annotation, AnnotationWrap, NestedReadingValue};
 use crate::utils::deserialize_null_default;
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -33,6 +33,7 @@ pub struct Sensor {
     pub readings: HashMap<String, Reading>,
     pub last_updated: Option<NaiveDateTime>,
     #[serde(default)]
+    pub state: SensorStateData,
     pub asset_url: Option<String>,
 }
 
@@ -64,10 +65,12 @@ pub struct Reading {
     pub id: String,
     pub address: String,
     pub timestamp: String,
-    pub value: f32,
+    pub value: NestedReadingValue,
+    #[serde(rename = "sheetData")]
     pub sheet_data: Option<Value>,
     pub annotations: HashMap<String, Annotation>,
     pub score: f32,
+    pub unit: Option<String>,
 }
 
 impl Default for Sensor {
@@ -85,6 +88,7 @@ impl Default for Sensor {
             equipment: Equipment::default(),
             readings: HashMap::new(),
             last_updated: None,
+            state: SensorStateData::default(),
             asset_url: None,
         }
     }
@@ -99,7 +103,16 @@ impl From<Equipment> for Sensor {
             equipment,
             readings: HashMap::new(),
             last_updated: None,
+            state: SensorStateData::default(),
             asset_url: None,
         }
     }
+}
+
+#[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SensorStateData {
+    pub real_time_flow: f64,
+    pub total_flow: f64,
+    pub current_day_avg: f64,
 }
