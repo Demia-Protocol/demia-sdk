@@ -85,7 +85,7 @@ impl Default for Sensor {
             equipment: Equipment::default(),
             readings: HashMap::new(),
             last_updated: None,
-            asset_url: None
+            asset_url: None,
         }
     }
 }
@@ -99,7 +99,7 @@ impl From<Equipment> for Sensor {
             equipment,
             readings: HashMap::new(),
             last_updated: None,
-            asset_url: None
+            asset_url: None,
         }
     }
 }

@@ -11,7 +11,7 @@ use crate::{
     models::{TokenResponse, TokenType, TokenWrap},
 };
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Auth0Client {
     client: reqwest::Client,
     url: String,

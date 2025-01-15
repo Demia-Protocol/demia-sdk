@@ -260,13 +260,13 @@ impl<T: Storage> StorageClient<T> {
             .await
     }
 
-    pub async fn upload_metadata<S: serde::Serialize + Send>(&self, metadata: S) -> StorageResult<()> {
+    pub async fn upload_metadata<S: serde::Serialize + Send>(&self, metadata: &S) -> StorageResult<()> {
         let (_, storage_path) = StorageDataType::IdentityMetadata("").get_paths(&self.sub);
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
                 bucket: &self.bucket_path,
-                data: Some(serde_json::to_vec(&metadata).expect("Metadata is serializable, should not fail")),
+                data: Some(serde_json::to_vec(metadata).expect("Metadata is serializable, should not fail")),
             })
             .await
     }

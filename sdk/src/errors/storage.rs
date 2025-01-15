@@ -34,6 +34,9 @@ impl From<google_cloud_storage::http::Error> for StorageError {
 #[cfg(feature = "aws")]
 impl<T: std::error::Error + 'static, R: std::fmt::Debug> From<aws_sdk_s3::error::SdkError<T, R>> for StorageError {
     fn from(value: aws_sdk_s3::error::SdkError<T, R>) -> Self {
+        // Note: If it says no permission means there is no file, as we dont have listFiles permission.
+        // And it will check for listfiles when it doesnt exist, so it doesnt leak permissions
+        // as in error 403 vs 404
         log::debug!("{}", aws_sdk_s3::error::DisplayErrorContext(&value));
         Self::AwsClientError(format!("AWS SDK error: {}", value))
     }
