@@ -47,44 +47,56 @@ pub enum IdentityError {
     MissingIdentityMethod(String),
 }
 
+impl IdentityError {
+    pub fn is_missing_identity(&self) -> bool {
+        match self {
+            IdentityError::IdentityDIDError(err) => *err == "Failed to fetch doc".to_string(),
+            IdentityError::StrongholdError(err) => {
+                *err == "stronghold client error: error loading client data; no data present".to_string()
+            }
+            _ => false,
+        }
+    }
+}
+
 impl From<identity_demia::demia::Error> for IdentityError {
     fn from(error: identity_demia::demia::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::IdentityError(error.to_string())
     }
 }
 
 impl From<identity_demia::core::Error> for IdentityError {
     fn from(error: identity_demia::core::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::IdentityCoreError(error.to_string())
     }
 }
 
 impl From<identity_demia::verification::Error> for IdentityError {
     fn from(error: identity_demia::verification::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::IdentityVerificationError(error.to_string())
     }
 }
 
 impl From<identity_demia::did::Error> for IdentityError {
     fn from(error: identity_demia::did::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::IdentityDIDError(error.to_string())
     }
 }
 
 impl From<iota_sdk::client::stronghold::Error> for IdentityError {
     fn from(error: iota_sdk::client::stronghold::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::StrongholdError(error.to_string())
     }
 }
 
 impl From<iota_stronghold::ClientError> for IdentityError {
     fn from(error: iota_stronghold::ClientError) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         Self::StrongholdClientError(error.to_string())
     }
 }

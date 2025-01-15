@@ -89,8 +89,11 @@ pub struct Site {
     pub avg_dcf: Option<String>,
     #[serde(default)]
     pub profiles: HashSet<Arc<AnalyticsProfile>>,
+    #[serde(default)]
+    pub asset_url: Option<String>,
     // Custom assets used in displaying the site
-    pub assets: Option<Vec<Asset>>,
+    #[serde(skip, default)]
+    pub assets: Option<HashMap<Asset, FileInfo>>,
 }
 
 impl std::fmt::Debug for Site {
@@ -200,12 +203,12 @@ impl Site {
         .boxed()
     }
 
-    pub async fn get_assets(&self) -> Option<&Vec<Asset>> {
+    pub async fn get_assets(&self) -> Option<&HashMap<Asset, FileInfo>> {
         self.assets.as_ref()
     }
 
-    pub fn set_assets(&mut self, assets: Vec<Asset>) {
-        self.assets.get_or_insert_with(Vec::new).extend(assets);
+    pub fn set_assets(&mut self, assets: HashMap<Asset, FileInfo>) {
+        self.assets.get_or_insert_with(HashMap::new).extend(assets);
     }
 }
 

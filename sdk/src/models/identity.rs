@@ -251,18 +251,17 @@ impl UserIdentity {
             .await
     }
 
-    pub async fn remove_streams_address(&self, address: Address) -> Result<()> {
+    pub async fn remove_streams_address(&self, address: &streams::Address) -> Result<()> {
         let mut addresses = self.vaulted_streams_addresses().await?;
         if !addresses.0.contains(&address.to_string()) {
             return Ok(());
         };
 
-        addresses.0.retain(|a| a.eq(&address.to_string()));
+        addresses.0.remove(&address.to_string());
 
-        self.set_stronghold_bytes(VAULT_STREAMS_ADDRESSES, &addresses.to_json_vec().unwrap())
+        self.set_stronghold_bytes(VAULT_STREAMS_ADDRESSES, &addresses.to_json_vec()?)
             .await
     }
-
 
     pub async fn vaulted_streams_addresses(&self) -> Result<StreamsAddresses> {
         match self.get_stronghold_bytes::<Vec<u8>>(VAULT_STREAMS_ADDRESSES).await? {

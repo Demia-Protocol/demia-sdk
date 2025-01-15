@@ -33,7 +33,8 @@ pub struct Sensor {
     pub readings: HashMap<String, Reading>,
     pub last_updated: Option<NaiveDateTime>,
     #[serde(default)]
-    pub state: SensorStateData
+    pub state: SensorStateData,
+    pub asset_url: Option<String>,
 }
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize, schemars::JsonSchema)]
@@ -48,6 +49,8 @@ pub struct Equipment {
     pub installed: u16,
     pub serial_no: String,
     pub manufacturer: String,
+    #[serde(default)]
+    pub asset_url: Option<String>,
 }
 
 impl Equipment {
@@ -86,6 +89,7 @@ impl Default for Sensor {
             readings: HashMap::new(),
             last_updated: None,
             state: SensorStateData::default()
+            asset_url: None,
         }
     }
 }
@@ -100,6 +104,7 @@ impl From<Equipment> for Sensor {
             readings: HashMap::new(),
             last_updated: None,
             state: SensorStateData::default()
+            asset_url: None,
         }
     }
 }

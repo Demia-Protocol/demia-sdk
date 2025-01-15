@@ -44,19 +44,28 @@ impl Asset {
         let segments = &url.split('/').collect::<Vec<_>>();
         let segment = segments.last().ok_or(StorageError::InvalidName(url.clone()))?;
         let parts = &segment.split('.').collect::<Vec<_>>();
-        let name = parts.first().ok_or(StorageError::InvalidName(url.clone()))?;
-        if *name == "site" {
-            Ok(Self::Site(segment.to_string()))
-        } else if *name == "equipment" {
-            Ok(Self::Equipment(segment.to_string()))
-        } else if *name == "sensor" {
-            Ok(Self::Sensor(segment.to_string()))
-        } else if *name == "custom" {
-            Ok(Self::Custom(segment.to_string()))
-        } else if *name == "link" {
+        let r#type = parts.first().ok_or(StorageError::InvalidName(url.clone()))?;
+
+        // The rest, as IDs may contain a .
+        let name = if r#type.len() + 1 <= segment.len() {
+            segment[r#type.len() + 1..].to_string()
+        } else {
+            // Shouldnt happen but just in case....
+            segment.to_string()
+        };
+
+        if *r#type == "site" {
+            Ok(Self::Site(name))
+        } else if *r#type == "equipment" {
+            Ok(Self::Equipment(name))
+        } else if *r#type == "sensor" {
+            Ok(Self::Sensor(name))
+        } else if *r#type == "custom" {
+            Ok(Self::Custom(name))
+        } else if *r#type == "link" {
             Ok(Self::Link(parts[1].to_string())) // link.site_id, has no file extension
         } else {
-            Ok(Self::Custom(segment.to_string()))
+            Ok(Self::Custom(name))
         }
     }
 }

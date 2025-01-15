@@ -21,14 +21,14 @@ pub enum NodeError {
 
 impl From<iota_sdk::client::Error> for NodeError {
     fn from(error: iota_sdk::client::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         NodeError::NodeClientError(error.to_string())
     }
 }
 
 impl From<iota_sdk::types::block::Error> for NodeError {
     fn from(error: iota_sdk::types::block::Error) -> Self {
-        log::warn!("Error: {}", error);
+        log::debug!("Error: {}", error);
         NodeError::NodeClientBlockError(error.to_string())
     }
 }
