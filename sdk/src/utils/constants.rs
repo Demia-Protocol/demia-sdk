@@ -18,3 +18,8 @@ pub const SECRETS_API: &str = "https://auth.demia-testing-domain.com/realms/Demi
 
 // Timeouts
 pub const API_TIMEOUT: Duration = Duration::from_secs(10);
+
+// Buckets
+pub const PROTECTED_BUCKET_PATH: &str = "stronghold-snapshots";
+pub const PROTECTED_BUCKET_PATH_TEST: &str = "staging-user-site-storage";
+pub const PUBLIC_BUCKET_PATH: &str = "demia-public";
