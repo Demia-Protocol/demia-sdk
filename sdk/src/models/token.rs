@@ -35,7 +35,11 @@ impl TokenWrap {
     }
 
     pub fn get_name(&self) -> Option<String> {
-        let name = self.token.claims.get("nickname").expect("Should be able to pull nickname");
+        let name = self
+            .token
+            .claims
+            .get("nickname")
+            .expect("Should be able to pull nickname");
         Some(name.to_string().replace('"', ""))
     }
 

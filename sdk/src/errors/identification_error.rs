@@ -50,9 +50,9 @@ pub enum IdentityError {
 impl IdentityError {
     pub fn is_missing_identity(&self) -> bool {
         match self {
-            IdentityError::IdentityDIDError(err) => *err == "Failed to fetch doc".to_string(),
+            IdentityError::IdentityDIDError(err) => err.eq("Failed to fetch doc"),
             IdentityError::StrongholdError(err) => {
-                *err == "stronghold client error: error loading client data; no data present".to_string()
+                err.eq("stronghold client error: error loading client data; no data present")
             }
             _ => false,
         }

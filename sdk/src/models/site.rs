@@ -184,7 +184,7 @@ impl Site {
 
                 let asset = Asset::from_id(file.name.clone())?;
                 if let Asset::Link(l) = &asset {
-                    if !assets.contains_key(&asset) && !(l == &project_id) {
+                    if !assets.contains_key(&asset) && l != &project_id {
                         links.push(l.clone());
                     } else {
                         continue;

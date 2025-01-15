@@ -71,10 +71,7 @@ impl<'a> StorageDataType<'a> {
     }
 
     pub fn is_public(&self) -> bool {
-        match self {
-            Self::Asset(_, _) => true,
-            _ => false,
-        }
+        matches!(self, Self::Asset(_, _))
     }
 }
 
@@ -205,7 +202,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
-                bucket: bucket,
+                bucket,
                 data: Some(data),
             })
             .await

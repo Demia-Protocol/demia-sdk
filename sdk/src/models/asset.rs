@@ -30,12 +30,12 @@ pub enum Asset {
 impl Asset {
     pub fn storage_path(&self) -> String {
         match self {
-            Asset::Profile(id) => format!("{}", id),
-            Asset::Site(id) => format!("{}", id),
-            Asset::Equipment(name) => format!("{}", name),
-            Asset::Sensor(id) => format!("{}", id),
-            Asset::Custom(id) => format!("{}", id),
-            Asset::Link(id) => format!("{}", id),
+            Asset::Profile(id) => id.to_string(),
+            Asset::Site(id) => id.to_string(),
+            Asset::Equipment(name) => name.to_string(),
+            Asset::Sensor(id) => id.to_string(),
+            Asset::Custom(id) => id.to_string(),
+            Asset::Link(id) => id.to_string(),
         }
     }
 
@@ -47,7 +47,7 @@ impl Asset {
         let r#type = parts.first().ok_or(StorageError::InvalidName(url.clone()))?;
 
         // The rest, as IDs may contain a .
-        let name = if r#type.len() + 1 <= segment.len() {
+        let name = if r#type.len() + 1 < segment.len() {
             segment[r#type.len() + 1..].to_string()
         } else {
             // Shouldnt happen but just in case....
