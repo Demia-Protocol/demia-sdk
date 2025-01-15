@@ -101,6 +101,13 @@ pub struct SheetData {
     pub simulated: String,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct NestedReadingWraps {
+    pub topic: String,
+    pub readings: Vec<WrappedReadingType>,
+}
+
+
 #[derive(Debug, Clone, Default, Deserialize, Serialize, schemars::JsonSchema)]
 pub struct NestedReading {
     pub id: String,
@@ -243,6 +250,13 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
     // Extract date time values from mappings
     let mut datetime = chrono::Utc::now();
     columns.iter().for_each(|c| match c[0].as_str() {
+        "date" => {
+            //ToDo: index by yyyy, mm, dd instead of using fixed index values
+            let date = c[2].split("-").collect::<Vec<&str>>();
+            datetime = datetime
+                .with_year(date[0].parse::<i32>().unwrap())
+                .unwrap()
+        }
         "DOY" => {
             println!("DOY: {}", c[2].parse::<f32>().unwrap().floor() as u32);
             datetime = datetime

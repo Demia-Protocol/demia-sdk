@@ -29,6 +29,16 @@ impl TokenWrap {
         Some(sub.to_string().replace('"', "").replace("auth0|", ""))
     }
 
+    pub fn get_email(&self) -> Option<String> {
+        let email = self.token.claims.get("email").expect("Should be able to pull email");
+        Some(email.to_string().replace('"', ""))
+    }
+
+    pub fn get_name(&self) -> Option<String> {
+        let name = self.token.claims.get("nickname").expect("Should be able to pull nickname");
+        Some(name.to_string().replace('"', ""))
+    }
+
     pub fn token_type(&self) -> &TokenType {
         &self.token_type
     }
