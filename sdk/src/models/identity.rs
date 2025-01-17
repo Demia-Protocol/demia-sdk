@@ -231,7 +231,6 @@ impl UserIdentity {
         match self.get_stronghold_bytes(VAULT_DOC_ID).await? {
             Some(bytes) => {
                 let id = String::from_utf8(bytes).unwrap();
-                info!("Found vault doc id: {}", id);
                 let iota_did = DemiaDID::parse(id)?;
                 Ok(iota_did)
             }
