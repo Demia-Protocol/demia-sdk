@@ -106,7 +106,13 @@ impl UserIdentity {
                 // Check that balances exist for addresses otherwise error out (temp faucet running for tests)
                 debug!("Getting Addresses");
                 let mut stronghold = SecretManager::Stronghold(stronghold_adapter);
-                let (balance_address, enough) = check_balance(api, auth0_token, &client, &mut stronghold).await?;
+                let (balance_address, enough) = check_balance(
+                    api,
+                    auth0_token,
+                    &client,
+                    &mut stronghold,
+                    identity_config
+                ).await?;
                 if !enough {
                     return Err(SdkError::Identity(IdentityError::InsufficientBalance(
                         balance_address.to_string(),
@@ -297,6 +303,7 @@ pub async fn check_balance(
     auth0_token: &TokenWrap,
     client: &IdentityClient,
     stronghold: &mut SecretManager,
+    identity_config: &IdentityConfiguration,
 ) -> SdkResult<(Address, bool)> {
     let addresses: Vec<identity_demia::demia::block::address::Bech32Address> = stronghold
         .generate_ed25519_addresses(
@@ -337,7 +344,13 @@ pub async fn check_balance(
             addresses[0]
         );
         // Request and return, user can press again manually
-        api.request_balance(auth0_token.raw(), &addresses[0])
+        api.request_balance(
+            auth0_token.raw(),
+            &addresses[0],
+            &identity_config.faucet.url,
+            &identity_config.client.url
+
+        )
             .await
             .map_err(|e| {
                 warn!("Could not request balance: {}", e);

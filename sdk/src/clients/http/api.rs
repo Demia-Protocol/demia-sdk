@@ -37,6 +37,8 @@ impl Default for ApiClient {
 impl TryFrom<&ApplicationConfiguration> for ApiClient {
     type Error = ApiError;
     fn try_from(config: &ApplicationConfiguration) -> Result<Self, Self::Error> {
+        log::info!("{}, {}", config.amazon_api, Url::parse(&config.amazon_api)?);
+
         Ok(Self {
             cloud_api_url: Url::parse(&config.amazon_api)?,
             guardian: GuardianApiClient::new(config.guardian_api.as_ref())?,
@@ -81,13 +83,29 @@ impl ApiClient {
         &self.guardian
     }
 
-    pub async fn request_balance(&self, bearer: &str, address: &Address) -> ApiResult<String> {
+    pub async fn request_balance(
+        &self,
+        bearer: &str,
+        address: &Address,
+        faucet: &str,
+        node: &str
+    ) -> ApiResult<String> {
         let addr = address.as_ed25519().to_string();
-        let path = "v1/balance";
-        let query = query_tuples_to_query_string([Some(("address", addr))]);
+        let path = "/v1/balance";
+        let query = query_tuples_to_query_string([
+            Some(("address", addr)),
+            Some(("faucetUrl", faucet.to_string())),
+            Some(("nodeUrl", node.to_string()))
+        ]);
 
         let mut url = self.cloud_api_url.clone();
-        url.set_path(path);
+
+        // Account for existing path in uri
+        let mut full_path = url.path().to_string();
+        let _ = full_path.strip_suffix("/");
+        full_path.push_str(path);
+
+        url.set_path(&full_path);
         url.set_query(query.as_deref());
 
         // TODO: Add bearer

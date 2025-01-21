@@ -123,6 +123,8 @@ pub struct StrongholdConfiguration {
 pub struct IdentityConfiguration {
     #[serde(default)]
     pub client: ClientConfiguration,
+    #[serde(default)]
+    pub faucet: ClientConfiguration,
     pub country: isocountry::CountryCode,
 }
 
@@ -130,6 +132,7 @@ impl Default for IdentityConfiguration {
     fn default() -> Self {
         Self {
             client: Default::default(),
+            faucet: Default::default(),
             country: isocountry::CountryCode::USA,
         }
     }

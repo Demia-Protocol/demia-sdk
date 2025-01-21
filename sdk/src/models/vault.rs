@@ -119,9 +119,8 @@ impl VaultClient {
                 info!("No stronghold key found, generating new one");
                 let password = new_stronghold_key();
                 self.password = Some(password.clone());
-                self.store_password(password).await?;
-
-                Err(IdentityError::NoStrongholdSecret)?
+                self.store_password(password.clone()).await?;
+                Ok(password)
             }
             Some(password) => Ok(password.clone()),
         }
