@@ -102,7 +102,9 @@ impl ApiClient {
 
         // Account for existing path in uri
         let mut full_path = url.path().to_string();
-        let _ = full_path.strip_suffix("/");
+        if let Some(stripped) = full_path.strip_suffix("/") {
+            full_path = stripped.to_string();
+        }
         full_path.push_str(path);
 
         url.set_path(&full_path);
