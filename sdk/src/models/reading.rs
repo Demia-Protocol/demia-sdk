@@ -308,7 +308,8 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
         .flexible(true)
         .from_reader(csv_content.as_bytes());
 
-    let mut sections = HashMap::from((section_label.clone(), vec![]));
+    let mut sections = HashMap::new();
+    sections.insert(section_label.clone(), vec![]);
 
     // Collect all records into a vector of StringRecords.
     let records: Vec<csv::StringRecord> = reader
