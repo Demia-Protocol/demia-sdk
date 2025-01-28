@@ -88,14 +88,14 @@ impl ApiClient {
         bearer: &str,
         address: &Address,
         faucet: &str,
-        node: &str
+        node: &str,
     ) -> ApiResult<String> {
         let addr = address.as_ed25519().to_string();
         let path = "/v1/balance";
         let query = query_tuples_to_query_string([
             Some(("address", addr)),
             Some(("faucetUrl", faucet.to_string())),
-            Some(("nodeUrl", node.to_string()))
+            Some(("nodeUrl", node.to_string())),
         ]);
 
         let mut url = self.cloud_api_url.clone();
