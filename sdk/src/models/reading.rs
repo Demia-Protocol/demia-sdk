@@ -330,10 +330,8 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
 
     for record in records {
         for (i, field) in record.iter().enumerate() {
-            if !headers[i].eq("date") && !headers[i].eq("DOY") && !headers[i].eq("time") {
-                columns[i].push(field.to_string());
-                println!("{:?}", columns[i])
-            }
+            columns[i].push(field.to_string());
+            println!("{:?}", columns[i])
         }
     }
 
@@ -341,13 +339,15 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
     let datetime = get_datetime(&columns);
 
     for (i, record) in columns.iter().enumerate() {
-        // Unwrap because we specifically put that object into it already
-        sections.get_mut(&section_label).unwrap().push(NestedReading {
-            id: headers[i].clone(),
-            value: parse_value(&record[1]),
-            unit: record[0].clone(),
-            timestamp: datetime,
-        })
+        if !headers[i].eq("date") && !headers[i].eq("DOY") && !headers[i].eq("time") {
+            // Unwrap because we specifically put that object into it already
+            sections.get_mut(&section_label).unwrap().push(NestedReading {
+                id: headers[i].clone(),
+                value: parse_value(&record[1]),
+                unit: record[0].clone(),
+                timestamp: datetime,
+            })
+        }
     }
 
     Ok(sections)
