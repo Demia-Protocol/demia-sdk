@@ -320,8 +320,7 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
         .collect::<Result<Vec<csv::StringRecord>, csv::Error>>()?;
 
     // Transpose the data (swap rows and columns).
-    let num_columns = records.iter().map(|r| r.len()).max().unwrap_or(0); // Get max columns count
-    let mut columns: Vec<Vec<String>> = vec![Vec::new(); num_columns];
+    let mut columns: Vec<Vec<String>> = headers.iter().cloned().map(|h| vec![h.clone()]).collect();
 
     for record in records {
         for (i, field) in record.iter().enumerate() {
@@ -332,13 +331,13 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
     // Extract date time values from mappings
     let datetime = get_datetime(&columns);
 
-    for (i, record) in columns.iter().enumerate() {
-        if !headers[i].eq("date") && !headers[i].eq("DOY") && !headers[i].eq("time") {
+    for record in columns.iter() {
+        if !record[0].eq("date") && !record[0].eq("DOY") && !record[0].eq("time") {
             // Unwrap because we specifically put that object into it already
             sections.get_mut(&section_label).unwrap().push(NestedReading {
-                id: headers[i].clone(),
-                value: parse_value(&record[1]),
-                unit: record[0].clone(),
+                id: record[0].clone(),
+                value: parse_value(&record[2]),
+                unit: record[1].clone(),
                 timestamp: datetime,
             })
         }
