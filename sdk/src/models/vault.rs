@@ -13,7 +13,7 @@ use vaultrs::{
 
 use crate::{
     configuration::StrongholdConfiguration,
-    errors::{IdentityError, IdentityResult as Result},
+    errors::{IdentityResult as Result},
     models::{TokenType, TokenWrap},
     utils::new_stronghold_key,
 };
