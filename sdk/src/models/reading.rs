@@ -303,7 +303,6 @@ fn get_datetime(columns: &[Vec<String>]) -> DateTime<Utc> {
 }
 
 pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Result<NestedMap, Box<dyn Error>> {
-    println!("{}", csv_content);
     let csv_content = csv_content.replace("\\n", "\n");
     let mut reader = csv::ReaderBuilder::new()
         .flexible(true)
@@ -315,14 +314,10 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
     let h = reader.headers()?;
     let headers = fill_empty_headers(h);
 
-    println!("{:?}", headers);
-
     // Collect all records into a vector of StringRecords.
     let records: Vec<csv::StringRecord> = reader
         .records()
         .collect::<Result<Vec<csv::StringRecord>, csv::Error>>()?;
-
-    println!("{:?}", records);
 
     // Transpose the data (swap rows and columns).
     let num_columns = records.iter().map(|r| r.len()).max().unwrap_or(0); // Get max columns count
@@ -331,7 +326,6 @@ pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Resu
     for record in records {
         for (i, field) in record.iter().enumerate() {
             columns[i].push(field.to_string());
-            println!("{:?}", columns[i])
         }
     }
 
