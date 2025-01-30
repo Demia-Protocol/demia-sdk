@@ -293,14 +293,17 @@ impl<T: Storage> StorageClient<T> {
             _ => {
                 let data = raw?;
 
-                let mut file = File::options()
-                    .create(true)
-                    .truncate(true)
-                    .write(true)
-                    .read(true)
-                    .open(file_path)
-                    .expect("Should be able to write to provided file path");
-                file.write_all(&data).expect("should be able to write to that file...");
+                // Stronghold will crash with a completely empty file
+                if data.len() > 0 {
+                    let mut file = File::options()
+                        .create(true)
+                        .truncate(true)
+                        .write(true)
+                        .read(true)
+                        .open(file_path)
+                        .expect("Should be able to write to provided file path");
+                    file.write_all(&data).expect("should be able to write to that file...");
+                }
 
                 Ok(data)
             }

@@ -22,6 +22,7 @@ use crate::{
             node_api::indexer::query_parameters::QueryParameter,
             secret::{SecretManager, stronghold::StrongholdSecretManager},
             storage::StorageAdapter,
+            stronghold::Error as StrongholdError,
         },
         crypto::{
             keys::{bip39, x25519},
@@ -29,7 +30,7 @@ use crate::{
         },
         types::block::{address::Address, output::AliasOutputBuilder},
     },
-    iota_stronghold::Location,
+    iota_stronghold::{ClientError as StrongholdClientError, Location},
     models::{StreamsAddresses, VAULT_DOC_ID, VAULT_STREAMS_ADDRESSES},
     streams::id::did::STREAMS_VAULT,
 };
@@ -64,10 +65,13 @@ impl UserIdentity {
         info!("Checking if there is an existing vault in stronghold");
         // create identity instance storing stronghold dir and adapter
 
-        let vault_doc_id = stronghold_adapter.get_bytes(VAULT_DOC_ID).await.map_err(|e| {
-            warn!("Could not get vault doc id: {}", e);
-            e
-        })?;
+        let vault_doc_id = match stronghold_adapter.get_bytes(VAULT_DOC_ID).await {
+            Ok(id) => id,
+            // Edge case for completely empty metadata
+            Err(StrongholdError::Client(StrongholdClientError::ClientDataNotPresent)) => None,
+            Err(e) => return Err(e.into()),
+        };
+
         let identity = match vault_doc_id {
             Some(doc_id) => {
                 info!("There is one, gonna try and return it");
