@@ -36,7 +36,6 @@ pub use token::TokenManager;
 use crate::{
     errors::{SecretResult, StorageResult},
     models::{Asset, TokenType, TokenWrap},
-    utils::PUBLIC_BUCKET_PATH,
 };
 
 pub const STRONGHOLD_PATH: &str = "stronghold";
@@ -159,16 +158,21 @@ pub enum Clients {
 pub struct StorageClient<T: Storage> {
     storage: T,
     pub sub: String,
-    pub bucket_path: String,
-    pub bucket_path_public: String,
+    pub private_bucket_path: String,
+    pub public_bucket_path: String,
 }
 
 impl<T: Storage> StorageClient<T> {
-    pub async fn new(bucket_path: String, jwt_token: TokenWrap, storage: T) -> StorageResult<Self> {
+    pub async fn new(
+        public_bucket_path: String,
+        private_bucket_path: String,
+        jwt_token: TokenWrap,
+        storage: T,
+    ) -> StorageResult<Self> {
         let sub = jwt_token.get_sub().unwrap();
         Ok(Self {
-            bucket_path_public: PUBLIC_BUCKET_PATH.to_string(),
-            bucket_path,
+            public_bucket_path,
+            private_bucket_path,
             storage,
             sub,
         })
@@ -180,8 +184,8 @@ impl<T: Storage> StorageClient<T> {
 
     fn get_bucket_path(&self, public: bool) -> &str {
         match public {
-            true => &self.bucket_path_public,
-            false => &self.bucket_path,
+            true => &self.public_bucket_path,
+            false => &self.private_bucket_path,
         }
     }
 
@@ -240,7 +244,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .get_metadata(StorageInfo {
                 url: file,
-                bucket: &self.bucket_path,
+                bucket: &self.private_bucket_path,
                 data: None,
             })
             .await
@@ -251,7 +255,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .delete(StorageInfo {
                 url: storage_path,
-                bucket: &self.bucket_path,
+                bucket: &self.private_bucket_path,
                 data: None,
             })
             .await
@@ -262,7 +266,7 @@ impl<T: Storage> StorageClient<T> {
         self.storage
             .upload(StorageInfo {
                 url: storage_path,
-                bucket: &self.bucket_path,
+                bucket: &self.private_bucket_path,
                 data: Some(serde_json::to_vec(metadata).expect("Metadata is serializable, should not fail")),
             })
             .await
@@ -276,7 +280,7 @@ impl<T: Storage> StorageClient<T> {
         let (file_path, storage_path) = storage_type.get_paths(&self.sub);
         let info = StorageInfo {
             url: storage_path,
-            bucket: &self.bucket_path,
+            bucket: &self.private_bucket_path,
             ..Default::default()
         };
 

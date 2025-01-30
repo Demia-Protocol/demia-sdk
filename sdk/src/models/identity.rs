@@ -208,6 +208,16 @@ impl UserIdentity {
         }
     }
 
+    pub async fn delete_stronghold_bytes(&self, key: &str) -> Result<()> {
+        match &*self.write_stronghold().await {
+            SecretManager::Stronghold(adapter) => {
+                adapter.delete(key).await?;
+                Ok(())
+            }
+            _ => unreachable!(),
+        }
+    }
+
     pub async fn get_stronghold_bytes<T: From<Vec<u8>>>(&self, key: &str) -> Result<Option<T>> {
         match &*self.read_stronghold().await {
             SecretManager::Stronghold(adapter) => match adapter.get_bytes(key).await? {
