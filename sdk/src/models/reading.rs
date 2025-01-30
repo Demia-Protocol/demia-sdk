@@ -247,7 +247,32 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
     }
 
     // Extract date time values from mappings
-    let mut datetime = chrono::Utc::now();
+    let datetime = get_datetime(&columns);
+
+    for (pos, record) in columns.iter().enumerate() {
+        let filename = headers.get(pos).cloned().unwrap_or_default(); // Assuming filename is in the first column
+
+        // Ignore file info section
+        if filename.eq("\\file_info") {
+            continue;
+        }
+        sections
+            .entry(filename.to_string())
+            .or_insert_with(Vec::new)
+            .push(NestedReading {
+                id: record[0].clone(),
+                value: parse_value(&record[2]),
+                unit: record[1].clone(),
+                timestamp: datetime,
+            });
+    }
+
+    Ok(sections)
+}
+
+fn get_datetime(columns: &[Vec<String>]) -> DateTime<Utc> {
+    // Extract date time values from mappings
+    let mut datetime = Utc::now();
     columns.iter().for_each(|c| match c[0].as_str() {
         "date" => {
             // ToDo: index by yyyy, mm, dd instead of using fixed index values
@@ -255,7 +280,6 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
             datetime = datetime.with_year(date[0].parse::<i32>().unwrap()).unwrap()
         }
         "DOY" => {
-            println!("DOY: {}", c[2].parse::<f32>().unwrap().floor() as u32);
             datetime = datetime
                 .with_ordinal(c[2].parse::<f32>().unwrap().floor() as u32)
                 .unwrap()
@@ -275,23 +299,48 @@ pub fn parse_csv_to_map(csv_content: &str) -> Result<NestedMap, Box<dyn Error>> 
         }
         _ => (),
     });
+    datetime
+}
 
-    for (pos, record) in columns.iter().enumerate() {
-        let filename = headers.get(pos).cloned().unwrap_or_default(); // Assuming filename is in the first column
+pub fn parse_csv_to_single_map(section_label: String, csv_content: &str) -> Result<NestedMap, Box<dyn Error>> {
+    let csv_content = csv_content.replace("\\n", "\n");
+    let mut reader = csv::ReaderBuilder::new()
+        .flexible(true)
+        .from_reader(csv_content.as_bytes());
 
-        // Ignore file info section
-        if filename.eq("\\file_info") {
-            continue;
+    let mut sections = HashMap::new();
+    sections.insert(section_label.clone(), vec![]);
+
+    let h = reader.headers()?;
+    let headers = fill_empty_headers(h);
+
+    // Collect all records into a vector of StringRecords.
+    let records: Vec<csv::StringRecord> = reader
+        .records()
+        .collect::<Result<Vec<csv::StringRecord>, csv::Error>>()?;
+
+    // Transpose the data (swap rows and columns).
+    let mut columns: Vec<Vec<String>> = headers.iter().cloned().map(|h| vec![h.clone()]).collect();
+
+    for record in records {
+        for (i, field) in record.iter().enumerate() {
+            columns[i].push(field.to_string());
         }
-        sections
-            .entry(filename.to_string())
-            .or_insert_with(Vec::new)
-            .push(NestedReading {
+    }
+
+    // Extract date time values from mappings
+    let datetime = get_datetime(&columns);
+
+    for record in columns.iter() {
+        if !record[0].eq("date") && !record[0].eq("DOY") && !record[0].eq("time") {
+            // Unwrap because we specifically put that object into it already
+            sections.get_mut(&section_label).unwrap().push(NestedReading {
                 id: record[0].clone(),
                 value: parse_value(&record[2]),
                 unit: record[1].clone(),
                 timestamp: datetime,
-            });
+            })
+        }
     }
 
     Ok(sections)
