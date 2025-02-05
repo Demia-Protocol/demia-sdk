@@ -84,9 +84,6 @@ pub struct ApplicationConfiguration {
     pub username: String,
     #[serde(default = "local_api")]
     pub amazon_api: String,
-    #[serde(default = "local_api")]
-    pub local_api: String,
-    pub use_local_api: bool,
     #[serde(default = "secrets_api")]
     pub secrets_api: String,
     #[serde(default = "retriever_api")]

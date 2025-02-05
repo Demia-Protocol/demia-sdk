@@ -162,7 +162,7 @@ pub struct StorageClient<T: Storage> {
     pub public_bucket_path: String,
 }
 
-impl<T: Storage> StorageClient<T> {
+impl<T: Storage + std::fmt::Debug> StorageClient<T> {
     pub async fn new(
         public_bucket_path: String,
         private_bucket_path: String,
