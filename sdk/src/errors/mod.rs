@@ -53,6 +53,9 @@ pub enum Error {
 
     #[error("Hedera Error: {0}")]
     Hedera(String),
+
+    #[error("Config load Error: {0}")]
+    Configuration(String),
 }
 
 impl From<streams::Error> for Error {
