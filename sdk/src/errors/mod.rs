@@ -1,14 +1,15 @@
 mod analytics;
 mod api_error;
+mod guardian;
 mod identification_error;
 mod node;
 mod secret;
 mod storage;
 mod user_error;
-mod guardian;
 
 pub use analytics::{AnalyticsError, AnalyticsResult};
 pub use api_error::{ApiError, ApiResult};
+pub use guardian::{GuardianError, GuardianResult};
 pub use identification_error::{IdentityError, IdentityResult};
 pub use node::{NodeError, NodeResult};
 pub use secret::{SecretError, SecretResult};
@@ -17,7 +18,6 @@ pub use storage::{StorageError, StorageResult};
 pub use streams::Error as StreamsError;
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
-pub use guardian::{GuardianError, GuardianResult};
 
 pub type SdkResult<T> = core::result::Result<T, Error>;
 

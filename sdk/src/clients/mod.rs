@@ -294,7 +294,7 @@ impl<T: Storage + std::fmt::Debug> StorageClient<T> {
                 let data = raw?;
 
                 // Stronghold will crash with a completely empty file
-                if data.len() > 0 {
+                if !data.is_empty() {
                     let mut file = File::options()
                         .create(true)
                         .truncate(true)

@@ -1,18 +1,21 @@
-use std::time::Duration;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
+
 use identity_demia::demia::DemiaDocument;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use url::Url;
 use tokio::sync::RwLock;
+use url::Url;
 
-use crate::models::{GuardianReport, Site};
-use crate::clients::HttpClient;
-use crate::errors::{ApiError, ApiResult};
-use crate::models::{CreateIdResponse, CreateProjectResponse, DataSendWrap, GuardianAccessTokenWrap, HederaLoginForm, LoginCredentials, LoginResponse, NewStreamRequest, TransportMessageWrap, UserMetadata, UserProfile};
-use crate::utils::{USER_STATE_API, USER_STATE_TIMEOUT};
-
-
+use crate::{
+    clients::HttpClient,
+    errors::{ApiError, ApiResult},
+    models::{
+        CreateIdResponse, CreateProjectResponse, DataSendWrap, GuardianAccessTokenWrap, GuardianReport,
+        HederaLoginForm, LoginCredentials, LoginResponse, NewStreamRequest, Site, TransportMessageWrap, UserMetadata,
+        UserProfile,
+    },
+    utils::{USER_STATE_API, USER_STATE_TIMEOUT},
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserStateApi {
@@ -41,10 +44,9 @@ impl UserStateApi {
         Ok(Self {
             http_client: HttpClient::new("demia".to_string()),
             url: url.try_into().map_err(|e| ApiError::NotFound(e.to_string()))?,
-            access_token: Arc::new(RwLock::new(String::new()))
+            access_token: Arc::new(RwLock::new(String::new())),
         })
     }
-
 
     fn get_path(&self, path: &str, site_id: Option<&str>) -> String {
         match path {
@@ -68,17 +70,18 @@ impl UserStateApi {
         USER_STATE_TIMEOUT
     }
 
-
     pub async fn get_token(&self, login_credentials: LoginCredentials) -> ApiResult<LoginResponse> {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("login", None));
 
-        let response: LoginResponse = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(login_credentials)?
-        )
+        let response: LoginResponse = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(login_credentials)?,
+            )
             .await?
             .into_json()
             .await?;
@@ -97,12 +100,9 @@ impl UserStateApi {
 
         *self.access_token.write().await = token.to_string();
 
-        let response = self.http_client.post_json(
-            url,
-            token,
-            self.get_timeout(),
-            Value::Null
-        )
+        let response = self
+            .http_client
+            .post_json(url, token, self.get_timeout(), Value::Null)
             .await?
             .into_text()
             .await?;
@@ -119,11 +119,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("metadata", None));
 
-        let response: UserMetadata = self.http_client.get(
-            url,
-            &self.access_token().await,
-            self.get_timeout()
-        )
+        let response: UserMetadata = self
+            .http_client
+            .get(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_json()
             .await?;
@@ -135,12 +133,13 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("metadata", None));
 
-        self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(metadata)?
-        )
+        self.http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(metadata)?,
+            )
             .await?;
 
         Ok(())
@@ -150,11 +149,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("profile", None));
 
-        let response: UserProfile = self.http_client.get(
-            url,
-            &self.access_token().await,
-            self.get_timeout()
-        )
+        let response: UserProfile = self
+            .http_client
+            .get(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_json()
             .await?;
@@ -166,11 +163,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("guardian_login", None));
 
-        let response: GuardianAccessTokenWrap = self.http_client.get(
-            url,
-            &self.access_token().await,
-            self.get_timeout()
-        )
+        let response: GuardianAccessTokenWrap = self
+            .http_client
+            .get(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_json()
             .await?;
@@ -182,12 +177,14 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("guardian_report", Some(site_id)));
 
-        let response: String = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(report)?
-        )
+        let response: String = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(report)?,
+            )
             .await?
             .into_text()
             .await?;
@@ -199,11 +196,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("did_doc", None));
 
-        let response: DemiaDocument = self.http_client.get(
-            url,
-            &self.access_token().await,
-            self.get_timeout()
-        )
+        let response: DemiaDocument = self
+            .http_client
+            .get(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_json()
             .await?;
@@ -215,12 +210,14 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("did_doc", None));
 
-        let response: String = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(doc)?
-        )
+        let response: String = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(doc)?,
+            )
             .await?
             .into_text()
             .await?;
@@ -232,12 +229,14 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("guardian_credentials", None));
 
-        let response: String = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(credentials)?
-        )
+        let response: String = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(credentials)?,
+            )
             .await?
             .into_text()
             .await?;
@@ -249,11 +248,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("is_site_admin", Some(site_id)));
 
-        let response: bool = self.http_client.get(
-            url,
-            &self.access_token().await,
-            self.get_timeout()
-        )
+        let response: bool = self
+            .http_client
+            .get(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_json()
             .await?;
@@ -265,12 +262,14 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("identity_create", None));
 
-        let response: CreateIdResponse = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(())?
-        )
+        let response: CreateIdResponse = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(())?,
+            )
             .await?
             .into_json()
             .await?;
@@ -282,11 +281,9 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("identity_create", None));
 
-        let response: String = self.http_client.delete(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-        )
+        let response: String = self
+            .http_client
+            .delete(url, &self.access_token().await, self.get_timeout())
             .await?
             .into_text()
             .await?;
@@ -298,12 +295,14 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("data_send", None));
 
-        let response: Vec<TransportMessageWrap> = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(data)?
-        )
+        let response: Vec<TransportMessageWrap> = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(data)?,
+            )
             .await?
             .into_json()
             .await?;
@@ -315,17 +314,18 @@ impl UserStateApi {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("project_create", None));
 
-        let response: CreateProjectResponse = self.http_client.post_json(
-            url,
-            &self.access_token().await,
-            self.get_timeout(),
-            serde_json::to_value(data)?
-        )
+        let response: CreateProjectResponse = self
+            .http_client
+            .post_json(
+                url,
+                &self.access_token().await,
+                self.get_timeout(),
+                serde_json::to_value(data)?,
+            )
             .await?
             .into_json()
             .await?;
 
         Ok(response)
     }
-
 }

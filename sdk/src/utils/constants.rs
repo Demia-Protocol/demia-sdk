@@ -21,7 +21,7 @@ pub const USER_STATE_API: &str = "http://localhost:8200";
 pub const API_TIMEOUT: Duration = Duration::from_secs(10);
 
 // 2.5 minutes to allow for creation calls in case of higher traffic
-//Todo: Investigate if we can get this lower (specifically on creation calls)
+// Todo: Investigate if we can get this lower (specifically on creation calls)
 pub const USER_STATE_TIMEOUT: Duration = Duration::from_secs(150);
 
 // Buckets

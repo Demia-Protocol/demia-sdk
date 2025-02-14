@@ -42,14 +42,12 @@ pub struct UserIdentity {
     pub(crate) stronghold: Arc<RwLock<SecretManager>>,
 }
 
-
 #[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
 pub struct CreateIdResponse {
     pub message: String,
     #[serde(rename = "userId")]
     pub user_id: String,
 }
-
 
 /// Context for "identity" page
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -59,7 +57,6 @@ pub struct IdentityContext {
     pub methods: Vec<VerificationMethodContext>,
 }
 
-
 /// Context for "identity" page
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct VerificationMethodContext {
@@ -68,7 +65,6 @@ pub struct VerificationMethodContext {
     pub fragment: String,
     pub controller: String,
 }
-
 
 impl std::fmt::Debug for UserIdentity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

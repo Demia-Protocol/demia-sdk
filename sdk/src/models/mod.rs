@@ -1,5 +1,6 @@
 mod analytics;
 mod asset;
+mod data;
 mod hedera;
 mod identity;
 mod json_scheme_wrap;
@@ -10,15 +11,15 @@ mod record;
 mod sensor;
 mod site;
 mod token;
+mod user_metadata;
 mod valueset;
 mod vault;
-mod user_metadata;
-mod data;
 
 use std::collections::HashSet;
 
 pub use analytics::*;
 pub use asset::*;
+pub use data::*;
 pub use hedera::*;
 pub use identity::*;
 pub use json_scheme_wrap::*;
@@ -30,10 +31,9 @@ use rocket_okapi::okapi::schemars;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
+pub use user_metadata::*;
 pub use valueset::*;
 pub use vault::*;
-pub use user_metadata::*;
-pub use data::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
@@ -92,7 +92,6 @@ pub struct LoginCredentials {
     /// Password for the user instance
     password: String,
 }
-
 
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug)]
 pub struct LoginResponse {

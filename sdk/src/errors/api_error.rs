@@ -4,6 +4,7 @@ use log::error;
 use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
 use crate::errors::UserError;
 
 pub type ApiResult<T> = core::result::Result<T, ApiError>;

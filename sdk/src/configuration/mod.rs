@@ -14,7 +14,7 @@ use crate::errors::Error;
 /// 3. If CONFIG is not set, it uses the provided fallback_path.
 /// 4. It reads and deserializes the JSON configuration from the determined file.
 /// 5. If the LOG_CONFIG environment variable is set, it logs the configuration details.
-pub fn build_config<'a, T: DeserializeOwned + std::fmt::Debug>(fallback_path: String) -> Result<T, Error> {
+pub fn build_config<T: DeserializeOwned + std::fmt::Debug>(fallback_path: String) -> Result<T, Error> {
     let config = match std::env::var("CONFIG_JSON") {
         Ok(json_str) => serde_json::from_str(&json_str).expect("Failed to parse CONFIG_JSON environment variable"),
         Err(_) => {
@@ -24,13 +24,11 @@ pub fn build_config<'a, T: DeserializeOwned + std::fmt::Debug>(fallback_path: St
             let config_file = File::open(config_file).map_err(|e| Error::Configuration(e.to_string()))?;
 
             // Parse the JSON file
-            let configuration =
-                serde_json::from_reader(config_file).map_err(|e| Error::Configuration(e.to_string()))?;
-            configuration
+            serde_json::from_reader(config_file).map_err(|e| Error::Configuration(e.to_string()))?
         }
     };
 
-    if let Ok(_) = std::env::var("LOG_CONFIG") {
+    if std::env::var("LOG_CONFIG").is_ok() {
         log::info!("Configuration: {:?}", config);
     }
 

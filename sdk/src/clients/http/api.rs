@@ -6,7 +6,7 @@ use url::Url;
 
 use super::{GuardianApiClient, retriever::RetrieverApi};
 use crate::{
-    clients::{HttpClient, query_tuples_to_query_string},
+    clients::{HttpClient, UserStateApi, query_tuples_to_query_string},
     configuration::ApplicationConfiguration,
     errors::{ApiError, ApiResult},
     utils::{
@@ -14,7 +14,6 @@ use crate::{
         constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API, USER_STATE_API},
     },
 };
-use crate::clients::UserStateApi;
 
 pub struct ApiClient {
     pub(crate) cloud_api_url: Url,
@@ -53,7 +52,12 @@ impl TryFrom<&ApplicationConfiguration> for ApiClient {
 }
 
 impl ApiClient {
-    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: Option<T>, guardian_url: Option<T>, user_state_api: Option<T>) -> ApiResult<Self>
+    pub fn new<T: TryInto<Url>>(
+        cloud_api_url: T,
+        retriever_url: Option<T>,
+        guardian_url: Option<T>,
+        user_state_api: Option<T>,
+    ) -> ApiResult<Self>
     where
         T::Error: std::fmt::Display,
     {

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use identity_demia::{credential::Credential, document::CoreDocument};
 use serde::{Deserialize, Serialize};
-use crate::clients::GuardianClient;
-use crate::utils::constants::*;
+
+use crate::{clients::GuardianClient, utils::constants::*};
 
 fn base_url() -> String {
     "http://localhost:14265".to_string()
@@ -164,7 +164,7 @@ pub struct GuardianConfigs {
     pub did_doc: Option<CoreDocument>,
     pub policy: String,
     pub vcs: HashMap<String, (String, Credential)>,
-    pub client: GuardianClient
+    pub client: GuardianClient,
 }
 
 impl GuardianConfigs {
@@ -172,4 +172,3 @@ impl GuardianConfigs {
         &mut self.client
     }
 }
-

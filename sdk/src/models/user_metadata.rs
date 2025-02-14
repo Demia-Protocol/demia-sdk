@@ -1,14 +1,19 @@
-use std::collections::{HashMap, HashSet};
-use std::str::FromStr;
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
+
 use chrono::Utc;
 use lets::address::Address;
 use log::warn;
 use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
-use crate::configuration::GuardianConfigs;
-use crate::models::{Notification, NotificationType, StreamsAddresses, TokenWrap, Site};
-use crate::errors::{GuardianError, GuardianResult, UserError, UserResult as Result};
+use crate::{
+    configuration::GuardianConfigs,
+    errors::{GuardianError, GuardianResult, UserError, UserResult as Result},
+    models::{Notification, NotificationType, Site, StreamsAddresses, TokenWrap},
+};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct UserMetadata {
@@ -22,7 +27,6 @@ pub struct UserMetadata {
     #[serde(skip_serializing, skip_deserializing, default)]
     pub identity_loaded: bool,
 }
-
 
 /// Custom deserializer for handling both direct and wrapped `SdkSite` formats.
 fn deserialize_sites<'de, D>(deserializer: D) -> std::result::Result<HashMap<String, Site>, D::Error>
@@ -49,9 +53,8 @@ where
 struct WrappedSite {
     #[serde(rename = "sdkSite")]
     sdk_site: Site,
-    //loading: bool, // Ignored during conversion
+    // loading: bool, // Ignored during conversion
 }
-
 
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct UserProfile {
@@ -62,7 +65,6 @@ pub struct UserProfile {
     pub sites: Vec<UserSite>,
 }
 
-
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct UserSite {
     pub name: String,
@@ -71,7 +73,6 @@ pub struct UserSite {
     #[serde(rename = "projectDeveloper")]
     pub project_developer: String,
 }
-
 
 impl UserMetadata {
     pub fn site_by_id(&self, site_id: &str) -> Result<&Site> {
@@ -148,9 +149,8 @@ impl UserMetadata {
     }
 }
 
-
 /// Context for a user
-#[derive(serde::Serialize,serde::Deserialize, Default, schemars::JsonSchema)]
+#[derive(serde::Serialize, serde::Deserialize, Default, schemars::JsonSchema)]
 pub struct UserContext {
     /// Streams address, if there is already a stream linked
     pub address: Option<String>,

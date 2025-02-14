@@ -1,6 +1,8 @@
 use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
 use crate::models::WrappedReadingType;
 
 #[derive(Clone, Serialize, Deserialize, schemars::JsonSchema)]
@@ -21,7 +23,6 @@ pub struct DataSendWrap {
     pub send_req: DataSendRequest,
     pub readings: HashMap<String, Vec<WrappedReadingType>>,
 }
-
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct TransportMessageWrap {

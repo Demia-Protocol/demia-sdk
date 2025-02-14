@@ -3,22 +3,26 @@ use std::{
     ops::{Index, IndexMut},
     sync::Arc,
 };
+
 use chrono::{DateTime, Utc};
 use futures_util::{FutureExt, future::BoxFuture};
 use indexmap::IndexMap;
 use rocket_okapi::okapi::schemars;
 
-use super::{update_sensor_readings, AnalyticsProfile, Asset, InputParameter, Parameter, Reading};
+use super::{AnalyticsProfile, Asset, InputParameter, Parameter, Reading, update_sensor_readings};
 use crate::{
+    analytics::{
+        all_daily_averages,
+        defaults::{
+            analytics::{equation6, run_equation},
+            constants::FEEDSTOCK_TYPE,
+        },
+    },
     clients::{AwsClient, FileInfo, StorageClient},
-    errors::{StorageResult, SdkResult},
+    errors::{Error, SdkResult, StorageResult, UserError},
     models::{Equipment, GHGInfo, Notification, ProjectInfo, Record, Sensor, Sensors, ValueSet},
     utils::{default_as_true, map_serialize},
 };
-use crate::analytics::all_daily_averages;
-use crate::analytics::defaults::analytics::{equation6, run_equation};
-use crate::analytics::defaults::constants::FEEDSTOCK_TYPE;
-use crate::errors::{Error, UserError};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteLocation {
@@ -38,7 +42,6 @@ pub struct NewSite {
     pub announcement: String,
 }
 
-
 #[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
 pub struct NewStreamRequest {
     pub address: String,
@@ -47,7 +50,6 @@ pub struct NewStreamRequest {
     pub sub_identifier: String,
     pub project: NewSite,
 }
-
 
 /// Context for "create_new_project" Response
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
@@ -58,7 +60,6 @@ pub struct CreateProjectResponse {
     pub location: SiteLocation,
     pub sensors: Sensors,
 }
-
 
 impl From<&Site> for CreateProjectResponse {
     fn from(site: &Site) -> Self {
@@ -133,7 +134,7 @@ pub struct Site {
     #[serde(skip, default)]
     pub assets: Option<HashMap<Asset, FileInfo>>,
     #[serde(default = "default_as_true")]
-    pub loading: bool
+    pub loading: bool,
 }
 
 impl std::fmt::Debug for Site {
@@ -252,7 +253,11 @@ impl Site {
     }
 
     pub fn sensor_by_id(&self, sensor_id: &str) -> SdkResult<&Sensor> {
-        Ok(self.sensors.sensors.get(sensor_id).ok_or(UserError::SiteMissingSensor)?)
+        Ok(self
+            .sensors
+            .sensors
+            .get(sensor_id)
+            .ok_or(UserError::SiteMissingSensor)?)
     }
 
     pub async fn update_sensors(&mut self) -> SdkResult<&mut Self> {
@@ -472,7 +477,6 @@ impl Site {
         self.run_equations(&mut sum_365_records).await;
         Ok(())
     }
-
 }
 
 impl From<&NewSite> for Site {
@@ -503,8 +507,6 @@ impl From<&NewSite> for Site {
     }
 }
 
-
-
 impl From<&Site> for NewSite {
     fn from(site: &Site) -> Self {
         Self {
@@ -522,7 +524,6 @@ impl From<&Site> for NewSite {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
