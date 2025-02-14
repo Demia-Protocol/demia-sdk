@@ -119,3 +119,7 @@ pub mod valueset_serialize {
         deserializer.deserialize_any(MapOrVec)
     }
 }
+
+pub fn default_as_true() -> bool {
+    true
+}

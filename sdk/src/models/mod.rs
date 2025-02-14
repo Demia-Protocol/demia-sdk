@@ -12,6 +12,8 @@ mod site;
 mod token;
 mod valueset;
 mod vault;
+mod user_metadata;
+mod data;
 
 use std::collections::HashSet;
 
@@ -30,6 +32,8 @@ pub use site::*;
 pub use token::*;
 pub use valueset::*;
 pub use vault::*;
+pub use user_metadata::*;
+pub use data::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct StreamsAddresses(pub HashSet<String>);
@@ -79,4 +83,19 @@ impl GHGInfo {
             label: label.to_string(),
         }
     }
+}
+
+#[derive(serde::Deserialize, serde::Serialize, schemars::JsonSchema, Debug)]
+pub struct LoginCredentials {
+    /// Username for the user
+    username: String,
+    /// Password for the user instance
+    password: String,
+}
+
+
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug)]
+pub struct LoginResponse {
+    pub message: String,
+    pub token: String,
 }

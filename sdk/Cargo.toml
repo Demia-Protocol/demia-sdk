@@ -37,11 +37,11 @@ url = "2.5"
 uuid = { version = "1.8.0", features = ["v4"] }
 vaultrs = "0.7.0"
 
-alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
-alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
+#alvarium-sdk-rust = { git = "https://github.com/project-alvarium/alvarium-sdk-rust", branch = "main" }
+#alvarium-annotator = { git = "https://github.com/project-alvarium/alvarium-annotator", branch = "main" }
 
-# alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
-# alvarium-annotator = { path = "../../alvarium-annotator" }
+alvarium-sdk-rust = { path = "../../alvarium-sdk-rust"}
+alvarium-annotator = { path = "../../alvarium-annotator" }
 
 aws-credential-types = { version = "1.2.0", optional = true }
 aws-config = { version = "1.5.6", features=["behavior-version-latest"], optional = true }

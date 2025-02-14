@@ -3,10 +3,13 @@ mod guardian;
 mod http_client;
 mod retriever;
 
+mod user_state_manager;
+
 pub use api::ApiClient;
 pub use guardian::{GuardianApiClient, GuardianClient};
 pub(crate) use http_client::*;
 pub use retriever::RetrieverApi;
+pub use user_state_manager::UserStateApi;
 
 pub(crate) fn query_tuples_to_query_string(
     tuples: impl IntoIterator<Item = Option<(&'static str, String)>>,

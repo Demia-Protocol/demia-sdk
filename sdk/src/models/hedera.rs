@@ -61,6 +61,12 @@ pub struct GuardianAccessTokenResponse {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Default)]
+pub struct GuardianAccessTokenWrap {
+    pub username: String,
+    pub token_response: GuardianAccessTokenResponse,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GuardianProfileResponse {
     pub username: String,

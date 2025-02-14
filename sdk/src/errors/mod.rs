@@ -5,6 +5,7 @@ mod node;
 mod secret;
 mod storage;
 mod user_error;
+mod guardian;
 
 pub use analytics::{AnalyticsError, AnalyticsResult};
 pub use api_error::{ApiError, ApiResult};
@@ -16,6 +17,7 @@ pub use storage::{StorageError, StorageResult};
 pub use streams::Error as StreamsError;
 use thiserror::Error;
 pub use user_error::{UserError, UserResult};
+pub use guardian::{GuardianError, GuardianResult};
 
 pub type SdkResult<T> = core::result::Result<T, Error>;
 
@@ -56,6 +58,12 @@ pub enum Error {
 
     #[error("Config load Error: {0}")]
     Configuration(String),
+
+    #[error("Hedera Guardian Error: {0}")]
+    Guardian(#[from] GuardianError),
+
+    #[error("Calculations error: {0}")]
+    Calculations(String),
 }
 
 impl From<streams::Error> for Error {

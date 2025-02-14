@@ -15,4 +15,5 @@ pub enum NotificationType {
         site: String,
     },
     NewSite,
+    SiteFailedToCreate,
 }

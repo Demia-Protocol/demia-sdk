@@ -116,3 +116,16 @@ pub struct SensorStateData {
     pub total_flow: f64,
     pub current_day_avg: f64,
 }
+
+pub(crate) fn update_sensor_readings(sensors: &mut IndexMap<String, Sensor>) {
+    for (_, sensor) in sensors {
+        let mut avgcf = 0_f32;
+        let readings = sensor.readings.clone();
+        let total = readings.values().map(|r| avgcf += r.score).count();
+        let avgcf = ((avgcf / total as f32) * 1000.0).round() / 1000.0;
+
+        sensor.readings.clone_from(&readings);
+        sensor.total = total;
+        sensor.avgcf = avgcf * 100.0;
+    }
+}

@@ -42,6 +42,14 @@ pub struct UserIdentity {
     pub(crate) stronghold: Arc<RwLock<SecretManager>>,
 }
 
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
+pub struct CreateIdResponse {
+    pub message: String,
+    #[serde(rename = "userId")]
+    pub user_id: String,
+}
+
 impl std::fmt::Debug for UserIdentity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut d = f.debug_struct("UserIdentity");

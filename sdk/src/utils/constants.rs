@@ -15,9 +15,11 @@ pub const LOCAL_API: &str = "http://localhost:1111";
 pub const RETRIEVER_API: &str = "http://localhost:9000";
 pub const GUARDIAN_API: &str = "http://guardian.demia-nodes.net/api/v1";
 pub const SECRETS_API: &str = "https://auth.demia-testing-domain.com/realms/DemiaTest";
+pub const USER_STATE_API: &str = "http://localhost:8200";
 
 // Timeouts
 pub const API_TIMEOUT: Duration = Duration::from_secs(10);
+pub const USER_STATE_TIMEOUT: Duration = Duration::from_secs(30);
 
 // Buckets
 pub const PROTECTED_BUCKET_PATH: &str = "stronghold-snapshots";

@@ -11,15 +11,17 @@ use crate::{
     errors::{ApiError, ApiResult},
     utils::{
         API_TIMEOUT,
-        constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API},
+        constants::{GUARDIAN_API, LOCAL_API, RETRIEVER_API, USER_STATE_API},
     },
 };
+use crate::clients::UserStateApi;
 
 pub struct ApiClient {
     pub(crate) cloud_api_url: Url,
     pub(crate) retriever: RetrieverApi,
     pub(crate) guardian: GuardianApiClient,
     pub(crate) http_client: HttpClient,
+    pub(crate) user_state_api: UserStateApi,
 }
 
 impl Default for ApiClient {
@@ -30,6 +32,7 @@ impl Default for ApiClient {
             retriever: RetrieverApi::new(RETRIEVER_API).unwrap(),
             guardian: GuardianApiClient::new(GUARDIAN_API).unwrap(),
             http_client: HttpClient::new("demia".to_string()),
+            user_state_api: UserStateApi::new(USER_STATE_API).unwrap(),
         }
     }
 }
@@ -43,13 +46,14 @@ impl TryFrom<&ApplicationConfiguration> for ApiClient {
             cloud_api_url: Url::parse(&config.amazon_api)?,
             guardian: GuardianApiClient::new(config.guardian_api.as_ref())?,
             retriever: RetrieverApi::new(config.retriever_api.as_ref())?,
+            user_state_api: UserStateApi::new(config.user_state_api.as_ref())?,
             ..Default::default()
         })
     }
 }
 
 impl ApiClient {
-    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: Option<T>, guardian_url: Option<T>) -> ApiResult<Self>
+    pub fn new<T: TryInto<Url>>(cloud_api_url: T, retriever_url: Option<T>, guardian_url: Option<T>, user_state_api: Option<T>) -> ApiResult<Self>
     where
         T::Error: std::fmt::Display,
     {
@@ -67,6 +71,9 @@ impl ApiClient {
         if let Some(guardian_url) = guardian_url {
             client.guardian = GuardianApiClient::new(guardian_url)?;
         }
+        if let Some(user_state_api) = user_state_api {
+            client.user_state_api = UserStateApi::new(user_state_api)?;
+        }
 
         Ok(client)
     }
@@ -81,6 +88,14 @@ impl ApiClient {
 
     pub fn guardian(&self) -> &GuardianApiClient {
         &self.guardian
+    }
+
+    pub fn user_state_api(&self) -> &UserStateApi {
+        &self.user_state_api
+    }
+
+    pub fn create_user_state_api(&mut self) -> &mut UserStateApi {
+        &mut self.user_state_api
     }
 
     pub async fn request_balance(

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use identity_demia::{credential::Credential, document::CoreDocument};
 use serde::{Deserialize, Serialize};
-
+use crate::clients::GuardianClient;
 use crate::utils::constants::*;
 
 fn base_url() -> String {
@@ -49,6 +49,10 @@ fn secrets_api() -> String {
     SECRETS_API.to_string()
 }
 
+fn user_state_api() -> String {
+    USER_STATE_API.to_string()
+}
+
 fn public_bucket_path() -> String {
     PUBLIC_BUCKET_PATH.to_string()
 }
@@ -90,6 +94,8 @@ pub struct ApplicationConfiguration {
     pub retriever_api: String,
     #[serde(default = "guardian_api")]
     pub guardian_api: String,
+    #[serde(default = "user_state_api")]
+    pub user_state_api: String,
 
     #[serde(default = "public_bucket_path")]
     pub public_bucket_path: String,
@@ -158,4 +164,12 @@ pub struct GuardianConfigs {
     pub did_doc: Option<CoreDocument>,
     pub policy: String,
     pub vcs: HashMap<String, (String, Credential)>,
+    pub client: GuardianClient
 }
+
+impl GuardianConfigs {
+    pub fn client(&mut self) -> &mut GuardianClient {
+        &mut self.client
+    }
+}
+
