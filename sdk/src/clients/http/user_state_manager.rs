@@ -2,10 +2,11 @@ use std::time::Duration;
 use std::sync::Arc;
 use identity_demia::demia::DemiaDocument;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use url::Url;
 use tokio::sync::RwLock;
 
-use crate::models::GuardianReport;
+use crate::models::{GuardianReport, Site};
 use crate::clients::HttpClient;
 use crate::errors::{ApiError, ApiResult};
 use crate::models::{CreateIdResponse, CreateProjectResponse, DataSendWrap, GuardianAccessTokenWrap, HederaLoginForm, LoginCredentials, LoginResponse, NewStreamRequest, TransportMessageWrap, UserMetadata, UserProfile};
@@ -48,6 +49,7 @@ impl UserStateApi {
     fn get_path(&self, path: &str, site_id: Option<&str>) -> String {
         match path {
             "login" => "api/login".to_string(),
+            "update_token" => "api/update_token".to_string(),
             "metadata" => "api/metadata".to_string(),
             "profile" => "api/profile".to_string(),
             "guardian_login" => "api/guardian/login".to_string(),
@@ -89,12 +91,34 @@ impl UserStateApi {
         self.access_token.read().await.to_string()
     }
 
+    pub async fn update_token(&self, token: &str) -> ApiResult<String> {
+        let mut url = self.url.clone();
+        url.set_path(&self.get_path("update_token", None));
+
+        *self.access_token.write().await = token.to_string();
+
+        let response = self.http_client.post_json(
+            url,
+            token,
+            self.get_timeout(),
+            Value::Null
+        )
+            .await?
+            .into_text()
+            .await?;
+
+        Ok(response)
+    }
+
+    pub async fn get_site(&self, site_id: &str) -> ApiResult<Site> {
+        let metadata = self.get_metadata().await?;
+        Ok(metadata.site_by_id(site_id)?.clone())
+    }
 
     pub async fn get_metadata(&self) -> ApiResult<UserMetadata> {
         let mut url = self.url.clone();
         url.set_path(&self.get_path("metadata", None));
 
-        log::info!("Access Token: {}", self.access_token().await);
         let response: UserMetadata = self.http_client.get(
             url,
             &self.access_token().await,
@@ -104,7 +128,6 @@ impl UserStateApi {
             .into_json()
             .await?;
 
-        log::info!("Got metadata");
         Ok(response)
     }
 
@@ -250,6 +273,22 @@ impl UserStateApi {
         )
             .await?
             .into_json()
+            .await?;
+
+        Ok(response)
+    }
+
+    pub async fn delete_identity(&self) -> ApiResult<String> {
+        let mut url = self.url.clone();
+        url.set_path(&self.get_path("identity_create", None));
+
+        let response: String = self.http_client.delete(
+            url,
+            &self.access_token().await,
+            self.get_timeout(),
+        )
+            .await?
+            .into_text()
             .await?;
 
         Ok(response)

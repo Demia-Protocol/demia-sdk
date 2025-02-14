@@ -49,7 +49,7 @@ where
 struct WrappedSite {
     #[serde(rename = "sdkSite")]
     sdk_site: Site,
-    loading: bool, // Ignored during conversion
+    //loading: bool, // Ignored during conversion
 }
 
 
@@ -136,4 +136,30 @@ impl UserMetadata {
             addresses.0.remove(address);
         }
     }
+
+    pub fn site_by_id_mut(&mut self, site_id: &str) -> Result<&mut Site> {
+        self.sites
+            .get_mut(site_id)
+            .ok_or(UserError::SiteNotFound(site_id.to_string()))
+    }
+
+    pub fn remove_site(&mut self, site_id: &str) {
+        self.sites.remove(site_id);
+    }
+}
+
+
+/// Context for a user
+#[derive(serde::Serialize,serde::Deserialize, Default, schemars::JsonSchema)]
+pub struct UserContext {
+    /// Streams address, if there is already a stream linked
+    pub address: Option<String>,
+    /// Streams identifier
+    pub author: Option<String>,
+    /// User identifier (DID)
+    pub identifier: Option<String>,
+    /// The username
+    pub username: Option<String>,
+    /// Keycloak ID
+    pub keycloak_id: Option<String>,
 }

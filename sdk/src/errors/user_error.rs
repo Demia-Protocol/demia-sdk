@@ -33,6 +33,9 @@ pub enum UserError {
     #[error("No site attached to user with ID {0}")]
     SiteNotFound(String),
 
+    #[error("Site doesn't have the sensor attached")]
+    SiteMissingSensor,
+
     #[error("This site action requires admin permissions")]
     NotSiteAdmin,
 }

@@ -26,9 +26,9 @@ pub enum Error {
     #[error("Node Service Error: {0}")]
     Node(#[from] NodeError),
 
-    // Dont think we want user error here
-    //#[error("User Service Error: {0}")]
-    // User(#[from] UserError),
+    #[error("User Service Error: {0}")]
+    User(#[from] UserError),
+
     #[error("Identity Service Error: {0}")]
     Identity(#[from] IdentityError),
 

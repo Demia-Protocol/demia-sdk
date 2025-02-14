@@ -18,7 +18,7 @@ use crate::{
 use crate::analytics::all_daily_averages;
 use crate::analytics::defaults::analytics::{equation6, run_equation};
 use crate::analytics::defaults::constants::FEEDSTOCK_TYPE;
-use crate::errors::Error;
+use crate::errors::{Error, UserError};
 
 #[derive(Default, Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SiteLocation {
@@ -249,6 +249,10 @@ impl Site {
 
     pub fn set_assets(&mut self, assets: HashMap<Asset, FileInfo>) {
         self.assets.get_or_insert_with(HashMap::new).extend(assets);
+    }
+
+    pub fn sensor_by_id(&self, sensor_id: &str) -> SdkResult<&Sensor> {
+        Ok(self.sensors.sensors.get(sensor_id).ok_or(UserError::SiteMissingSensor)?)
     }
 
     pub async fn update_sensors(&mut self) -> SdkResult<&mut Self> {

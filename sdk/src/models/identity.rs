@@ -4,7 +4,7 @@ use isocountry::CountryCode;
 use log::{debug, info, warn};
 use tokio::sync::RwLock;
 
-use super::TokenWrap;
+use super::{TokenWrap, UserContext};
 use crate::{
     clients::ApiClient,
     configuration::{IdentityConfiguration, StrongholdConfiguration},
@@ -49,6 +49,26 @@ pub struct CreateIdResponse {
     #[serde(rename = "userId")]
     pub user_id: String,
 }
+
+
+/// Context for "identity" page
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct IdentityContext {
+    pub user: UserContext,
+    pub doc_id: DemiaDID,
+    pub methods: Vec<VerificationMethodContext>,
+}
+
+
+/// Context for "identity" page
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct VerificationMethodContext {
+    pub type_: String,
+    pub id: String,
+    pub fragment: String,
+    pub controller: String,
+}
+
 
 impl std::fmt::Debug for UserIdentity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

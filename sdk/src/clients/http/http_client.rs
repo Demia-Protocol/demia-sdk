@@ -130,4 +130,11 @@ impl HttpClient {
         request_builder = request_builder.header("Content-Type", "application/vnd.demia.serializer-v2");
         Self::parse_response(request_builder.body(body.to_vec()).send().await?, &url).await
     }
+
+    pub(crate) async fn delete(&self, url: Url, bearer: &str, timeout: Duration) -> Result<Response> {
+        let mut request_builder = self.client.delete(url.clone());
+        request_builder = self.build_request(request_builder, bearer, timeout)?;
+        let resp = request_builder.send().await?;
+        Self::parse_response(resp, &url).await
+    }
 }

@@ -3,6 +3,7 @@ use rocket_okapi::okapi::schemars;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize, de::value::MapDeserializer};
 use serde_json::{Map, Value};
+use crate::models::VerificationMethodContext;
 
 #[derive(Deserialize, Serialize, Debug, Default, Clone, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -165,6 +166,24 @@ pub struct DataResponse {
 #[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ReportParams {
     pub site_id: String,
-    pub start: chrono::DateTime<chrono::Utc>,
-    pub end: chrono::DateTime<chrono::Utc>,
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
+}
+
+
+///  Context for "<site_id>/hedera" page
+#[derive(serde::Serialize, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct HederaContext {
+    pub doc_id: String,
+    pub methods: Vec<VerificationMethodContext>,
+    pub vcs: Vec<VCWrap>,
+}
+
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, schemars::JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct VCWrap {
+    pub msg_id: String,
+    pub vc: String,
 }

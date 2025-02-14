@@ -4,6 +4,7 @@ use log::error;
 use rocket_okapi::okapi::schemars;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use crate::errors::UserError;
 
 pub type ApiResult<T> = core::result::Result<T, ApiError>;
 
@@ -16,6 +17,9 @@ pub enum ApiError {
     BadRequest,
     #[error("Internal Server Error")]
     InternalServerError,
+
+    #[error("Internal Server User Error: {0}")]
+    InternalUserError(#[from] UserError),
 
     #[error("Invalid API url {0}")]
     NotFound(String),
