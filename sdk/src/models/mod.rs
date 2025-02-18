@@ -10,6 +10,7 @@ mod record;
 mod sensor;
 mod site;
 mod token;
+mod user;
 mod valueset;
 mod vault;
 
@@ -28,6 +29,7 @@ use rocket_okapi::okapi::schemars;
 pub use sensor::*;
 pub use site::*;
 pub use token::*;
+pub use user::*;
 pub use valueset::*;
 pub use vault::*;
 
