@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use iota_sdk::types::block::address::Address;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use streams::Address;
 use url::Url;
 
 use super::HttpClient;
@@ -51,7 +51,6 @@ impl RetrieverApi {
             .http_client
             .post_json(url, bearer, RetrieverApi::get_timeout(), json)
             .await?;
-        print!("code: {}", &res.status());
         res.into_json().await
     }
 
@@ -65,7 +64,6 @@ impl RetrieverApi {
         user_id: String,
         address: &Address,
     ) -> ApiResult<Value> {
-        let addr = address.as_ed25519().to_string();
         let path = "add-address";
 
         let mut url = self.url.clone();
@@ -73,7 +71,7 @@ impl RetrieverApi {
 
         let json = serde_json::json!({
             "id": user_id,
-            "address": addr,
+            "address": address.to_string(),
         });
 
         let res = self
